@@ -176,6 +176,17 @@ async function macroForStock(headers) {
   return getMacro();
 }
 
+// 배당 정보를 출처와 상관없이 같은 모양으로 정리해요. 없는 값은 배당수익률·PER로 계산해요
+function dividendInfo(raw) {
+  const d = raw.dividend || {};
+  const y = raw.metrics?.divYield ?? null;
+  const perShare = d.perShare ?? (y !== null && raw.price ? (raw.price * y) / 100 : null);
+  const pe = raw.metrics?.pe;
+  const payout =
+    d.payout ?? (perShare > 0 && d.eps > 0 ? (perShare / d.eps) * 100 : y > 0 && pe > 0 ? y * pe : y === 0 ? 0 : null);
+  return { yield: y, perShare, payout, exDate: d.exDate || null, payDate: d.payDate || null, history: d.history || [] };
+}
+
 async function getStock(input, headers = {}) {
   const { demo } = env();
   let target;
@@ -204,7 +215,8 @@ async function getStock(input, headers = {}) {
     const stats = priceStats(raw.history);
     const result = judgeStock(raw, stats, macro);
     const history = raw.history.slice(-252).map((p) => [p.date, p.close]);
-    return { ...raw, history, stats, ...result, streetLazy, macroScore: macro.score, fetchedAt: new Date().toISOString() };
+    const dividend = dividendInfo(raw);
+    return { ...raw, history, stats, ...result, dividend, streetLazy, macroScore: macro.score, fetchedAt: new Date().toISOString() };
   });
 }
 

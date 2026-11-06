@@ -36,6 +36,12 @@
         --warn: #f2711c;
         --warn-soft: #fff1e6;
         --shadow: 0 8px 28px rgba(0, 27, 55, 0.12);
+        /* 점수 5단계: 저점 쪽 초록 → 과열 쪽 빨강 */
+        --s5: #0f9d63;
+        --s4: #4fb36c;
+        --s3: #c48f00;
+        --s2: #f2711c;
+        --s1: #e5383b;
         --sans: "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
       }
       @media (prefers-color-scheme: dark) {
@@ -60,6 +66,11 @@
           --warn: #ff8a3d;
           --warn-soft: #3a2615;
           --shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
+          --s5: #2fc28a;
+          --s4: #7acb8c;
+          --s3: #e2b341;
+          --s2: #ff8a3d;
+          --s1: #ff6b6e;
         }
       }
       * {
@@ -111,6 +122,15 @@
         margin: 0;
         font-size: 20px;
         font-weight: 700;
+      }
+      /* 화면에는 숨기고 화면 낭독기만 읽어요 */
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
       }
       .brand span {
         font-size: 12px;
@@ -1020,6 +1040,64 @@
         font-size: 15px;
         line-height: 1.7;
       }
+      /* 점수에 따라 색이 바뀌는 구간 이름 */
+      .stance {
+        display: block;
+        font-size: 21px;
+        font-weight: 700;
+        line-height: 1.35;
+        margin-top: 2px;
+      }
+      .score-pill {
+        font-size: 15px;
+        font-weight: 700;
+        padding: 6px 12px;
+        border-radius: 999px;
+        white-space: nowrap;
+        color: #fff;
+      }
+      /* 숫자 강조 */
+      b.hl {
+        font-weight: 700;
+        color: var(--primary);
+      }
+      /* 환율·원자재 숫자 목록 */
+      .mkt .name small {
+        margin-left: 6px;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--ink-3);
+      }
+      .mkt .price-v {
+        font-weight: 700;
+        color: var(--ink);
+        font-variant-numeric: tabular-nums;
+      }
+      .mkt .chg-v {
+        min-width: 44px;
+        text-align: right;
+        font-size: 13px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
+      /* 배당 카드 */
+      .div-hero {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .div-hero strong {
+        font-size: 34px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+      .div-hist {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+        flex-wrap: wrap;
+      }
       /* 한두 줄 요약 + 더보기 */
       .clamp {
         display: -webkit-box;
@@ -1078,7 +1156,7 @@
   <body>
     <header class="top">
       <div class="brand">
-        <h1>배당셰프 판독기</h1>
+        <h1 class="sr-only">배당셰프 판독기</h1>
         <span id="asof"></span>
       </div>
       <form id="search" autocomplete="off">
@@ -1208,6 +1286,8 @@
         천연가스: ["천연가스", "난방과 발전에 쓰이는 연료예요. 겨울에 급등하면 유럽·아시아 물가를 끌어올려요."],
         금: ["금", "대표적인 안전자산이에요. 불안할 때나 달러 가치가 떨어질 때 올라요."],
         환율: ["원·달러 환율", "1달러를 사는 데 드는 원화예요. 오르면 원화로 미국 주식을 살 때 비싸지고, 나중에 환율이 내리면 원화 기준 수익이 줄어요(환차손)."],
+        배당성향: ["배당성향", "회사가 번 이익 중 배당으로 나눠주는 비율이에요. 100%가 넘으면 번 돈보다 많이 주는 것이라 오래 이어지기 어려울 수 있어요."],
+        배당락일: ["배당락일", "이날부터 주식을 사면 이번 배당을 받지 못해요. 배당을 받으려면 배당락일 전날까지 사야 해요."],
         컨센서스: ["컨센서스", "이 종목을 분석하는 증권사 애널리스트들의 평균 의견이에요."],
         목표가: ["평균 목표가", "애널리스트들이 제시한 1년 뒤 예상 주가의 평균이에요. 자주 틀리고 주가를 뒤따라 바뀌어요."],
       };
@@ -1267,6 +1347,20 @@
       });
 
       const pointTone = (v) => (v >= 15 ? "on" : v > -15 ? "mid" : "off");
+      // 점수(−100~+100) → 5단계 색
+      const scoreVar = (v) => (v >= 45 ? "--s5" : v >= 15 ? "--s4" : v > -15 ? "--s3" : v > -45 ? "--s2" : "--s1");
+      const scoreHead = (label, score) =>
+        `<div class="hero"><strong class="stance" style="color:var(${scoreVar(score)})">${esc(
+          label
+        )}</strong><span class="score-pill" style="background:var(${scoreVar(score)})">${signed(score, 0, "점")}</span></div>`;
+      // 문장 속 숫자를 굵게 강조 (먼저 나누고 각각 이스케이프)
+      const hl = (text) =>
+        String(text ?? "")
+          // 단위(%, %p, 곳, 배, 점, 원)가 붙었거나 쉼표가 있는 숫자만 강조해요 ('10년' 같은 건 제외)
+          .split(/([+\-]?\d[\d,]*(?:\.\d+)?(?:%p|%|곳|배|점|원)|[+\-]?\d{1,3}(?:,\d{3})+(?:\.\d+)?)/)
+          .map((p, i) => (i % 2 ? `<b class="hl">${esc(p)}</b>` : esc(p)))
+          .join("");
+      let MACRO = null;
       const dayText = (d) => {
         if (!d) return "";
         const [, mo, da] = String(d).slice(0, 10).split("-");
@@ -1327,13 +1421,15 @@
           const m = await api("/api/macro");
           $("#asof").textContent = m.updatedAt ? `업데이트 ${timeText(m.updatedAt)}` : `${m.asOf} 기준`;
           FX = m.fx || null;
+          MACRO = m;
           fillKrw();
+          fillDiv();
           const v = m.view || {};
           const tone = pointTone(m.score);
           const body = $("#market-body");
           const hasMore = v.action || (v.lenses && v.lenses.length) || (v.watch && v.watch.length);
           body.innerHTML = `
-        <div class="hero"><strong class="big">${esc(m.stance)}</strong><span class="score tone-${tone}">${signed(m.score, 0, "점")}</span></div>
+        ${scoreHead(m.stance, m.score)}
         <p class="sub">신호 ${m.signals.length}개의 점수를 합쳐 −100(과열)~+100(저점)으로 환산했어요</p>
         ${v.headline ? `<p class="lead clamp">${esc(v.headline)}</p>` : ""}
         ${
@@ -1388,56 +1484,40 @@
           )
           .join("")}</ul>`;
 
-          if (m.commodities && m.commodities.length) {
+          if ((m.commodities && m.commodities.length) || m.fx) {
+            const cms = m.commodities || [];
             const price = (c) => (c.price >= 100 ? Math.round(c.price).toLocaleString("en-US") : c.price.toFixed(2));
+            const fx = m.fx;
+            const row = (o) => `<li><details class="row mkt">
+          <summary><span class="name">${esc(o.name)}${tip(o.tipKey || o.name)}${o.unit ? `<small>${esc(o.unit)}</small>` : ""}</span><span class="val"><span class="price-v">${
+              o.price
+            }</span><span class="chg-v ${updown(o.m1, 1)}">${signed(o.m1, 1)}</span><span class="chg-v ${updown(o.y1, 0)}">${signed(
+              o.y1,
+              0
+            )}</span></span></summary>
+          <p class="detail">${o.chip ? `<span class="chip" style="margin-right:6px">${esc(o.chip)}</span>` : ""}${esc(o.text)}<span style="display:block;margin-top:8px;font-size:12px;color:var(--ink-3)">${esc(
+              o.foot
+            )}</span></p></details></li>`;
             const cm = $("#commodities");
             cm.hidden = false;
-            const fx = m.fx;
             cm.innerHTML = `<h2 id="cmd-title">환율·원자재</h2>
-        <p class="sub">${dayText(m.commodities[0].date)} 기준 · 1년 등락</p>
-        <div class="cmd-grid">${
+        <p class="sub">${dayText((fx || cms[0]).date)} 기준 · 오른쪽 숫자는 1개월 / 1년 등락이에요</p>
+        <ul class="rows">${
           fx
-            ? `<div class="cmd fx">
-          <b>${esc(fx.name)}${tip("환율")}</b><small>${dayText(fx.date)} · 1년 ${Math.round(fx.low).toLocaleString("ko-KR")}~${Math.round(
-                fx.high
-              ).toLocaleString("ko-KR")}원</small>
-          <strong>${fx.price.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}원</strong><span class="chg ${updown(
-                fx.y1,
-                0
-              )}">${signed(fx.y1, 0)}</span> <span class="chip" style="margin-left:6px">${esc(fx.zone)}</span>
-          <svg viewBox="0 0 200 28" preserveAspectRatio="none" class="${updown(fx.y1, 0) || "down"}" aria-hidden="true"><path d="${sparkPath(
-                fx.spark,
-                200,
-                28
-              )}" vector-effect="non-scaling-stroke"/></svg></div>`
+            ? row({
+                name: fx.name, tipKey: "환율", unit: "", price: `${fx.price.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}원`,
+                m1: fx.m1, y1: fx.y1, chip: fx.zone, text: fx.note,
+                foot: `1년 범위 ${Math.round(fx.low).toLocaleString("ko-KR")}~${Math.round(fx.high).toLocaleString("ko-KR")}원 · ${dayText(fx.date)} · 네이버(하나은행 고시)`,
+              })
             : ""
-        }${m.commodities
-          .map(
-            (c) => `<div class="cmd">
-          <b>${esc(c.name)}${tip(c.name)}</b><small>${esc(c.unit)}</small>
-          <strong>${price(c)}</strong><span class="chg ${updown(c.y1, 0)}">${signed(c.y1, 0)}</span>
-          <svg viewBox="0 0 200 28" preserveAspectRatio="none" class="${updown(c.y1, 0) || "down"}" aria-hidden="true"><path d="${sparkPath(
-              c.spark,
-              200,
-              28
-            )}" vector-effect="non-scaling-stroke"/></svg></div>`
+        }${cms
+          .map((c) =>
+            row({
+              name: c.name, unit: c.unit, price: price(c), m1: c.m1, y1: c.y1, text: c.meaning,
+              foot: `3개월 ${signed(c.m3, 0)} · ${dayText(c.date)} · ${c.source}`,
+            })
           )
-          .join("")}</div>
-        <details class="more"><summary>환율·원자재가 말해주는 것</summary><div class="body"><dl class="defs">${
-          fx
-            ? `<div><dt>${esc(fx.name)} <span class="sub" style="font-weight:400">1개월 ${signed(fx.m1, 1)}</span></dt><dd>${esc(
-                fx.note
-              )}</dd></div>`
-            : ""
-        }${m.commodities
-          .map(
-            (c) =>
-              `<div><dt>${esc(c.name)} <span class="sub" style="font-weight:400">1개월 ${signed(c.m1, 0)} · 3개월 ${signed(
-                c.m3,
-                0
-              )}</span></dt><dd>${esc(c.meaning)}</dd></div>`
-          )
-          .join("")}</dl><p class="foot" style="margin:12px 0 0">출처 ${esc(m.commodities[0].source)}</p></div></details>`;
+          .join("")}</ul>`;
           }
 
           const hv = m.houseViews;
@@ -1448,8 +1528,19 @@
             sp.hidden = false;
             sp.innerHTML = `<h2 id="street-title">월가는 어떻게 보나요</h2>
         <p class="sub">${esc(hv.index.name)} ${hv.index.level.toLocaleString("en-US")} 기준 · ${esc(hv.asOf)} 갱신</p>
-        <p class="lead">${esc(hv.summary)}</p>
-        <div class="callout"><b>판독기와 비교하면</b>${esc(hv.compare)}</div>
+        ${(() => {
+          const withT = hv.firms.filter((f) => f.target);
+          const avg = withT.length ? withT.reduce((a, f) => a + f.target, 0) / withT.length : null;
+          const up = avg ? ((avg - hv.index.level) / hv.index.level) * 100 : null;
+          const bulls = hv.firms.filter((f) => /강세/.test(f.stance)).length;
+          return `<div class="tiles3">
+          <div class="tile"><small>강세 기관</small><strong>${bulls}<span style="font-size:13px;color:var(--ink-3)"> / ${hv.firms.length}곳</span></strong></div>
+          <div class="tile"><small>목표치 평균</small><strong>${avg ? Math.round(avg).toLocaleString("en-US") : "–"}</strong></div>
+          <div class="tile"><small>지금 대비</small><strong class="${updown(up, 1)}">${signed(up, 1)}</strong></div>
+        </div>`;
+        })()}
+        <p class="lead">${hl(hv.summary)}</p>
+        <div class="callout"><b>판독기와 비교하면</b>${hl(hv.compare)}</div>
         <ul class="rows">${hv.firms
           .map(
             (f) => `<li><details class="row">
@@ -1543,6 +1634,55 @@
   </div>`;
       }
 
+      // 배당 카드: 객관적인 숫자와 규칙 기반 한 줄만 보여줘요
+      function divCard(s, money) {
+        const d = s.dividend || {};
+        const y = d.yield;
+        if (y === null || y === undefined)
+          return `<section class="card" id="div-card"><p class="eyebrow">배당</p><p class="sub">이 종목은 배당 자료를 받지 못했어요</p></section>`;
+        if (y === 0 || !(d.perShare > 0))
+          return `<section class="card" id="div-card"><p class="eyebrow">배당</p><strong class="stance">배당을 주지 않는 종목이에요</strong>
+        <p class="sub">이익을 배당 대신 사업에 다시 투자하거나 자사주 매입에 쓰는 회사일 수 있어요</p></section>`;
+        const per = s.currency === "KRW" ? `${Math.round(d.perShare).toLocaleString("ko-KR")}원` : `$${fmt(d.perShare, 2)}`;
+        const pay = d.payout;
+        const payNote =
+          pay === null || pay === undefined ? "" :
+          pay > 100 ? "번 돈보다 많이 배당하고 있어요. 이대로 이어질 수 있는지 확인이 필요해요." :
+          pay >= 60 ? "이익의 대부분을 배당으로 돌려주고 있어요." :
+          "이익에 여유를 두고 배당하고 있어요.";
+        const hist = d.history || [];
+        return `<section class="card" id="div-card">
+        <p class="eyebrow">배당${tip("배당수익률")}</p>
+        <div class="div-hero"><strong>${fmt(y, 2)}%</strong><span class="sub" style="margin:0">1주당 1년 ${per}</span></div>
+        <p class="sub" id="div-vs" data-y="${y}" data-kr="${s.market === "KR" ? 1 : 0}"></p>
+        <div class="tiles3">
+          <div class="tile"><small>배당성향${tip("배당성향")}</small><strong>${pay === null || pay === undefined ? "–" : fmt(pay, 0) + "%"}</strong></div>
+          <div class="tile"><small>배당락일${tip("배당락일")}</small><strong style="font-size:15px">${d.exDate ? dayText(d.exDate) : "–"}</strong></div>
+          <div class="tile"><small>지급일</small><strong style="font-size:15px">${d.payDate ? dayText(d.payDate) : "–"}</strong></div>
+        </div>
+        ${payNote ? `<p class="sub" style="margin-top:12px">${hl(`배당성향 ${fmt(pay, 0)}% · `)}${esc(payNote)}</p>` : ""}
+        ${
+          hist.length
+            ? `<p class="sub" style="margin-top:14px">연도별 주당배당금</p><div class="div-hist">${hist
+                .map((h) => `<span class="chip">${esc(h.year)} · ${s.currency === "KRW" ? Math.round(h.value).toLocaleString("ko-KR") + "원" : "$" + fmt(h.value, 2)}</span>`)
+                .join("")}</div>`
+            : ""
+        }
+      </section>`;
+      }
+      // 미 국채 10년과 배당수익률 비교 (시장 데이터가 오면 채워요)
+      function fillDiv() {
+        const el = document.getElementById("div-vs");
+        if (!el || !MACRO || !MACRO.tenYear) return;
+        const y = Number(el.dataset.y);
+        const gap = y - MACRO.tenYear;
+        el.innerHTML = hl(
+          `미 국채 10년 금리 ${MACRO.tenYear.toFixed(2)}%보다 ${Math.abs(gap).toFixed(2)}%p ${gap >= 0 ? "높아요" : "낮아요"}${
+            el.dataset.kr === "1" ? " (한국 종목이라 참고만 해요)" : ""
+          }`
+        );
+      }
+
       function streetBody(t, money) {
         return `        ${t.analysts ? `<p class="sub">애널리스트 ${t.analysts}명 기준</p>` : ""}
         <div class="tiles3">
@@ -1606,11 +1746,7 @@
         ${spark(s.history, st.high52, s.currency)}
         <div class="divider"></div>
         <p class="eyebrow">가격 위치 종합</p>
-        <div class="hero"><strong class="big">${esc(s.position.label)}</strong><span class="score tone-${tone}">${signed(
-            s.needle,
-            0,
-            "점"
-          )}</span></div>
+        ${scoreHead(s.position.label, s.needle)}
         <p class="sub">가격 위치 50% + 시장 신호 30% + 투자자 7명 평균 20%를 합친 점수예요 (−100 과열 ~ +100 저점)</p>
         <div class="tiles3">
           <div class="tile"><small>배당수익률${tip("배당수익률")}</small><strong>${
@@ -1631,6 +1767,8 @@
             : ""
         }
       </section>
+
+      ${divCard(s, money)}
 
       <section class="card">
         <p class="eyebrow">일곱 투자자의 판독</p>
@@ -1663,6 +1801,7 @@
         new Date(s.fetchedAt).toLocaleString("ko-KR")
       )}</p>`;
           fillKrw();
+          fillDiv();
           col.querySelectorAll(".judges-sum a").forEach((a) =>
             a.addEventListener("click", (e) => {
               e.preventDefault();

@@ -127,6 +127,10 @@ async function stock(symbol, key) {
       epsGrowthBasis: epsGrowth === null ? null : `최근 ${years}년 EPS 연평균`,
     },
     history,
+    dividend: {
+      perShare: pick(ratios, "dividendPerShareTTM"),
+      payout: pct(pick(ratios, "dividendPayoutRatioTTM", "payoutRatioTTM")),
+    },
   };
 }
 

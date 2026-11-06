@@ -81,6 +81,13 @@ function annual(fin) {
     net = series(/^당기순이익/),
     eps = series(/^EPS/);
   const ocf = series(/영업활동.*현금/);
+  // 연도별 주당배당금 (연도 라벨과 함께)
+  const dpsRow = rowOf(/^주당배당금/);
+  const dpsHistory = dpsRow
+    ? periods
+        .map((p) => ({ year: String(p).slice(0, 4), value: n(dpsRow.columns?.[p]?.value ?? dpsRow.columns?.[p]) }))
+        .filter((x) => x.value !== null)
+    : [];
   return {
     revenue: lastOf(revenue),
     revenuePrev: prevOf(revenue),
@@ -90,6 +97,7 @@ function annual(fin) {
     netMarginRow: lastOf(series(/^순이익률/)),
     operatingCashFlow: lastOf(ocf),
     eps, // 연도순
+    dpsHistory,
   };
 }
 
@@ -168,6 +176,11 @@ async function stock(code) {
             actions: [],
           }
         : null,
+    dividend: {
+      perShare: n(info(integ, /^주당배당금/)) ?? (a.dpsHistory?.length ? a.dpsHistory[a.dpsHistory.length - 1].value : null),
+      eps: n(info(integ, /^EPS$/)),
+      history: a.dpsHistory || [],
+    },
     source: "네이버 증권",
   };
 }
@@ -332,6 +345,12 @@ async function worldStock(ticker) {
     },
     history,
     street: consensusOf(integ.consensusInfo),
+    dividend: {
+      perShare: n(info.dividend),
+      eps,
+      exDate: info.exDividendAt && /\d/.test(info.exDividendAt) ? String(info.exDividendAt).replace(/\.$/, "").replace(/\./g, "-") : null,
+      payDate: info.dividendAt && /\d/.test(info.dividendAt) ? String(info.dividendAt).replace(/\.$/, "").replace(/\./g, "-") : null,
+    },
     source: "네이버 증권",
   };
 }
