@@ -315,6 +315,201 @@
         font-size: 13px;
       }
 
+      /* ---------- 판독표 ---------- */
+      .chips .board-chip {
+        background: var(--primary-soft);
+        color: var(--primary);
+        font-weight: 600;
+      }
+      .matched {
+        margin: 8px 0 0;
+        padding: 8px 12px;
+        border-radius: 10px;
+        background: var(--primary-soft);
+        color: var(--ink-2);
+        font-size: 13px;
+      }
+      .board-view {
+        min-width: 0;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 12px 16px 40px;
+        max-width: 1080px;
+        margin: 0 auto;
+      }
+      .board-view[hidden],
+      main[hidden] {
+        display: none;
+      }
+      .board-view .back {
+        background: none;
+        padding: 0;
+        min-height: 32px;
+        margin-bottom: 8px;
+        color: var(--ink-3);
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .board-tools {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .board-tools .seg {
+        display: flex;
+        gap: 4px;
+        padding: 4px;
+        border-radius: 12px;
+        background: var(--fill);
+      }
+      .board-tools .seg button {
+        min-height: 32px;
+        padding: 0 12px;
+        border-radius: 9px;
+        background: none;
+        color: var(--ink-3);
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .board-tools .seg button[aria-pressed="true"] {
+        background: var(--card);
+        color: var(--ink);
+        box-shadow: 0 1px 3px rgba(0, 27, 55, 0.08);
+      }
+      .board-tools .refresh {
+        min-height: 36px;
+        padding: 0 14px;
+        border-radius: 10px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .board-tools .refresh:disabled {
+        opacity: 0.6;
+      }
+      .table-wrap {
+        position: relative; /* 안쪽 sr-only 글자가 페이지를 옆으로 늘리지 않게 */
+        margin: 12px -20px 0;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      table.board {
+        border-collapse: separate;
+        border-spacing: 0;
+        width: max-content;
+        min-width: 100%;
+        font-size: 14px;
+      }
+      table.board th,
+      table.board td {
+        padding: 12px 10px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+        text-align: left;
+        font-weight: 400;
+      }
+      table.board .num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      table.board thead th {
+        padding-top: 4px;
+        padding-bottom: 8px;
+      }
+      table.board thead button {
+        background: none;
+        padding: 0;
+        min-height: 28px;
+        color: var(--ink-3);
+        font-size: 12px;
+        font-weight: 600;
+      }
+      table.board thead button[aria-sort="ascending"],
+      table.board thead button[aria-sort="descending"] {
+        color: var(--ink);
+      }
+      table.board .stick {
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        background: var(--card);
+        padding-left: 20px;
+        box-shadow: 1px 0 0 var(--line);
+      }
+      table.board .go {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        column-gap: 6px;
+        align-items: center;
+        background: none;
+        padding: 0;
+        text-align: left;
+        max-width: 132px;
+      }
+      table.board .go strong {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--ink);
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      table.board .go small {
+        grid-column: 1 / -1;
+        color: var(--ink-3);
+        font-size: 12px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      table.board .go .mk {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 1px 6px;
+        border-radius: 6px;
+        background: var(--fill);
+        color: var(--ink-3);
+      }
+      table.board .go .mk.KR {
+        color: var(--primary);
+        background: var(--primary-soft);
+      }
+      .pos-tag {
+        font-weight: 700;
+      }
+      .sc {
+        display: inline-block;
+        min-width: 36px;
+        padding: 3px 0;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 700;
+      }
+      .sc.on {
+        background: var(--good-soft);
+        color: var(--good);
+      }
+      .sc.mid {
+        background: var(--mid-soft);
+        color: var(--mid);
+      }
+      .sc.off {
+        background: var(--warn-soft);
+        color: var(--warn);
+      }
+      table.board .muted {
+        color: var(--ink-3);
+      }
+      table.board .del {
+        background: none;
+        padding: 0;
+        min-height: 32px;
+        min-width: 32px;
+        color: var(--ink-3);
+        font-size: 18px;
+      }
+
       /* ---------- 레이아웃 ---------- */
       main {
         padding: 12px 16px 40px;
@@ -1459,6 +1654,15 @@
       </div>
     </main>
 
+    <section class="board-view" id="board-view" aria-labelledby="board-title" hidden>
+      <div class="card">
+        <button type="button" class="back" id="board-back">‹ 판독으로 돌아가기</button>
+        <h2 id="board-title">판독표</h2>
+        <p class="sub" style="margin-bottom:16px">이 기기에서 조회한 종목을 일곱 투자자 점수로 한눈에 비교해요</p>
+        <div id="board-body"></div>
+      </div>
+    </section>
+
     <div class="progress" id="progress" role="progressbar" aria-label="불러오는 중" aria-hidden="true"></div>
     <div class="sheet-bg" id="sheet-bg"></div>
     <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" aria-hidden="true">
@@ -2155,6 +2359,7 @@
         symbol = symbol.trim();
         if (/^[a-z.\-]+$/i.test(symbol)) symbol = symbol.toUpperCase();
         if (!symbol) return;
+        showView("stock");
         const col = $("#col-stock");
         col.innerHTML = `<section class="card" aria-busy="true">
           <div class="sk" style="height:18px;width:44px"></div>
@@ -2170,12 +2375,16 @@
           if (w) w.textContent = "첫 조회는 조금 걸릴 수 있어요. 잠시만 기다려 주세요";
         }, 3000);
         if (scroll) col.scrollIntoView({ behavior: "smooth", block: "start" });
-        location.hash = encodeURIComponent(symbol);
-        remember(symbol);
         const req = ++stockReq;
         try {
           const s = await api(`/api/stock/${encodeURIComponent(symbol)}`);
           if (req !== stockReq) return; // 그사이 다른 종목을 검색했으면 버려요
+          // 입력한 글자가 아니라 실제로 조회된 종목으로 주소·최근 검색·판독표를 저장해요
+          const key = stockKey(s);
+          shownKey = key;
+          if (decodeURIComponent(location.hash.slice(1)) !== key) history.replaceState(null, "", "#" + encodeURIComponent(key));
+          saveBoard(s);
+          remember(key, s.name, s.market);
           const st = s.stats;
           const money = (v) => (s.currency === "KRW" ? Math.round(v).toLocaleString("ko-KR") + "원" : "$" + fmt(v, 2));
           const tone = pointTone(s.needle);
@@ -2191,7 +2400,11 @@
           <p class="sub" style="margin:0">${
             (s.market === "KR" ? esc(s.symbol.replace(/\.(KS|KQ)$/, "")) : esc(s.name) + (s.sector ? " · " + esc(s.sector) : "")) +
             ` · 출처 ${esc(s.source || (config.demo ? "데모 데이터" : "FMP"))}`
-          }</p></div></div>
+          }</p>${
+            s.resolvedFrom
+              ? `<p class="matched">'${esc(s.resolvedFrom)}' 검색어로 ${esc(s.name)} (${esc(key)})를 찾았어요. 원하던 종목이 아니면 자동완성에서 골라 주세요.</p>`
+              : ""
+          }</div></div>
         <div class="price"><strong>${money(s.price)}</strong><span class="${updown(s.changePct)}">${signed(
             s.changePct,
             2
@@ -2484,38 +2697,263 @@
 
       // 최근 검색은 이 기기에만 저장
       const DEFAULTS = ["VZ", "GOOGL", "JPM", "005930", "000660", "105560"];
+      const DEFAULT_NAMES = { "005930": "삼성전자", "000660": "SK하이닉스", "105560": "KB금융" };
+      // 최근 검색: 예전에는 입력한 글자를 그대로 저장했어요. 지금은 { s: 종목코드, n: 이름, m: 시장 }으로 저장해요
       function recent() {
         try {
-          return JSON.parse(localStorage.getItem("recent") || "[]");
+          return JSON.parse(localStorage.getItem("recent") || "[]")
+            .map((x) => (typeof x === "string" ? { s: x } : x))
+            .filter((x) => x && x.s && (/^\d{6}$/.test(x.s) || /^[A-Z][A-Z.\-]{0,9}$/.test(x.s)));
         } catch {
           return [];
         }
       }
-      function remember(sym) {
-        const list = [sym, ...recent().filter((x) => x !== sym)].slice(0, 8);
+      function remember(sym, name, market) {
+        const list = [{ s: sym, n: name, m: market }, ...recent().filter((x) => x.s !== sym)].slice(0, 8);
         try {
           localStorage.setItem("recent", JSON.stringify(list));
         } catch {}
         renderChips();
       }
       function renderChips() {
-        const list = config.demo ? config.demoSymbols : [...new Set([...recent(), ...DEFAULTS])].slice(0, 10);
-        const label = (sym) =>
-          STOCKS.find((x) => x.s === sym)?.m !== "US" && STOCKS.find((x) => x.s === sym)
-            ? STOCKS.find((x) => x.s === sym).n
-            : sym;
-        $("#chips").innerHTML = list.map((s) => `<button type="button" data-s="${esc(s)}">${esc(label(s))}</button>`).join("");
+        const seen = new Set();
+        const list = (config.demo ? config.demoSymbols.map((s) => ({ s })) : [...recent(), ...DEFAULTS.map((s) => ({ s }))])
+          .filter((x) => !seen.has(x.s) && seen.add(x.s))
+          .slice(0, 10);
+        // 국내는 이름, 미국은 티커로 보여줘요
+        const label = (x) =>
+          /^\d{6}$/.test(x.s) ? x.n || DEFAULT_NAMES[x.s] || board()[x.s]?.n || x.s : x.s;
+        const n = Object.keys(board()).length;
+        $("#chips").innerHTML =
+          `<button type="button" class="board-chip" data-board="1">판독표${n ? " " + n : ""}</button>` +
+          list.map((x) => `<button type="button" data-s="${esc(x.s)}">${esc(label(x))}</button>`).join("");
       }
       $("#chips").addEventListener("click", (e) => {
         const b = e.target.closest("button");
-        if (b) {
-          $("#q").value = b.textContent;
-          loadStock(b.dataset.s, true);
-        }
+        if (!b) return;
+        if (b.dataset.board) return openBoard();
+        $("#q").value = b.textContent;
+        showView("stock");
+        loadStock(b.dataset.s, true);
       });
       $("#search").addEventListener("submit", (e) => {
         e.preventDefault();
         submitSearch();
+      });
+
+      // ---------- 판독표: 검색한 종목을 표로 모아 봐요 (이 기기에만 저장) ----------
+      const JUDGE_COLS = [
+        ["williams", "래리"],
+        ["buffett", "버핏"],
+        ["munger", "멍거"],
+        ["lynch", "린치"],
+        ["druckenmiller", "드러켄밀러"],
+        ["ackman", "애크먼"],
+        ["burry", "버리"],
+      ];
+      let shownKey = "";
+      let boardSort = { key: "at", dir: -1 },
+        boardFilter = "all",
+        boardBusy = false;
+      // 국내는 6자리 코드, 미국은 티커 하나로 통일해요 (같은 종목이 두 줄로 저장되지 않게)
+      const stockKey = (s) => (s.market === "KR" ? String(s.symbol).replace(/\.(KS|KQ)$/, "") : String(s.symbol).toUpperCase());
+      function board() {
+        try {
+          return JSON.parse(localStorage.getItem("board") || "{}") || {};
+        } catch {
+          return {};
+        }
+      }
+      function writeBoard(b) {
+        try {
+          localStorage.setItem("board", JSON.stringify(b));
+        } catch {}
+      }
+      function saveBoard(s) {
+        const b = board();
+        const key = stockKey(s);
+        const scores = {};
+        (s.judges || []).forEach((j) => (scores[j.key] = j.score ?? null));
+        b[key] = {
+          s: key,
+          n: s.name,
+          market: s.market,
+          marketName: s.marketName,
+          currency: s.currency,
+          price: s.price,
+          changePct: s.changePct,
+          label: s.position?.label || null,
+          needle: s.needle,
+          favorable: s.consensus?.favorable ?? null,
+          scores,
+          divYield: s.dividend?.yield ?? null,
+          pe: s.metrics?.pe ?? null,
+          at: s.fetchedAt || new Date().toISOString(),
+        };
+        // 너무 많아지면 오래 조회한 것부터 지워요
+        const keys = Object.keys(b).sort((x, y) => (b[y].at < b[x].at ? -1 : 1));
+        keys.slice(60).forEach((k) => delete b[k]);
+        writeBoard(b);
+      }
+
+      function showView(v) {
+        const isBoard = v === "board";
+        document.querySelector("main").hidden = isBoard;
+        $("#board-view").hidden = !isBoard;
+        if (!isBoard && location.hash === "#/board") history.pushState(null, "", location.pathname + location.search);
+      }
+      function openBoard() {
+        if (location.hash !== "#/board") location.hash = "/board";
+        else route();
+      }
+      function route() {
+        const h = decodeURIComponent(location.hash.slice(1));
+        if (h === "/board") {
+          showView("board");
+          renderBoard();
+          window.scrollTo(0, 0);
+          return;
+        }
+        showView("stock");
+        if (h && h !== shownKey) {
+          $("#q").value = board()[h]?.n || h;
+          loadStock(h);
+        }
+      }
+      window.addEventListener("hashchange", route);
+
+      const scoreCell = (v) =>
+        v === null || v === undefined
+          ? `<td class="num muted">–</td>`
+          : `<td class="num"><span class="sc ${scoreTone(v)}">${Math.round(v)}</span></td>`;
+      const boardMoney = (r) =>
+        r.price === null || r.price === undefined
+          ? "–"
+          : r.currency === "KRW"
+          ? Math.round(r.price).toLocaleString("ko-KR") + "원"
+          : "$" + fmt(r.price, 2);
+      function boardValue(r, k) {
+        if (k === "name") return r.market === "KR" ? r.n : r.s;
+        if (k in (r.scores || {}) || JUDGE_COLS.some(([jk]) => jk === k)) return r.scores?.[k] ?? -1;
+        const v = r[k];
+        return v === null || v === undefined ? -Infinity : v;
+      }
+      function renderBoard() {
+        const all = Object.values(board());
+        const rows = all
+          .filter((r) => boardFilter === "all" || r.market === boardFilter)
+          .sort((a, b) => {
+            const x = boardValue(a, boardSort.key),
+              y = boardValue(b, boardSort.key);
+            return (typeof x === "string" ? x.localeCompare(y, "ko") : x - y) * boardSort.dir;
+          });
+        const th = (k, label, cls = "num") =>
+          `<th scope="col" class="${cls}"><button type="button" data-sort="${k}" aria-sort="${
+            boardSort.key === k ? (boardSort.dir > 0 ? "ascending" : "descending") : "none"
+          }">${label}${boardSort.key === k ? (boardSort.dir > 0 ? " ▲" : " ▼") : ""}</button></th>`;
+        const filterBtn = (f, t) =>
+          `<button type="button" data-filter="${f}" aria-pressed="${boardFilter === f}">${t}${
+            f === "all" ? "" : " " + all.filter((r) => r.market === f).length
+          }</button>`;
+        $("#board-body").innerHTML = all.length
+          ? `<div class="board-tools">
+          <div class="seg">${filterBtn("all", "전체 " + all.length)}${filterBtn("US", "미국")}${filterBtn("KR", "국내")}</div>
+          <button type="button" class="refresh" id="board-refresh"${boardBusy ? " disabled" : ""}>${
+              boardBusy ? "갱신 중이에요" : "모두 새로고침"
+            }</button>
+        </div>
+        <p class="sub" id="board-status">점수는 마지막으로 조회한 시점 기준이에요. 65점 이상은 초록, 45점 미만은 주황이에요.</p>
+        <div class="table-wrap" tabindex="0" aria-label="판독표, 옆으로 넘겨 볼 수 있어요">
+          <table class="board">
+            <thead><tr>
+              ${th("name", "종목", "stick")}
+              ${th("needle", "가격 위치", "")}
+              ${th("favorable", "호의적")}
+              ${JUDGE_COLS.map(([k, l]) => th(k, l)).join("")}
+              ${th("divYield", "배당")}
+              ${th("pe", "PER")}
+              ${th("price", "현재가")}
+              ${th("changePct", "등락")}
+              ${th("at", "조회")}
+              <th scope="col"><span class="sr-only">삭제</span></th>
+            </tr></thead>
+            <tbody>${
+              rows.length
+                ? rows
+                    .map(
+                      (r) => `<tr>
+              <th scope="row" class="stick"><button type="button" class="go" data-go="${esc(r.s)}">
+                <span class="mk ${r.market === "KR" ? "KR" : "US"}">${r.market === "KR" ? "국내" : "미국"}</span>
+                <strong>${esc(r.market === "KR" ? r.n : r.s)}</strong>
+                <small>${esc(r.market === "KR" ? r.s : r.n || "")}</small>
+              </button></th>
+              <td class="pos">${r.label ? `<span class="pos-tag" style="color:var(${scoreVar(r.needle ?? 0)})">${esc(r.label)}</span>` : "–"}</td>
+              <td class="num">${r.favorable === null || r.favorable === undefined ? "–" : `<strong>${r.favorable}</strong>/7`}</td>
+              ${JUDGE_COLS.map(([k]) => scoreCell(r.scores?.[k])).join("")}
+              <td class="num">${r.divYield === null || r.divYield === undefined ? "–" : fmt(r.divYield, 2) + "%"}</td>
+              <td class="num">${r.pe === null || r.pe === undefined || r.pe <= 0 ? "–" : fmt(r.pe, 1) + "배"}</td>
+              <td class="num">${boardMoney(r)}</td>
+              <td class="num ${updown(r.changePct)}">${r.changePct === null || r.changePct === undefined ? "–" : signed(r.changePct, 2)}</td>
+              <td class="num muted">${esc(timeText(r.at))}</td>
+              <td><button type="button" class="del" data-del="${esc(r.s)}" aria-label="${esc(r.n || r.s)} 표에서 빼기">×</button></td>
+            </tr>`
+                    )
+                    .join("")
+                : `<tr><td colspan="${JUDGE_COLS.length + 9}" class="muted">이 시장에서 조회한 종목이 없어요.</td></tr>`
+            }</tbody>
+          </table>
+        </div>`
+          : `<p class="empty">아직 판독한 종목이 없어요.<br />종목을 검색하면 여기에 차곡차곡 쌓여요.</p>`;
+      }
+      async function refreshBoard() {
+        if (boardBusy) return;
+        const keys = Object.keys(board());
+        if (!keys.length) return;
+        boardBusy = true;
+        renderBoard();
+        let fail = 0;
+        for (let i = 0; i < keys.length; i++) {
+          const st = $("#board-status");
+          if (st) st.textContent = `${keys.length}개 중 ${i + 1}번째를 갱신하고 있어요`;
+          try {
+            saveBoard(await api(`/api/stock/${encodeURIComponent(keys[i])}`));
+          } catch {
+            fail++;
+          }
+        }
+        boardBusy = false;
+        renderBoard();
+        const st = $("#board-status");
+        if (st) st.textContent = fail ? `${fail}개는 불러오지 못했어요. 나머지는 방금 갱신했어요.` : "방금 모두 갱신했어요.";
+      }
+      $("#board-view").addEventListener("click", (e) => {
+        const t = e.target.closest("button");
+        if (!t) return;
+        if (t.id === "board-back") {
+          location.hash = shownKey ? encodeURIComponent(shownKey) : "";
+          return;
+        }
+        if (t.id === "board-refresh") return refreshBoard();
+        if (t.dataset.filter) {
+          boardFilter = t.dataset.filter;
+          return renderBoard();
+        }
+        if (t.dataset.sort) {
+          const k = t.dataset.sort;
+          boardSort = boardSort.key === k ? { key: k, dir: -boardSort.dir } : { key: k, dir: k === "name" ? 1 : -1 };
+          return renderBoard();
+        }
+        if (t.dataset.del) {
+          const b = board();
+          delete b[t.dataset.del];
+          writeBoard(b);
+          renderBoard();
+          return renderChips();
+        }
+        if (t.dataset.go) {
+          $("#q").value = board()[t.dataset.go]?.n || t.dataset.go;
+          location.hash = encodeURIComponent(t.dataset.go);
+        }
       });
 
       function showGate() {
@@ -2553,11 +2991,7 @@
         renderChips();
         loadMarket();
         loadTicker();
-        const start = decodeURIComponent(location.hash.slice(1));
-        if (start) {
-          $("#q").value = start;
-          loadStock(start);
-        }
+        route(); // #종목코드 는 상세, #/board 는 판독표
       })();
     </script>
   </body>

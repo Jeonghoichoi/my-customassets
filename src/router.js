@@ -192,16 +192,17 @@ function dividendInfo(raw) {
 async function getStock(input, headers = {}) {
   const { demo } = env();
   let target;
+  let resolvedFrom = null;
   try {
     target = resolve(input);
   } catch (e) {
     // 목록에 없는 한글 종목명은 네이버 검색으로 코드를 찾는다
     if (e.code !== "UNKNOWN_KR_NAME" || demo) throw e;
-    const hit = (await naver.search(e.query).catch(() => []))[0];
-    if (!hit) throw e;
+    const hit = await matchByName(e.query);
     target = resolve(hit.s);
+    resolvedFrom = e.query;
   }
-  return cached(`stock:${target.candidates.join("|")}`, TTL.stock * 1e3, async () => {
+  const result = await cached(`stock:${target.candidates.join("|")}`, TTL.stock * 1e3, async () => {
     const [macro, raw] = await Promise.all([macroForStock(headers), fetchStock(target, demo)]);
     // 미국 종목(FMP)과 데모는 월가 의견을 버튼으로 따로 불러와요 (호출 한도 절약)
     if (demo) delete raw.street;
@@ -220,6 +221,33 @@ async function getStock(input, headers = {}) {
     const dividend = dividendInfo(raw);
     return { ...raw, history, stats, ...result, dividend, streetLazy, macroScore: macro.score, fetchedAt: new Date().toISOString() };
   });
+  // 검색어와 다른 이름으로 찾았으면 화면에서 알려줘요 (캐시된 결과는 건드리지 않아요)
+  return resolvedFrom ? { ...result, resolvedFrom } : result;
+}
+
+// 한글 이름 → 종목. 국내·미국을 함께 찾아서 이름이 맞는 종목만 골라요.
+// 예전에는 국내 검색의 첫 결과를 그대로 써서, 미국 종목 이름을 치면 엉뚱한 국내 ETF가 뜨기도 했어요.
+const normName = (v) =>
+  String(v || "")
+    .replace(/[\s·.,()\-]/g, "")
+    .toUpperCase();
+async function matchByName(query) {
+  const q = normName(query);
+  const [kr, us] = await Promise.all([naver.search(query).catch(() => []), naver.worldSearch(query).catch(() => [])]);
+  const all = [...kr, ...us];
+  const hit =
+    all.find((h) => normName(h.n) === q) ||
+    all.find((h) => normName(h.n).startsWith(q)) ||
+    (all.length === 1 && normName(all[0].n).includes(q) ? all[0] : null);
+  if (hit) return hit;
+  const names = all.slice(0, 3).map((h) => `${h.n}(${h.s})`);
+  const err = new Error(
+    names.length
+      ? `이름이 '${query}'인 종목을 찾지 못했어요. 혹시 ${names.join(", ")} 중 하나인가요? 자동완성에서 골라 주세요.`
+      : `'${query}' 종목을 찾지 못했어요. 6자리 종목코드(예: 005930)나 미국 티커로 검색해 보세요.`
+  );
+  err.status = 404;
+  throw err;
 }
 
 async function aiCommentary(symbol, headers) {
