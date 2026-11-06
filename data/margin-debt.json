@@ -1,0 +1,8 @@
+{
+  "_설명": "FINRA 마진 부채(단위: 십억 달러). FINRA는 매월 셋째 주쯤 전월 수치를 발표합니다. 발표되면 latest를 갱신하세요. https://www.finra.org/rules-guidance/key-topics/margin-accounts/margin-statistics",
+  "asOf": "2026-09",
+  "latest": 1480,
+  "yearAgo": 1126,
+  "record": 1502,
+  "recordDate": "2026-06"
+}

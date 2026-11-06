@@ -1,0 +1,37 @@
+{
+  "_설명": "대형 증권사·은행의 시장 전망. 공개 보도를 바탕으로 직접 갱신합니다. 각 항목의 date와 source를 함께 고치세요.",
+  "asOf": "2026-11-05",
+  "index": { "name": "S&P 500", "level": 7698.8, "date": "2026-11-04" },
+  "firms": [
+    {
+      "name": "JP모건", "stance": "강세", "target": 8000, "horizon": "2026년 말",
+      "thesis": "시장을 끄는 건 이익입니다. S&P 500 주당순이익을 2026년 365달러, 2027년 420달러로 올려 잡았고, 금리와 지정학 위험 때문에 PER은 약 20배로 보수적으로 둡니다. 프라이빗뱅크는 2027년 중반 8,200을 제시했습니다.",
+      "date": "2026-08-10", "source": "https://www.cnbc.com/2026/08/10/jpmorgan-is-the-latest-to-raise-its-sp-500-target-this-time-to-8000-heres-why.html"
+    },
+    {
+      "name": "골드만삭스", "stance": "강세", "target": 8000, "target2": 8700, "horizon": "2026년 말 / 2027년 말",
+      "thesis": "상승은 밸류에이션 확대가 아니라 이익 성장에서 나옵니다. 이익 성장률이 올해 36%에서 내년 11%로 둔화되면서 수익률도 플러스지만 완만해질 것으로 봅니다.",
+      "date": "2026-10-20", "source": "https://finance.yahoo.com/markets/article/goldman-sachs-is-still-betting-on-a-nice-year-end-rally-for-the-sp-500-134755098.html"
+    },
+    {
+      "name": "모건스탠리", "stance": "신중한 강세", "target": 8000, "horizon": "2026년 말",
+      "thesis": "조정이 마지막 단계에 가까워졌고, 중간선거가 불확실성을 걷어내 질 좋은 경기민감주에 기회가 생긴다고 봅니다. 다만 조정이 끝나기 전 5~6% 추가 하락 가능성도 열어 둡니다.",
+      "date": "2026-11-02", "source": "https://beinsure.com/news/sp500-forecast-goldman-sachs-jpmorgan-morgan-stanley-target/"
+    },
+    {
+      "name": "씨티·UBS", "stance": "강세", "target": 8100, "horizon": "2026년 말",
+      "thesis": "월가에서 가장 높은 축의 연말 목표치입니다.",
+      "date": "2026-10-31", "source": "https://beinsure.com/news/stock-market-today-sp500-nasdaq-dow-forecast-after-ai-selloff/"
+    },
+    {
+      "name": "뱅크오브아메리카", "stance": "신중", "target": 7400, "horizon": "2026년 말",
+      "thesis": "주요 은행 중 가장 보수적입니다. 현재 지수보다 낮은 목표치로, 밸류에이션 부담과 기술주 쏠림을 경계합니다.",
+      "date": "2026-10-31", "source": "https://beinsure.com/news/stock-market-today-sp500-nasdaq-dow-forecast-after-ai-selloff/"
+    },
+    {
+      "name": "찰스 슈왑", "stance": "신중", "target": null, "horizon": "목표치 없음",
+      "thesis": "지수는 평온해 보여도 종목 간 순환이 격렬한 '종목 장세'로 봅니다. 상승이 소수 종목에 기대 취약하고, 사상 최고 수준의 신용잔고와 높은 주식 비중이 장기 위험이라고 지적합니다. 12월 금리 결정은 고용 지표에 달렸다고 봅니다.",
+      "date": "2026-11-05", "source": "https://www.schwab.com/learn/story/stock-market-update-open"
+    }
+  ]
+}
