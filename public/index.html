@@ -360,6 +360,12 @@
         font-weight: 400;
         border-radius: inherit;
       }
+      .brief-empty {
+        padding: 20px;
+      }
+      .brief-empty .sub {
+        margin: 6px 0 0;
+      }
       .brief-open:active {
         transform: none;
         background: var(--fill);
@@ -3411,7 +3417,7 @@
         if (!BRIEF) return (el.hidden = true);
         el.hidden = false;
         if (BRIEF.empty) {
-          el.innerHTML = `<p class="eyebrow" id="brief-title">아침 브리핑</p><p class="sub">매일 아침 7시쯤 어제 장 정리가 여기에 올라와요.</p>`;
+          el.innerHTML = `<div class="brief-empty"><p class="eyebrow" id="brief-title">아침 브리핑</p><p class="sub">매일 아침 7시쯤 어제 장 정리가 여기에 올라와요.</p></div>`;
           return;
         }
         const b = BRIEF;
