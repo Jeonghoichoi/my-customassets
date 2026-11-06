@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#EEF0EB" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#12181D" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#F2F4F6" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#17171C" media="(prefers-color-scheme: dark)" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -13,49 +13,58 @@
     <title>저점 판독기</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
       :root {
         color-scheme: light;
-        --bg: #eef0eb;
-        --surface: #f8f9f6;
-        --ink: #16202a;
-        --ink-2: #4a5560;
-        --ink-3: #7a858f;
-        --rule: #d4d9d2;
-        --brass: #94742a;
-        --on: #2f7a55;
-        --neutral: #a8771a;
-        --off: #b3402f;
-        --on-soft: #dcebe2;
-        --neutral-soft: #f3e7cc;
-        --off-soft: #f4deda;
-        --sans: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
-        --serif: "Noto Serif KR", "AppleMyungjo", "Batang", serif;
+        --bg: #f2f4f6;
+        --card: #ffffff;
+        --fill: #f2f4f6;
+        --fill-2: #e5e8eb;
+        --ink: #191f28;
+        --ink-2: #4e5968;
+        --ink-3: #8b95a1;
+        --line: #eef0f2;
+        --primary: #3182f6;
+        --primary-soft: #e8f3ff;
+        --up: #f04452;
+        --down: #3182f6;
+        --good: #12a66d;
+        --good-soft: #e3f6ee;
+        --mid: #6b7684;
+        --mid-soft: #f2f4f6;
+        --warn: #f2711c;
+        --warn-soft: #fff1e6;
+        --shadow: 0 8px 28px rgba(0, 27, 55, 0.12);
+        --sans: "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
       }
       @media (prefers-color-scheme: dark) {
         :root {
           color-scheme: dark;
-          --bg: #12181d;
-          --surface: #1a2229;
-          --ink: #e4e8e3;
-          --ink-2: #a9b2b9;
-          --ink-3: #78838c;
-          --rule: #2b353e;
-          --brass: #d2ae5c;
-          --on: #6cc497;
-          --neutral: #e2b357;
-          --off: #ee8a7a;
-          --on-soft: #183025;
-          --neutral-soft: #352a12;
-          --off-soft: #3a1f1b;
+          --bg: #17171c;
+          --card: #202027;
+          --fill: #2c2c35;
+          --fill-2: #3a3a45;
+          --ink: #ececef;
+          --ink-2: #b0b8c1;
+          --ink-3: #7e8590;
+          --line: #2c2c35;
+          --primary: #4593fc;
+          --primary-soft: #1b2a40;
+          --up: #f45a69;
+          --down: #4593fc;
+          --good: #2fc28a;
+          --good-soft: #15302a;
+          --mid: #9aa3ad;
+          --mid-soft: #2c2c35;
+          --warn: #ff8a3d;
+          --warn-soft: #3a2615;
+          --shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
         }
       }
       * {
         box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
       }
       html,
       body {
@@ -66,31 +75,42 @@
         color: var(--ink);
         font: 15px/1.6 var(--sans);
         padding-bottom: env(safe-area-inset-bottom);
+        word-break: keep-all;
+        overflow-wrap: anywhere;
+      }
+      .num,
+      .big,
+      .price strong,
+      .score,
+      .tile strong {
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* ---------- 상단 ---------- */
+      .top {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        background: color-mix(in srgb, var(--bg) 88%, transparent);
+        backdrop-filter: saturate(1.6) blur(14px);
+        -webkit-backdrop-filter: saturate(1.6) blur(14px);
+        padding: calc(env(safe-area-inset-top) + 14px) 16px 12px;
       }
       .top > * {
         max-width: 1048px;
         margin-left: auto;
         margin-right: auto;
       }
-      .top {
-        position: sticky;
-        top: 0;
-        z-index: 5;
-        background: var(--bg);
-        padding: calc(env(safe-area-inset-top) + 12px) 16px 10px;
-        border-bottom: 1px solid var(--rule);
-      }
       .brand {
         display: flex;
         justify-content: space-between;
         align-items: baseline;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
       }
       .brand h1 {
         margin: 0;
-        font-size: 18px;
-        font-weight: 600;
-        letter-spacing: -0.01em;
+        font-size: 20px;
+        font-weight: 700;
       }
       .brand span {
         font-size: 12px;
@@ -109,85 +129,115 @@
       .ac input {
         width: 100%;
       }
+      input {
+        flex: 1;
+        min-width: 0;
+        font: 500 16px var(--sans);
+        padding: 0 16px;
+        height: 50px;
+        border: 0;
+        border-radius: 14px;
+        background: var(--card);
+        color: var(--ink);
+      }
+      input::placeholder {
+        font-weight: 400;
+        color: var(--ink-3);
+      }
+      button {
+        font: 600 15px var(--sans);
+        border-radius: 14px;
+        border: 0;
+        padding: 0 20px;
+        background: var(--primary);
+        color: #fff;
+        cursor: pointer;
+        min-height: 50px;
+        transition: transform 0.1s ease, filter 0.15s ease;
+      }
+      button:active {
+        transform: scale(0.97);
+      }
+      :focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+      }
       .ac-panel {
         position: absolute;
         left: 0;
         right: 0;
-        top: calc(100% + 6px);
+        top: calc(100% + 8px);
         z-index: 20;
-        background: var(--surface);
-        border: 1px solid var(--rule);
-        border-radius: 12px;
-        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+        background: var(--card);
+        border-radius: 18px;
+        box-shadow: var(--shadow);
         overflow: hidden;
       }
       .ac-tabs {
         display: flex;
-        gap: 4px;
-        padding: 8px 8px 4px;
-        border-bottom: 1px solid var(--rule);
+        gap: 6px;
+        padding: 12px 12px 6px;
       }
       .ac-tabs button {
-        min-height: 30px;
-        padding: 0 12px;
+        min-height: 32px;
+        padding: 0 14px;
         font-size: 13px;
-        font-weight: 500;
-        background: transparent;
+        font-weight: 600;
+        background: var(--fill);
         color: var(--ink-2);
-        border: 1px solid transparent;
-        border-radius: 8px;
+        border-radius: 999px;
       }
       .ac-tabs button[aria-selected="true"] {
         background: var(--ink);
-        color: var(--bg);
+        color: var(--card);
       }
       #ac-list {
         list-style: none;
         margin: 0;
-        padding: 4px;
+        padding: 4px 6px 8px;
         max-height: min(60vh, 380px);
         overflow-y: auto;
       }
       #ac-list li {
         display: grid;
         grid-template-columns: auto 1fr;
-        gap: 2px 10px;
+        gap: 0 12px;
         align-items: center;
-        padding: 9px 10px;
-        border-radius: 8px;
+        padding: 10px;
+        border-radius: 12px;
         cursor: pointer;
       }
       #ac-list li[aria-selected="true"],
       #ac-list li:hover {
-        background: var(--bg);
+        background: var(--fill);
       }
       #ac-list .mk {
         grid-row: span 2;
         font-size: 11px;
         font-weight: 600;
-        padding: 2px 6px;
-        border-radius: 5px;
+        padding: 3px 7px;
+        border-radius: 6px;
         text-align: center;
         min-width: 46px;
       }
       #ac-list .mk.US {
-        background: var(--on-soft);
-        color: var(--on);
+        background: var(--primary-soft);
+        color: var(--primary);
       }
       #ac-list .mk.KR {
-        background: var(--neutral-soft);
-        color: var(--neutral);
+        background: var(--good-soft);
+        color: var(--good);
       }
       #ac-list .nm {
         font-weight: 600;
-        font-size: 14.5px;
+        font-size: 15px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
       #ac-list .nm mark {
         background: none;
-        color: var(--brass);
+        color: var(--primary);
       }
       #ac-list .sb {
         font-size: 12px;
@@ -195,7 +245,6 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        font-variant-numeric: tabular-nums;
       }
       #ac-list .empty-row {
         display: block;
@@ -206,37 +255,6 @@
       #ac-list .empty-row:hover {
         background: none;
       }
-      input {
-        flex: 1;
-        min-width: 0;
-        font: 600 17px var(--sans);
-        letter-spacing: 0.01em;
-        padding: 11px 14px;
-        border: 1px solid var(--rule);
-        border-radius: 10px;
-        background: var(--surface);
-        color: var(--ink);
-      }
-      input::placeholder {
-        text-transform: none;
-        letter-spacing: 0;
-        font-weight: 400;
-        color: var(--ink-3);
-      }
-      button {
-        font: 600 15px var(--sans);
-        border-radius: 10px;
-        border: 0;
-        padding: 0 18px;
-        background: var(--ink);
-        color: var(--bg);
-        cursor: pointer;
-        min-height: 46px;
-      }
-      :focus-visible {
-        outline: 2px solid var(--brass);
-        outline-offset: 2px;
-      }
       .chips {
         display: flex;
         gap: 6px;
@@ -244,90 +262,316 @@
         margin-top: 10px;
         scrollbar-width: none;
       }
+      .chips::-webkit-scrollbar {
+        display: none;
+      }
       .chips button {
-        min-height: 32px;
-        padding: 0 12px;
+        min-height: 34px;
+        padding: 0 14px;
         font-size: 13px;
         font-weight: 500;
-        background: var(--surface);
+        background: var(--card);
         color: var(--ink-2);
-        border: 1px solid var(--rule);
+        border-radius: 999px;
         flex: none;
       }
       .demo {
         max-width: 1048px;
-        margin: 12px auto 0;
+        margin: 4px auto 0;
         margin-inline: max(16px, calc((100% - 1048px) / 2));
-        padding: 10px 12px;
-        border-radius: 10px;
-        background: var(--neutral-soft);
-        color: var(--ink);
+        padding: 12px 16px;
+        border-radius: 14px;
+        background: var(--primary-soft);
+        color: var(--ink-2);
         font-size: 13px;
       }
 
+      /* ---------- 레이아웃 ---------- */
       main {
-        padding: 16px;
+        padding: 12px 16px 40px;
         display: grid;
-        gap: 16px;
+        gap: 12px;
         max-width: 1080px;
         margin: 0 auto;
       }
+      .col {
+        display: grid;
+        gap: 12px;
+        min-width: 0;
+        align-content: start;
+      }
       @media (min-width: 900px) {
         main {
-          grid-template-columns: 400px 1fr;
+          grid-template-columns: 420px 1fr;
           align-items: start;
+          gap: 16px;
         }
-        #market {
-          position: sticky;
-          top: 140px;
+        .col {
+          gap: 16px;
         }
       }
-      main > * {
+      .card {
+        background: var(--card);
+        border-radius: 22px;
+        padding: 24px 20px;
         min-width: 0;
       }
-      section.panel {
-        background: var(--surface);
-        border: 1px solid var(--rule);
-        border-radius: 16px;
-        padding: 18px 16px;
+      .card[hidden] {
+        display: none;
+      }
+      .eyebrow {
+        margin: 0 0 4px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--ink-2);
       }
       h2 {
         margin: 0;
-        font-size: 15px;
-        font-weight: 600;
+        font-size: 19px;
+        font-weight: 700;
+        line-height: 1.4;
+      }
+      h3 {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 700;
       }
       .sub {
         color: var(--ink-3);
-        font-size: 12.5px;
+        font-size: 13px;
+        margin: 4px 0 0;
+      }
+      .big {
+        display: block;
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 1.3;
         margin: 2px 0 0;
       }
-
-      /* 판독 다이얼: 이 화면의 중심 */
-      .dial {
+      .lead {
+        margin: 16px 0 0;
+        font-size: 16px;
+        line-height: 1.65;
+        color: var(--ink);
+      }
+      .callout {
+        margin: 16px 0 0;
+        padding: 14px 16px;
+        border-radius: 14px;
+        background: var(--fill);
+        color: var(--ink-2);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      .callout b {
         display: block;
+        color: var(--ink);
+        font-size: 13px;
+        margin-bottom: 2px;
+      }
+      .foot {
+        margin: 16px 4px 0;
+        font-size: 12px;
+        color: var(--ink-3);
+        line-height: 1.6;
+      }
+      .empty {
+        color: var(--ink-3);
+        text-align: center;
+        padding: 28px 8px;
+        margin: 0;
+        font-size: 15px;
+      }
+      .error {
+        color: var(--up);
+      }
+      .up {
+        color: var(--up);
+      }
+      .down {
+        color: var(--down);
+      }
+
+      /* 상태 칩: 우호(초록) · 중립(회색) · 경계(주황) */
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 3px 9px;
+        border-radius: 999px;
+        white-space: nowrap;
+        background: var(--mid-soft);
+        color: var(--mid);
+      }
+      .chip.on {
+        background: var(--good-soft);
+        color: var(--good);
+      }
+      .chip.off {
+        background: var(--warn-soft);
+        color: var(--warn);
+      }
+      .chip.blue {
+        background: var(--primary-soft);
+        color: var(--primary);
+      }
+
+      /* 펼치기 */
+      details > summary {
+        list-style: none;
+        cursor: pointer;
+      }
+      details > summary::-webkit-details-marker {
+        display: none;
+      }
+      .more {
+        margin-top: 16px;
+        border-top: 1px solid var(--line);
+      }
+      .more > summary {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 2px 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--ink-2);
+      }
+      .more > summary::after,
+      .row > summary .val::after {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-right: 2px solid var(--ink-3);
+        border-bottom: 2px solid var(--ink-3);
+        transform: rotate(45deg) translateY(-3px);
+        transition: transform 0.2s ease;
+        flex: none;
+      }
+      .more[open] > summary::after,
+      .row[open] > summary .val::after {
+        transform: rotate(-135deg) translateY(-1px);
+      }
+      .more > .body {
+        padding-top: 12px;
+      }
+
+      /* ⓘ 툴팁 버튼 */
+      .tip {
+        display: inline-grid;
+        place-items: center;
+        width: 18px;
+        height: 18px;
+        min-height: 0;
+        padding: 0;
+        margin-left: 4px;
+        border-radius: 50%;
+        background: var(--fill-2);
+        color: var(--ink-2);
+        font: 700 11px/1 var(--sans);
+        vertical-align: 1px;
+        flex: none;
+        position: relative;
+      }
+      .tip::before {
+        content: "";
+        position: absolute;
+        inset: -12px;
+      }
+
+      /* 바텀시트 */
+      .sheet-bg {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        background: rgba(0, 0, 0, 0.4);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+      }
+      .sheet {
+        position: fixed;
+        left: 50%;
+        bottom: 0;
+        z-index: 51;
+        width: min(100%, 480px);
+        background: var(--card);
+        border-radius: 24px 24px 0 0;
+        padding: 12px 24px calc(24px + env(safe-area-inset-bottom));
+        transform: translate(-50%, 105%);
+        transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+      .sheet::before {
+        content: "";
+        display: block;
+        width: 40px;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--fill-2);
+        margin: 0 auto 18px;
+      }
+      body.sheet-open .sheet-bg {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      body.sheet-open .sheet {
+        transform: translate(-50%, 0);
+      }
+      .sheet h3 {
+        font-size: 20px;
+      }
+      .sheet p {
+        margin: 10px 0 0;
+        color: var(--ink-2);
+        line-height: 1.7;
+      }
+      .sheet .now {
+        margin-top: 16px;
+        padding: 14px 16px;
+        border-radius: 14px;
+        background: var(--fill);
+        font-size: 14px;
+      }
+      .sheet .now b {
+        display: block;
+        font-size: 12px;
+        color: var(--ink-3);
+        margin-bottom: 2px;
+      }
+      .sheet button {
         width: 100%;
-        max-width: 340px;
-        margin: 8px auto 0;
+        margin-top: 20px;
+      }
+
+      /* ---------- 다이얼 ---------- */
+      .dial {
+        width: 100%;
+        max-width: 260px;
+        display: block;
+        margin: 18px auto 0;
       }
       .dial .arc-off {
-        stroke: var(--off);
+        stroke: var(--warn);
       }
       .dial .arc-neutral {
-        stroke: var(--neutral);
+        stroke: var(--fill-2);
       }
       .dial .arc-on {
-        stroke: var(--on);
+        stroke: var(--good);
       }
       .dial .tick {
+        font: 500 12px var(--sans);
         fill: var(--ink-3);
-        font: 500 11px var(--sans);
       }
       .dial .needle {
-        stroke: var(--brass);
-        stroke-width: 3;
+        stroke: var(--ink);
+        stroke-width: 4;
         stroke-linecap: round;
         transform-origin: 160px 150px;
-        transition: transform 900ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        transition: transform 0.9s cubic-bezier(0.3, 1.3, 0.5, 1);
       }
       @media (prefers-reduced-motion: reduce) {
         .dial .needle {
@@ -335,216 +579,282 @@
         }
       }
       .dial .hub {
-        fill: var(--brass);
+        fill: var(--ink);
       }
-      .reading {
-        text-align: center;
-        margin-top: -4px;
+      .hero {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 12px;
       }
-      .reading strong {
-        display: block;
-        font-size: 20px;
-        font-weight: 600;
-      }
-      .reading small {
-        color: var(--ink-3);
-        font-size: 12.5px;
-        font-variant-numeric: tabular-nums;
-      }
-
-      .signals {
-        list-style: none;
-        padding: 0;
-        margin: 14px 0 0;
-        border-top: 1px solid var(--rule);
-      }
-      .signals li {
-        border-bottom: 1px solid var(--rule);
-      }
-      details summary {
-        list-style: none;
-        cursor: pointer;
-        display: grid;
-        grid-template-columns: 10px 1fr auto;
-        gap: 10px;
-        align-items: center;
-        padding: 11px 2px;
-      }
-      details summary::-webkit-details-marker {
-        display: none;
-      }
-      .dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-      }
-      .dot.on {
-        background: var(--on);
-      }
-      .dot.neutral {
-        background: var(--neutral);
-      }
-      .dot.off {
-        background: var(--off);
-      }
-      .sig-title {
-        font-weight: 500;
+      .hero .score {
+        font-size: 15px;
+        font-weight: 700;
+        padding: 6px 12px;
+        border-radius: 999px;
         white-space: nowrap;
       }
-      .sig-value {
-        color: var(--ink-2);
-        font-size: 12.5px;
-        text-align: right;
-        font-variant-numeric: tabular-nums;
+      .tone-on {
+        background: var(--good-soft);
+        color: var(--good);
       }
-      details p {
-        margin: 0 0 12px 20px;
-        color: var(--ink-2);
-        font-size: 13.5px;
+      .tone-mid {
+        background: var(--mid-soft);
+        color: var(--mid);
+      }
+      .tone-off {
+        background: var(--warn-soft);
+        color: var(--warn);
       }
 
-      .empty {
-        color: var(--ink-2);
-        padding: 28px 8px;
-        text-align: center;
+      /* ---------- 목록 행 ---------- */
+      .rows {
+        list-style: none;
+        margin: 12px 0 0;
+        padding: 0;
       }
+      .rows > li + li {
+        border-top: 1px solid var(--line);
+      }
+      .row > summary,
+      .row-static {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 0;
+        min-height: 52px;
+      }
+      .row .name {
+        flex: 1;
+        min-width: 0;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+      }
+      .row .val {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: var(--ink-2);
+        text-align: right;
+      }
+      .row .detail {
+        margin: 0 0 14px;
+        padding: 14px 16px;
+        border-radius: 14px;
+        background: var(--fill);
+        font-size: 14px;
+        color: var(--ink-2);
+        line-height: 1.65;
+      }
+      .row .detail a {
+        color: var(--primary);
+        text-decoration: none;
+        font-size: 13px;
+        margin-left: 4px;
+        white-space: nowrap;
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex: none;
+        background: var(--mid);
+      }
+      .dot.on {
+        background: var(--good);
+      }
+      .dot.off {
+        background: var(--warn);
+      }
+      .tally {
+        display: flex;
+        gap: 6px;
+        margin-top: 10px;
+        flex-wrap: wrap;
+      }
+
+      /* ---------- 숫자 타일 ---------- */
+      .tiles3 {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 16px;
+      }
+      .tile {
+        background: var(--fill);
+        border-radius: 14px;
+        padding: 12px;
+        min-width: 0;
+      }
+      .tile small {
+        display: flex;
+        align-items: center;
+        font-size: 12px;
+        color: var(--ink-3);
+        white-space: nowrap;
+      }
+      .tile strong {
+        display: block;
+        font-size: 18px;
+        font-weight: 700;
+        margin-top: 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      /* ---------- 원자재 ---------- */
+      .cmd-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 16px;
+      }
+      .cmd {
+        background: var(--fill);
+        border-radius: 16px;
+        padding: 14px;
+        min-width: 0;
+      }
+      .cmd small {
+        color: var(--ink-3);
+        font-size: 12px;
+      }
+      .cmd b {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .cmd strong {
+        display: block;
+        font-size: 20px;
+        font-weight: 700;
+        margin-top: 4px;
+        font-variant-numeric: tabular-nums;
+      }
+      .cmd .chg {
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .cmd svg {
+        display: block;
+        width: 100%;
+        height: 28px;
+        margin-top: 8px;
+      }
+      .cmd svg path {
+        fill: none;
+        stroke-width: 1.6;
+      }
+      .cmd svg.up path {
+        stroke: var(--up);
+      }
+      .cmd svg.down path {
+        stroke: var(--down);
+      }
+      .defs {
+        margin: 0;
+        display: grid;
+        gap: 12px;
+      }
+      .defs dt {
+        font-weight: 600;
+        font-size: 14px;
+      }
+      .defs dd {
+        margin: 2px 0 0;
+        color: var(--ink-2);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      /* ---------- 종목 ---------- */
       .stock-head {
         display: flex;
         justify-content: space-between;
-        align-items: flex-start;
         gap: 12px;
+        align-items: flex-start;
       }
       .stock-head h2 {
-        font-size: 20px;
-      }
-      .price {
-        text-align: right;
-        font-variant-numeric: tabular-nums;
-      }
-      .price strong {
-        font-size: 20px;
-        font-weight: 600;
-        display: block;
+        font-size: 22px;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .badge {
         display: inline-block;
-        font-size: 11.5px;
+        font-size: 11px;
         font-weight: 600;
-        padding: 2px 8px;
+        padding: 3px 7px;
         border-radius: 6px;
-        margin-right: 6px;
-        vertical-align: 2px;
+        margin-bottom: 6px;
       }
       .badge.US {
-        background: var(--on-soft);
-        color: var(--on);
+        background: var(--primary-soft);
+        color: var(--primary);
       }
       .badge.KR {
-        background: var(--neutral-soft);
-        color: var(--neutral);
+        background: var(--good-soft);
+        color: var(--good);
       }
-      .note-kr {
-        margin: 12px 0 0;
-        padding: 10px 12px;
-        border-radius: 10px;
-        background: var(--neutral-soft);
-        font-size: 13px;
+      .price {
+        margin-top: 16px;
       }
-      .up {
-        color: var(--on);
+      .price strong {
+        display: block;
+        font-size: 34px;
+        font-weight: 700;
+        line-height: 1.2;
       }
-      .down {
-        color: var(--off);
+      .price span {
+        font-size: 15px;
+        font-weight: 600;
       }
       .spark {
         width: 100%;
-        height: 84px;
+        height: 96px;
         display: block;
-        margin-top: 12px;
+        margin-top: 20px;
       }
       .spark .line {
         fill: none;
-        stroke: var(--ink);
-        stroke-width: 1.6;
+        stroke-width: 2;
+      }
+      .spark.up .line {
+        stroke: var(--up);
+      }
+      .spark.down .line {
+        stroke: var(--down);
       }
       .spark .hi {
         stroke: var(--ink-3);
         stroke-dasharray: 3 4;
+        stroke-width: 1;
+        vector-effect: non-scaling-stroke;
       }
       .spark-labels {
         display: flex;
         justify-content: space-between;
+        font-size: 12px;
         color: var(--ink-3);
-        font-size: 11.5px;
         margin-top: 4px;
-        font-variant-numeric: tabular-nums;
       }
-      .stats {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
+      .note-kr {
         margin: 14px 0 0;
-      }
-      .stats div {
-        background: var(--bg);
-        border-radius: 10px;
-        padding: 9px 10px;
-      }
-      .stats dt {
-        font-size: 11.5px;
-        color: var(--ink-3);
-      }
-      .stats dd {
-        margin: 0;
-        font-weight: 600;
-        font-variant-numeric: tabular-nums;
-      }
-
-      .tech {
-        border-top: 1px solid var(--rule);
-        padding-top: 16px;
-        margin-top: 18px;
-      }
-      .tech h3 {
-        margin: 0 0 4px;
-        font-size: 15px;
-        font-weight: 600;
-      }
-      .tech-row {
-        padding: 10px 0;
-        border-bottom: 1px solid var(--rule);
-      }
-      .tech-row:last-child {
-        border-bottom: 0;
-      }
-      .tech-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        gap: 10px;
-      }
-      .tech-top b {
-        font-weight: 500;
-        font-size: 14px;
-      }
-      .tech-top span {
-        font-variant-numeric: tabular-nums;
-        font-weight: 600;
-        white-space: nowrap;
-      }
-      .tech-top span.on {
-        color: var(--on);
-      }
-      .tech-top span.off {
-        color: var(--off);
+        font-size: 13px;
+        color: var(--ink-2);
+        background: var(--fill);
+        border-radius: 12px;
+        padding: 10px 14px;
       }
       .meter {
         position: relative;
-        height: 10px;
-        margin: 8px 0 6px;
-        border-radius: 5px;
-        background: var(--bg);
-        overflow: hidden;
+        height: 8px;
+        border-radius: 4px;
+        background: var(--fill);
+        margin: 0 0 16px;
+        overflow: visible;
       }
       .meter .zl,
       .meter .zh {
@@ -554,121 +864,43 @@
       }
       .meter .zl {
         left: 0;
-        background: var(--on-soft);
+        background: var(--good-soft);
+        border-radius: 4px 0 0 4px;
       }
       .meter .zh {
         right: 0;
-        background: var(--off-soft);
+        background: var(--warn-soft);
+        border-radius: 0 4px 4px 0;
       }
       .meter .pin {
         position: absolute;
-        top: -1px;
-        bottom: -1px;
+        top: -4px;
         width: 4px;
+        height: 16px;
         margin-left: -2px;
         border-radius: 2px;
         background: var(--ink);
       }
       .meter .pin.d {
-        background: var(--brass);
-        width: 3px;
+        background: var(--ink-3);
       }
-      .tech-note {
-        margin: 0;
-        color: var(--ink-2);
-        font-size: 13px;
-      }
-      #view {
-        padding: 20px 18px;
-      }
-      @media (min-width: 900px) {
-        #view {
-          grid-column: 1 / -1;
-        }
-      }
-      #view .headline {
-        font-family: var(--serif);
-        font-size: 19px;
-        line-height: 1.65;
-        margin: 6px 0 14px;
-      }
-      .lenses {
-        list-style: none;
-        margin: 0;
-        padding: 0;
+
+      /* 일곱 투자자 */
+      .judges-sum {
         display: grid;
-        gap: 10px;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 4px;
+        margin-top: 16px;
       }
-      @media (min-width: 700px) {
-        .lenses {
-          grid-template-columns: 1fr 1fr;
-        }
-      }
-      .lenses li {
-        background: var(--bg);
-        border-radius: 12px;
-        padding: 11px 13px;
-        font-size: 13.5px;
-        color: var(--ink-2);
-      }
-      .lenses b {
-        display: block;
-        color: var(--ink);
-        font-weight: 600;
-        font-size: 13px;
-        margin-bottom: 2px;
-      }
-      .action {
-        margin: 14px 0 0;
-        padding: 12px 14px;
-        border-left: 3px solid var(--brass);
-        background: var(--bg);
-        border-radius: 0 10px 10px 0;
-        font-size: 14px;
-      }
-      .watch {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin-top: 10px;
-        font-size: 12.5px;
-        color: var(--ink-2);
-        align-items: center;
-      }
-      .watch span {
-        border: 1px solid var(--rule);
-        border-radius: 999px;
-        padding: 3px 10px;
-      }
-      .consensus {
-        margin: 18px 0 0;
-        padding-top: 16px;
-        border-top: 1px solid var(--rule);
-      }
-      .consensus p {
-        margin: 0 0 10px;
-        font-size: 14px;
-      }
-      .tiles {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 6px;
-      }
-      @media (min-width: 600px) {
-        .tiles {
-          grid-template-columns: repeat(7, 1fr);
-        }
-      }
-      .tiles a {
+      .judges-sum a {
         text-decoration: none;
-        color: var(--ink);
-        background: var(--bg);
-        border-radius: 10px;
-        padding: 8px 6px;
+        color: inherit;
         text-align: center;
-        border-top: 3px solid var(--rule);
+        padding: 10px 0 8px;
+        border-radius: 12px;
+        background: var(--fill);
       }
-      .tiles a small {
+      .judges-sum small {
         display: block;
         font-size: 11px;
         color: var(--ink-3);
@@ -676,264 +908,37 @@
         overflow: hidden;
         text-overflow: ellipsis;
       }
-      .tiles a strong {
-        font-variant-numeric: tabular-nums;
-        font-size: 16px;
-      }
-      .gate {
-        max-width: 360px;
-        margin: 40px auto;
-        text-align: center;
-      }
-      .gate form {
-        margin-top: 12px;
-      }
-      #commodities {
-        padding: 18px 0 16px;
-      }
-      #commodities > h2,
-      #commodities > .sub {
-        padding: 0 16px;
-      }
-      @media (min-width: 900px) {
-        #commodities {
-          grid-column: 1 / -1;
-        }
-      }
-      .cmd-row {
-        display: flex;
-        gap: 10px;
-        overflow-x: auto;
-        padding: 12px 16px 4px;
-        scroll-snap-type: x mandatory;
-        scrollbar-width: thin;
-      }
-      .cmd {
-        flex: 0 0 210px;
-        scroll-snap-align: start;
-        background: var(--bg);
-        border-radius: 12px;
-        padding: 12px;
-      }
-      @media (min-width: 900px) {
-        .cmd-row {
-          display: grid;
-          grid-template-columns: repeat(5, 1fr);
-          overflow: visible;
-        }
-        .cmd {
-          flex: none;
-        }
-      }
-      .cmd-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-      }
-      .cmd-top b {
-        font-size: 14px;
-        font-weight: 600;
-      }
-      .cmd-top small {
-        color: var(--ink-3);
-        font-size: 11px;
-      }
-      .cmd-price {
-        font-size: 19px;
-        font-weight: 600;
-        font-variant-numeric: tabular-nums;
-        margin: 2px 0 6px;
-      }
-      .cmd svg {
-        width: 100%;
-        height: 34px;
+      .judges-sum strong {
         display: block;
-      }
-      .cmd svg path {
-        fill: none;
-        stroke: var(--ink-2);
-        stroke-width: 1.4;
-      }
-      .pills {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 4px;
-        margin: 6px 0;
-      }
-      .pills span {
-        white-space: nowrap;
-        font-size: 11.5px;
-        font-variant-numeric: tabular-nums;
-        padding: 1px 6px;
-        border-radius: 5px;
-        background: var(--surface);
-      }
-      .cmd p {
-        margin: 4px 0 0;
-        font-size: 12px;
-        color: var(--ink-3);
-        line-height: 1.5;
-      }
-      @media (min-width: 900px) {
-        #street-panel {
-          grid-column: 1 / -1;
-        }
-      }
-      .firms {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 13.5px;
-        margin-top: 10px;
-      }
-      .firms th {
-        text-align: left;
-        font-weight: 500;
-        color: var(--ink-3);
-        font-size: 12px;
-        padding: 6px 0;
-        border-bottom: 1px solid var(--rule);
-      }
-      .firms td {
-        padding: 9px 0 2px;
-        vertical-align: top;
-      }
-      .firms td.thesis-row {
-        padding: 0 0 10px;
-        border-bottom: 1px solid var(--rule);
-      }
-      .firms td.num {
-        text-align: right;
-        font-variant-numeric: tabular-nums;
-        white-space: nowrap;
-        padding-left: 8px;
-      }
-      .firms .thesis {
-        display: block;
-        color: var(--ink-2);
-        font-size: 12.5px;
-        margin-top: 3px;
-      }
-      .firms a {
-        color: var(--ink-3);
-        font-size: 11.5px;
-      }
-      .stance {
-        display: inline-block;
-        font-size: 11.5px;
-        font-weight: 600;
-        padding: 1px 7px;
-        border-radius: 6px;
-        margin-left: 6px;
-      }
-      .stance.bull {
-        background: var(--on-soft);
-        color: var(--on);
-      }
-      .stance.mid {
-        background: var(--neutral-soft);
-        color: var(--neutral);
-      }
-      .stance.bear {
-        background: var(--off-soft);
-        color: var(--off);
-      }
-      .street-stock {
-        border-top: 1px solid var(--rule);
-        padding-top: 16px;
-        margin-top: 18px;
-      }
-      .street-stock h3 {
-        margin: 0 0 8px;
-        font-size: 15px;
-        font-weight: 600;
-      }
-      .street-nums {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
-      }
-      .street-nums div {
-        background: var(--bg);
-        border-radius: 10px;
-        padding: 8px 10px;
-      }
-      .street-nums dt {
-        font-size: 11.5px;
-        color: var(--ink-3);
-      }
-      .street-nums dd {
-        margin: 0;
-        font-weight: 600;
-        font-variant-numeric: tabular-nums;
-      }
-      .actions-list {
-        list-style: none;
-        padding: 0;
-        margin: 10px 0 0;
-        font-size: 13px;
-      }
-      .actions-list li {
-        padding: 6px 0;
-        border-bottom: 1px solid var(--rule);
-        display: flex;
-        justify-content: space-between;
-        gap: 8px;
-      }
-      .profile {
-        margin: 4px 0 10px;
-      }
-      .profile summary {
-        grid-template-columns: 1fr auto !important;
-        padding: 2px 0 !important;
-      }
-      .chipset {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 5px;
-        margin: 6px 0 8px;
-      }
-      .chipset span {
-        font-size: 12px;
-        background: var(--bg);
-        border-radius: 6px;
-        padding: 2px 8px;
-        color: var(--ink-2);
-      }
-      .profile p {
-        margin: 0 0 6px !important;
-        font-size: 13px;
-        color: var(--ink-2);
+        font-size: 17px;
+        font-weight: 700;
       }
       .judge {
-        scroll-margin-top: 150px;
-        border-top: 1px solid var(--rule);
-        padding-top: 16px;
-        margin-top: 18px;
+        padding: 20px 0;
+        scroll-margin-top: 160px;
+      }
+      .judge + .judge {
+        border-top: 1px solid var(--line);
       }
       .judge-head {
         display: flex;
         justify-content: space-between;
-        align-items: baseline;
-      }
-      .judge-head h3 {
-        margin: 0;
-        font-size: 15px;
-        font-weight: 600;
+        align-items: center;
+        gap: 12px;
       }
       .judge-head .idea {
+        font-size: 13px;
         color: var(--ink-3);
-        font-size: 12.5px;
       }
-      .score {
-        font-weight: 600;
-        font-size: 18px;
-        font-variant-numeric: tabular-nums;
+      .judge-head .score {
+        font-size: 28px;
+        font-weight: 700;
       }
       .bar {
         height: 6px;
         border-radius: 3px;
-        background: var(--rule);
-        margin: 8px 0 12px;
+        background: var(--fill);
+        margin-top: 10px;
         overflow: hidden;
       }
       .bar i {
@@ -942,63 +947,76 @@
         border-radius: 3px;
       }
       .verdict {
-        font-family: var(--serif);
-        font-size: 15.5px;
-        line-height: 1.75;
-        margin: 0 0 8px;
+        margin: 12px 0 0;
+        font-size: 15px;
+        line-height: 1.65;
+      }
+      .judge .more {
+        margin-top: 12px;
+        border: 0;
+      }
+      .judge .more > summary {
+        padding-top: 4px;
+        font-size: 13px;
+        color: var(--ink-3);
       }
       .checks {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 13px;
+        list-style: none;
+        margin: 0;
+        padding: 0;
       }
-      .checks td {
-        padding: 7px 0;
-        border-bottom: 1px solid var(--rule);
-        vertical-align: top;
+      .checks li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 0;
+        font-size: 14px;
       }
-      .checks td:nth-child(2) {
+      .checks li + li {
+        border-top: 1px solid var(--line);
+      }
+      .checks .name {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        color: var(--ink-2);
+      }
+      .checks .v {
+        font-weight: 600;
         text-align: right;
         font-variant-numeric: tabular-nums;
-        white-space: nowrap;
-        padding-left: 10px;
-      }
-      .checks td:nth-child(3) {
-        width: 22px;
-        text-align: right;
-      }
-      .checks .note {
-        display: block;
-        color: var(--ink-3);
-        font-size: 11.5px;
       }
       .mark {
-        display: inline-block;
-        width: 8px;
-        height: 8px;
+        width: 10px;
+        height: 10px;
         border-radius: 50%;
+        flex: none;
       }
-      .ai {
-        margin-top: 18px;
+      .profile-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
       }
-      .ai button {
-        width: 100%;
-        background: var(--surface);
-        color: var(--ink);
-        border: 1px solid var(--rule);
-      }
-      .ai p {
-        white-space: pre-wrap;
+      .profile p {
+        margin: 10px 0 0;
         font-size: 14px;
         color: var(--ink-2);
       }
-      .foot {
-        color: var(--ink-3);
-        font-size: 12px;
-        margin: 16px 0 0;
+      .ai button {
+        width: 100%;
+        margin-top: 16px;
       }
-      .error {
-        color: var(--off);
+      .ai p {
+        white-space: pre-wrap;
+        font-size: 15px;
+        line-height: 1.7;
+      }
+      .gate form {
+        margin-top: 16px;
+      }
+      .gate input {
+        background: var(--fill);
       }
     </style>
   </head>
@@ -1013,7 +1031,7 @@
           <input
             id="q"
             inputmode="text"
-            placeholder="종목명·티커·코드 (애플, VZ, 삼성전자, ㅅㅅㅈㅈ)"
+            placeholder="종목명·티커 (애플, VZ, 삼성전자)"
             aria-label="종목 검색"
             role="combobox"
             aria-autocomplete="list"
@@ -1039,34 +1057,149 @@
     <div id="demo" class="demo" hidden></div>
 
     <main>
-      <section class="panel" id="view" aria-labelledby="view-title" hidden></section>
-
-      <section class="panel" id="commodities" aria-labelledby="cmd-title" hidden></section>
-
-      <section class="panel" id="street-panel" aria-labelledby="street-title" hidden></section>
-
-      <section class="panel" id="market" aria-labelledby="market-title">
-        <h2 id="market-title">지금 시장은 바닥인가</h2>
-        <p class="sub">윌리엄스의 시장 주기와 바닥 확인 신호</p>
-        <div id="market-dial"></div>
-        <ul class="signals" id="signals"></ul>
-      </section>
-
-      <section class="panel" id="stock" aria-live="polite">
-        <p class="empty">종목을 검색하면 일곱 투자자의 원칙으로 지금 가격을 판독합니다.</p>
-      </section>
+      <div class="col" id="col-market">
+        <section class="card" id="market" aria-labelledby="market-title">
+          <p class="eyebrow" id="market-title">지금 시장은</p>
+          <div id="market-body"><p class="empty">시장 신호를 불러오는 중이에요</p></div>
+        </section>
+        <section class="card" id="signals-card" aria-labelledby="signals-title" hidden></section>
+        <section class="card" id="commodities" aria-labelledby="cmd-title" hidden></section>
+        <section class="card" id="street-panel" aria-labelledby="street-title" hidden></section>
+      </div>
+      <div class="col" id="col-stock">
+        <section class="card" id="stock" aria-live="polite">
+          <p class="empty">종목을 검색하면<br />일곱 투자자의 원칙으로 판독해 드려요</p>
+        </section>
+      </div>
     </main>
+
+    <div class="sheet-bg" id="sheet-bg"></div>
+    <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" aria-hidden="true">
+      <h3 id="sheet-title"></h3>
+      <p id="sheet-body"></p>
+      <div class="now" id="sheet-now" hidden></div>
+      <button type="button" id="sheet-close">확인</button>
+    </div>
 
     <script>
       const $ = (s) => document.querySelector(s);
       const esc = (v) =>
         String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
       const fmt = (v, d = 1) => (v === null || v === undefined || Number.isNaN(v) ? "–" : v.toFixed(d));
-      const statusColor = (g) => (g === null ? "var(--rule)" : g >= 1 ? "var(--on)" : g > 0 ? "var(--neutral)" : "var(--off)");
+      const signed = (v, d = 1, unit = "%") => (v === null || v === undefined || Number.isNaN(v) ? "–" : `${v >= 0 ? "+" : ""}${v.toFixed(d)}${unit}`);
+      const updown = (v) => (v === null || v === undefined ? "" : v > 0 ? "up" : v < 0 ? "down" : "");
+      const statusColor = (g) => (g === null ? "var(--fill-2)" : g >= 1 ? "var(--good)" : g > 0 ? "var(--mid)" : "var(--warn)");
+      const scoreTone = (s) => (s >= 65 ? "on" : s >= 45 ? "mid" : "off");
+      const toneColor = { on: "var(--good)", mid: "var(--mid)", off: "var(--warn)" };
+      // 받침에 맞춰 은/는
+      const withTopic = (w) => {
+        const c = w.charCodeAt(w.length - 1) - 0xac00;
+        return w + (c >= 0 && c < 11172 && c % 28 ? "은" : "는");
+      };
+      const STATUS_TEXT ={ on: "바닥 쪽", neutral: "중립", off: "과열 쪽" };
       let config = { ai: false };
 
+      // ---------- 어려운 지표 쉬운 설명 (ⓘ 버튼) ----------
+      const TERMS = {
+        PER: ["PER (주가수익비율)", "주가가 1년 이익의 몇 배인지 보여줘요. 낮을수록 이익에 비해 싸게 거래되고 있다는 뜻이에요."],
+        PBR: ["PBR (주가순자산비율)", "주가가 회사 순자산(자본)의 몇 배인지예요. 1보다 낮으면 장부상 가치보다 싸게 거래되는 셈이에요."],
+        PSR: ["PSR (주가매출비율)", "시가총액이 1년 매출의 몇 배인지예요. 아직 이익이 적은 회사도 비교할 수 있어요."],
+        PCR: ["PCR (주가현금흐름비율)", "주가가 영업으로 번 현금의 몇 배인지예요. 회계상 이익보다 속이기 어려운 지표예요."],
+        PEG: ["PEG", "PER을 이익 성장률로 나눈 값이에요. 1 이하면 성장 속도에 비해 싸다고 봐요. 피터 린치가 즐겨 썼어요."],
+        "배당 보정 PEG": ["배당 보정 PEG", "(이익 성장률 + 배당수익률)을 PER로 나눈 값이에요. 2 이상이면 매력적, 1 미만이면 비싸다고 봐요."],
+        ROE: ["ROE (자기자본이익률)", "주주가 맡긴 돈으로 1년에 몇 %를 버는지예요. 꾸준히 15~20% 넘으면 경쟁력이 강한 회사일 가능성이 커요."],
+        ROIC: ["ROIC (투하자본이익률)", "빌린 돈까지 포함해 사업에 넣은 돈으로 얼마나 버는지예요. 높을수록 남들이 따라 하기 어려운 사업이에요."],
+        FCF: ["FCF 수익률", "회사가 실제로 손에 쥔 현금(잉여현금흐름)이 시가총액의 몇 %인지예요. 높을수록 현금을 잘 버는데 싸다는 뜻이에요."],
+        "EV/EBITDA": ["EV/EBITDA", "빚까지 포함한 회사 몸값이 영업으로 버는 돈의 몇 배인지예요. 회사를 통째로 사면 몇 년 만에 본전인지에 가까워요."],
+        배당수익률: ["배당수익률", "주가 대비 1년 배당금 비율이에요. 3%면 100만 원어치 사면 1년에 3만 원을 받아요."],
+        부채: ["부채비율", "자본 대비 빚이 얼마나 되는지예요. 낮을수록 불황이 와도 버틸 힘이 있어요."],
+        EPS: ["EPS 성장률", "주식 1주당 이익이 1년 새 얼마나 늘었는지예요."],
+        매출총이익률: ["매출총이익률", "매출에서 원가를 빼고 남는 비율이에요. 높으면 값을 올려도 손님이 떠나지 않는 가격 결정력이 있다는 뜻이에요."],
+        순이익률: ["순이익률", "매출 중 최종적으로 남는 이익의 비율이에요. 얇으면 작은 충격에도 적자가 날 수 있어요."],
+        희석: ["주주 지분 희석", "회사가 새 주식을 많이 찍으면 기존 주주의 몫이 줄어요. 주식 수가 늘었는지 보는 항목이에요."],
+        이익수익률: ["이익수익률", "PER을 뒤집은 값(1÷PER)이에요. 주식을 채권처럼 봤을 때의 수익률이라, 국채 금리와 바로 비교할 수 있어요."],
+        "미스터 마켓": ["미스터 마켓의 할인", "버핏의 스승 그레이엄의 비유예요. 시장은 기분파라 가끔 좋은 회사를 이유 없이 싸게 내놓아요."],
+        할인: ["일시적 할인", "좋은 회사가 일시적인 악재로 고점보다 많이 빠져 있는지 봐요."],
+        RSI: ["RSI (상대강도지수)", "최근 14일 동안 오른 힘과 내린 힘을 비교한 값이에요. 30 아래면 너무 많이 팔린 과매도, 70 위면 과매수예요."],
+        스토캐스틱: ["스토캐스틱", "최근 14일 가격 범위에서 오늘 종가가 어디쯤인지 보여줘요. 20 아래 과매도, 80 위 과매수예요. %K가 %D를 위로 뚫으면 반등 신호로 봐요."],
+        "%R": ["윌리엄스 %R", "래리 윌리엄스가 만든 지표예요. 최근 14일 범위에서 종가 위치를 보고, -80 아래면 과매도, -20 위면 과매수예요."],
+        "200일선": ["200일 이동평균선", "최근 200거래일 종가의 평균이에요. 주가가 이 선 위에 있으면 장기 추세가 살아 있다고 봐요."],
+        "1년 고점": ["1년 고점 대비", "최근 1년 중 가장 높았던 가격에서 지금 얼마나 내려와 있는지예요."],
+        "상대 강도": ["상대 강도", "최근 12개월 주가 상승률이에요. 시장이 이미 알아보기 시작했는지 보는 항목이에요."],
+        "신용 스프레드": ["신용 스프레드", "회사채 금리에서 국채 금리를 뺀 값이에요. 벌어지면 시장이 불안하다는 뜻이고, 좁혀지면 안도하고 있다는 뜻이에요."],
+        신용시장: ["신용시장", "회사채 위험 프리미엄(신용 스프레드)이 넓은지 좁은지로 시장의 불안을 읽어요."],
+        "장단기 금리차": ["장단기 금리차", "10년 국채 금리에서 2년 국채 금리를 뺀 값이에요. 마이너스(역전)면 경기 둔화 경고, 다시 벌어지면 회복 기대로 봐요."],
+        "구리/금": ["구리/금 비율", "경기에 민감한 구리와 안전자산인 금의 가격 비율이에요. 오르면 성장 기대, 내리면 불안이 커진다는 뜻이에요."],
+        통화정책: ["통화정책 (연준)", "미국 중앙은행이 금리를 올리는지 내리는지예요. 내리면 시장에 돈이 풀려 주가에 우호적이에요."],
+        유동성: ["연준 유동성", "미국 중앙은행이 시장에 돈을 푸는지 거두는지예요. 주가를 크게 움직이는 힘이에요."],
+        "채권 금리": ["채권 금리 (10년 국채)", "미국 10년 국채 금리예요. 고점을 찍고 꺾이면 주식 바닥에 앞서는 경우가 많았어요."],
+        신용잔고: ["신용잔고 (빚투)", "빚을 내서 주식을 산 금액이에요. 너무 많으면 하락 때 강제 매도가 하락을 키우고, 크게 줄면 바닥 조건에 가까워요."],
+        "투자 심리": ["투자 심리 (VIX)", "시장의 공포 지수예요. 높을수록 사람들이 겁먹고 있다는 뜻이고, 극단적인 공포는 바닥 근처에서 자주 나와요."],
+        "4년 주기": ["4년 주기", "미국 대선을 기준으로 한 4년 주기예요. 중간선거 해 하반기에 저점이 자주 나왔어요."],
+        계절성: ["계절성", "10월부터 이듬해 봄까지 강하고, 5~9월은 약했던 과거 패턴이에요."],
+        "10년 패턴": ["10년 패턴", "연도 끝자리별 과거 수익률 패턴이에요. 끝자리 5·7·8년이 강했어요."],
+        유가: ["유가 (WTI)", "미국 원유 가격이에요. 오르면 물가와 금리 부담이 커지고, 꺾이면 주식에 순풍이에요."],
+        구리: ["구리", "공장·건설·전력망에 두루 쓰여서 경기를 먼저 알려준다고 '닥터 코퍼'라고 불려요."],
+        금: ["금", "대표적인 안전자산이에요. 불안할 때나 달러 가치가 떨어질 때 올라요."],
+        컨센서스: ["컨센서스", "이 종목을 분석하는 증권사 애널리스트들의 평균 의견이에요."],
+        목표가: ["평균 목표가", "애널리스트들이 제시한 1년 뒤 예상 주가의 평균이에요. 자주 틀리고 주가를 뒤따라 바뀌어요."],
+      };
+      // 라벨 안에 이 단어가 있으면 해당 설명을 붙여요 (먼저 맞는 것 우선)
+      const TERM_MATCH = [
+        ["배당 보정 PEG", "배당 보정 PEG"], ["PEG", "PEG"], ["EV/EBITDA", "EV/EBITDA"], ["PCR", "PCR"], ["PSR", "PSR"], ["PBR", "PBR"],
+        ["ROIC", "ROIC"], ["자본 효율", "ROIC"], ["ROE", "ROE"], ["FCF", "FCF"], ["현금을 못", "FCF"], ["이익수익률", "이익수익률"],
+        ["PER", "PER"], ["기대가 너무 큰", "PER"], ["배당수익률", "배당수익률"], ["부채", "부채"], ["EPS", "EPS"], ["실적 모멘텀", "EPS"],
+        ["매출총이익률", "매출총이익률"], ["순이익률", "순이익률"], ["얇은 이익", "순이익률"], ["희석", "희석"], ["미스터 마켓", "미스터 마켓"],
+        ["일시적 할인", "할인"], ["RSI", "RSI"], ["스토캐스틱", "스토캐스틱"], ["%R", "%R"], ["200일", "200일선"], ["1년 고점", "1년 고점"],
+        ["상대 강도", "상대 강도"], ["신용 스프레드", "신용 스프레드"], ["신용시장", "신용시장"], ["장단기", "장단기 금리차"],
+        ["구리/금", "구리/금"], ["통화정책", "통화정책"], ["유동성", "유동성"], ["채권 금리", "채권 금리"], ["신용잔고", "신용잔고"],
+        ["투자 심리", "투자 심리"], ["4년 주기", "4년 주기"], ["계절성", "계절성"], ["10년 패턴", "10년 패턴"], ["유가", "유가"],
+        ["구리", "구리"], ["금 가격", "금"], ["컨센서스", "컨센서스"], ["목표가", "목표가"],
+      ];
+      const termKey = (label) => (TERM_MATCH.find(([w]) => String(label).includes(w)) || [])[1];
+      // 라벨 옆 ⓘ 버튼. now는 '지금 이 종목에서는' 같은 구체 설명
+      function tip(label, now) {
+        const k = termKey(label);
+        if (!k && !now) return "";
+        return `<button type="button" class="tip" aria-label="${esc(label)} 설명 보기" data-k="${esc(k || "")}" data-l="${esc(
+          label
+        )}" data-now="${esc(now || "")}">i</button>`;
+      }
+      function openSheet(btn) {
+        const t = TERMS[btn.dataset.k];
+        $("#sheet-title").textContent = t ? t[0] : btn.dataset.l;
+        $("#sheet-body").textContent = t ? t[1] : "";
+        $("#sheet-body").hidden = !t;
+        const now = btn.dataset.now;
+        $("#sheet-now").hidden = !now;
+        $("#sheet-now").innerHTML = now ? `<b>지금은</b>${esc(now)}` : "";
+        document.body.classList.add("sheet-open");
+        $("#sheet").setAttribute("aria-hidden", "false");
+        $("#sheet-close").focus();
+      }
+      function closeSheet() {
+        document.body.classList.remove("sheet-open");
+        $("#sheet").setAttribute("aria-hidden", "true");
+      }
+      document.addEventListener(
+        "click",
+        (e) => {
+          const b = e.target.closest(".tip");
+          if (!b) return;
+          e.preventDefault();
+          e.stopPropagation();
+          openSheet(b);
+        },
+        true
+      );
+      $("#sheet-bg").addEventListener("click", closeSheet);
+      $("#sheet-close").addEventListener("click", closeSheet);
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && document.body.classList.contains("sheet-open")) closeSheet();
+      });
+
       // 반원 다이얼: 왼쪽 과열, 오른쪽 저점. value는 -100(과열) ~ +100(저점)
-      function dial(value, label, sub) {
+      function dial(value, label) {
         const angle = Math.max(-90, Math.min(90, (value / 100) * 90));
         const arc = (a0, a1) => {
           const p = (a) => [160 + 120 * Math.cos(Math.PI - a), 150 - 120 * Math.sin(Math.PI - a)];
@@ -1077,16 +1210,15 @@
         const r = (deg) => (deg * Math.PI) / 180;
         return `
     <svg class="dial" viewBox="0 0 320 175" role="img" aria-label="판독 ${esc(label)}, ${value}점">
-      <path d="${arc(r(2), r(58))}" class="arc-off" stroke-width="14" fill="none" stroke-linecap="round"/>
-      <path d="${arc(r(62), r(118))}" class="arc-neutral" stroke-width="14" fill="none"/>
-      <path d="${arc(r(122), r(178))}" class="arc-on" stroke-width="14" fill="none" stroke-linecap="round"/>
+      <path d="${arc(r(2), r(58))}" class="arc-off" stroke-width="12" fill="none" stroke-linecap="round"/>
+      <path d="${arc(r(62), r(118))}" class="arc-neutral" stroke-width="12" fill="none"/>
+      <path d="${arc(r(122), r(178))}" class="arc-on" stroke-width="12" fill="none" stroke-linecap="round"/>
       <text class="tick" x="26" y="172">과열</text>
-      <text class="tick" x="160" y="16" text-anchor="middle">중립</text>
+      <text class="tick" x="160" y="14" text-anchor="middle">중립</text>
       <text class="tick" x="294" y="172" text-anchor="end">저점</text>
-      <line class="needle" x1="160" y1="150" x2="160" y2="46" style="transform: rotate(-90deg)" data-angle="${angle}"/>
+      <line class="needle" x1="160" y1="150" x2="160" y2="50" style="transform: rotate(-90deg)" data-angle="${angle}"/>
       <circle class="hub" cx="160" cy="150" r="7"/>
-    </svg>
-    <div class="reading"><strong>${esc(label)}</strong><small>${esc(sub)}</small></div>`;
+    </svg>`;
       }
       function settleNeedles(root) {
         requestAnimationFrame(() =>
@@ -1097,6 +1229,7 @@
           })
         );
       }
+      const pointTone = (v) => (v >= 15 ? "on" : v > -15 ? "mid" : "off");
 
       async function api(path) {
         let code = "";
@@ -1106,145 +1239,158 @@
         const res = await fetch(path, { headers: code ? { "x-access-code": code } : {} });
         if (res.status === 401) {
           showGate();
-          throw new Error("접근 코드가 필요합니다.");
+          throw new Error("접근 코드가 필요해요.");
         }
         const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || `요청 실패 (${res.status})`);
+        if (!res.ok) throw new Error(data.error || `요청에 실패했어요 (${res.status})`);
         return data;
+      }
+
+      function sparkPath(vals, W, H, pad = 2) {
+        const mn = Math.min(...vals),
+          mx = Math.max(...vals);
+        return vals
+          .map((v, i) => `${i ? "L" : "M"}${((i / (vals.length - 1)) * W).toFixed(1)} ${(pad + (1 - (v - mn) / (mx - mn || 1)) * (H - pad * 2)).toFixed(1)}`)
+          .join("");
       }
 
       async function loadMarket() {
         try {
           const m = await api("/api/macro");
-          $("#asof").textContent = `금리 기준일 ${m.asOf}`;
-          const v = m.view;
-          if (v) {
-            const view = $("#view");
-            view.hidden = false;
-            view.innerHTML = `
-        <h2 id="view-title">오늘 시장을 읽는 법</h2>
-        <p class="headline">${esc(v.headline)}</p>
-        <ul class="lenses">${v.lenses.map((l) => `<li><b>${esc(l.who)}</b>${esc(l.text)}</li>`).join("")}</ul>
-        <p class="action">${esc(v.action)}</p>
+          $("#asof").textContent = `${m.asOf} 기준`;
+          const v = m.view || {};
+          const tone = pointTone(m.score);
+          const body = $("#market-body");
+          body.innerHTML = `
+        <div class="hero"><strong class="big">${esc(m.stance)}</strong><span class="score tone-${tone}">${signed(m.score, 0, "점")}</span></div>
+        ${dial(m.score, m.stance)}
+        ${v.headline ? `<p class="lead">${esc(v.headline)}</p>` : ""}
+        ${v.action ? `<div class="callout"><b>원칙대로라면</b>${esc(v.action)}</div>` : ""}
         ${
-          v.watch.length
-            ? `<div class="watch">켜지면 비중을 늘릴 신호 ${v.watch.map((w) => `<span>${esc(w)}</span>`).join("")}</div>`
+          v.watch && v.watch.length
+            ? `<p class="sub" style="margin-top:14px">켜지면 비중을 늘릴 신호</p><div class="tally">${v.watch
+                .map((w) => `<span class="chip blue">${esc(w)}</span>`)
+                .join("")}</div>`
+            : ""
+        }
+        ${
+          v.lenses && v.lenses.length
+            ? `<details class="more"><summary>투자자별 시각 ${v.lenses.length}가지</summary><div class="body"><dl class="defs">${v.lenses
+                .map((l) => `<div><dt>${esc(l.who)}</dt><dd>${esc(l.text)}</dd></div>`)
+                .join("")}</dl></div></details>`
             : ""
         }`;
-          }
-          const el = $("#market-dial");
-          el.innerHTML = dial(m.score, m.stance, `시장 판독 ${m.score > 0 ? "+" : ""}${m.score}점`);
-          settleNeedles(el);
-          $("#signals").innerHTML = m.signals
-            .map(
-              (s) => `
-      <li><details>
-        <summary><span class="dot ${s.status}" aria-hidden="true"></span><span class="sig-title">${esc(
-                s.title
-              )}</span><span class="sig-value">${esc(s.value)}</span></summary>
-        <p>${esc(s.detail)}</p>
-      </details></li>`
-            )
-            .join("");
+          settleNeedles(body);
+
+          const cnt = (st) => m.signals.filter((s) => s.status === st).length;
+          const sc = $("#signals-card");
+          sc.hidden = false;
+          sc.innerHTML = `<h2 id="signals-title">신호 ${m.signals.length}개</h2>
+        <div class="tally"><span class="chip on">바닥 쪽 ${cnt("on")}</span><span class="chip">중립 ${cnt(
+            "neutral"
+          )}</span><span class="chip off">과열 쪽 ${cnt("off")}</span></div>
+        <ul class="rows">${m.signals
+          .map(
+            (s) => `<li><details class="row">
+          <summary><span class="dot ${esc(s.status)}" aria-hidden="true"></span><span class="name">${esc(s.title)}${tip(
+              s.title
+            )}</span><span class="val">${esc(String(s.value).split(" (")[0])}</span></summary>
+          <p class="detail"><span class="chip ${esc(s.status)}" style="margin-right:6px">${STATUS_TEXT[s.status] || ""}</span>${esc(
+              s.detail
+            )}</p></details></li>`
+          )
+          .join("")}</ul>`;
+
           if (m.commodities && m.commodities.length) {
-            const pct = (v) => (v === null || v === undefined ? "–" : `${v >= 0 ? "+" : ""}${v.toFixed(0)}%`);
-            const tone = (v) => (v === null || v === undefined ? "" : v >= 0 ? "up" : "down");
-            const line = (vals) => {
-              const mn = Math.min(...vals),
-                mx = Math.max(...vals);
-              return vals
-                .map(
-                  (v, i) =>
-                    `${i ? "L" : "M"}${((i / (vals.length - 1)) * 200).toFixed(1)} ${(
-                      32 -
-                      ((v - mn) / (mx - mn || 1)) * 30
-                    ).toFixed(1)}`
-                )
-                .join("");
-            };
             const price = (c) => (c.price >= 100 ? Math.round(c.price).toLocaleString("en-US") : c.price.toFixed(2));
             const cm = $("#commodities");
             cm.hidden = false;
-            cm.innerHTML = `<h2 id="cmd-title">원자재가 말하는 실물 경기</h2><p class="sub">출처 ${esc(
-              m.commodities[0].source
-            )}, 기준일 ${esc(m.commodities[0].date)}</p>
-        <div class="cmd-row">${m.commodities
+            cm.innerHTML = `<h2 id="cmd-title">원자재로 보는 실물 경기</h2>
+        <p class="sub">${esc(m.commodities[0].date)} 기준 · 3개월 등락</p>
+        <div class="cmd-grid">${m.commodities
           .map(
             (c) => `<div class="cmd">
-          <div class="cmd-top"><b>${esc(c.name)}</b><small>${esc(c.unit)}</small></div>
-          <div class="cmd-price">${price(c)}</div>
-          <svg viewBox="0 0 200 34" preserveAspectRatio="none" aria-hidden="true"><path d="${line(
-            c.spark
-          )}" vector-effect="non-scaling-stroke"/></svg>
-          <div class="pills"><span class="${tone(c.m1)}">1개월 ${pct(c.m1)}</span><span class="${tone(c.m3)}">3개월 ${pct(
-              c.m3
-            )}</span><span class="${tone(c.y1)}">1년 ${pct(c.y1)}</span></div>
-          <p>${esc(c.meaning)}</p></div>`
+          <b>${esc(c.name)}${tip(c.name)}</b><small>${esc(c.unit)}</small>
+          <strong>${price(c)}</strong><span class="chg ${updown(c.m3)}">${signed(c.m3, 0)}</span>
+          <svg viewBox="0 0 200 28" preserveAspectRatio="none" class="${updown(c.y1) || "down"}" aria-hidden="true"><path d="${sparkPath(
+              c.spark,
+              200,
+              28
+            )}" vector-effect="non-scaling-stroke"/></svg></div>`
           )
-          .join("")}</div>`;
+          .join("")}</div>
+        <details class="more"><summary>원자재가 말해주는 것</summary><div class="body"><dl class="defs">${m.commodities
+          .map(
+            (c) =>
+              `<div><dt>${esc(c.name)} <span class="sub" style="font-weight:400">1개월 ${signed(c.m1, 0)} · 1년 ${signed(
+                c.y1,
+                0
+              )}</span></dt><dd>${esc(c.meaning)}</dd></div>`
+          )
+          .join("")}</dl><p class="foot" style="margin:12px 0 0">출처 ${esc(m.commodities[0].source)}</p></div></details>`;
           }
+
           const hv = m.houseViews;
           if (hv) {
             const cls = (st) =>
-              /강세/.test(st) && !/신중/.test(st) ? "bull" : /신중한/.test(st) ? "mid" : /신중|약세/.test(st) ? "bear" : "mid";
+              /강세/.test(st) && !/신중/.test(st) ? "on" : /신중한/.test(st) ? "" : /신중|약세/.test(st) ? "off" : "";
             const sp = $("#street-panel");
             sp.hidden = false;
-            sp.innerHTML = `<h2 id="street-title">월가는 어떻게 보나</h2>
-        <p class="sub">${esc(hv.index.name)} ${hv.index.level.toLocaleString("en-US")} (${esc(
-              hv.index.date
-            )}) 기준, 전망 갱신일 ${esc(hv.asOf)}</p>
-        <p class="headline" style="font-family:var(--serif);font-size:16px;line-height:1.7;margin:10px 0 6px">${esc(
-          hv.summary
-        )}</p>
-        <p class="action" style="margin-top:8px">${esc(hv.compare)}</p>
-        <table class="firms"><thead><tr><th>기관</th><th class="num">목표치</th><th class="num">여력</th></tr></thead><tbody>
-        ${hv.firms
+            sp.innerHTML = `<h2 id="street-title">월가는 어떻게 보나요</h2>
+        <p class="sub">${esc(hv.index.name)} ${hv.index.level.toLocaleString("en-US")} 기준 · ${esc(hv.asOf)} 갱신</p>
+        <p class="lead">${esc(hv.summary)}</p>
+        <div class="callout"><b>판독기와 비교하면</b>${esc(hv.compare)}</div>
+        <ul class="rows">${hv.firms
           .map(
-            (f) => `<tr class="firm-top"><td>${esc(f.name)}<span class="stance ${cls(f.stance)}">${esc(
+            (f) => `<li><details class="row">
+          <summary><span class="name" style="flex-wrap:wrap;gap:6px">${esc(f.name)}<span class="chip ${cls(f.stance)}">${esc(
               f.stance
-            )}</span><br><small style="color:var(--ink-3)">${esc(f.horizon)}</small></td>
-          <td class="num">${
-            f.target ? f.target.toLocaleString("en-US") + (f.target2 ? ` / ${f.target2.toLocaleString("en-US")}` : "") : "–"
-          }</td>
-          <td class="num">${f.upside === null ? "–" : (f.upside >= 0 ? "+" : "") + f.upside.toFixed(1) + "%"}</td></tr>
-          <tr><td colspan="3" class="thesis-row"><span class="thesis">${esc(f.thesis)}</span><a href="${esc(
+            )}</span></span><span class="val"><span class="num" style="color:var(--ink);font-weight:600">${
+              f.target ? f.target.toLocaleString("en-US") : "–"
+            }</span><span class="num ${updown(f.upside)}" style="min-width:48px">${
+              f.upside === null ? "–" : signed(f.upside, 1)
+            }</span></span></summary>
+          <p class="detail">${esc(f.thesis)}${
+              f.target2 ? ` (상단 ${f.target2.toLocaleString("en-US")})` : ""
+            } <span style="color:var(--ink-3)">${esc(f.horizon)}</span><a href="${esc(
               f.source
-            )}" target="_blank" rel="noopener">출처 ${esc(f.date)}</a></td></tr>`
+            )}" target="_blank" rel="noopener">출처 ${esc(f.date)}</a></p></details></li>`
           )
-          .join("")}
-        </tbody></table>
+          .join("")}</ul>
         <p class="foot">${esc(hv.caution)}</p>`;
           }
         } catch (e) {
-          $("#market-dial").innerHTML = `<p class="error">${esc(e.message)}</p>`;
+          $("#market-body").innerHTML = `<p class="empty error">${esc(e.message)}</p>`;
         }
       }
 
       function spark(history, high, currency) {
         const money = (v) => (currency === "KRW" ? Math.round(v).toLocaleString("ko-KR") + "원" : "$" + fmt(v, 2));
         const closes = history.map((p) => p[1]);
-        const min = Math.min(...closes),
-          max = Math.max(...closes);
+        const min = Math.min(...closes, high),
+          max = Math.max(...closes, high);
         const W = 320,
-          H = 84,
+          H = 96,
           pad = 4;
-        const x = (i) => (i / (closes.length - 1)) * W;
         const y = (v) => pad + (1 - (v - min) / (max - min || 1)) * (H - pad * 2);
-        const d = closes.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join("");
-        return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="최근 1년 주가">
+        const d = closes.map((v, i) => `${i ? "L" : "M"}${((i / (closes.length - 1)) * W).toFixed(1)} ${y(v).toFixed(1)}`).join("");
+        const dir = closes[closes.length - 1] >= closes[0] ? "up" : "down";
+        return `<svg class="spark ${dir}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="최근 1년 주가">
     <line class="hi" x1="0" x2="${W}" y1="${y(high)}" y2="${y(high)}"/>
     <path class="line" d="${d}" vector-effect="non-scaling-stroke"/>
   </svg>
-  <div class="spark-labels"><span>${esc(history[0][0])}</span><span>점선: 1년 고점 ${money(high)}</span></div>`;
+  <div class="spark-labels"><span>1년 전</span><span>점선은 1년 고점 ${money(high)}</span></div>`;
       }
 
       function techBlock(items) {
         if (!items || !items.length) return "";
-        return `<div class="tech"><h3>기술적 신호</h3><p class="sub">초록 구간은 과매도, 빨강 구간은 과매수입니다</p>
-    ${items
+        return `<section class="card"><h2>기술적 신호</h2><p class="sub">초록 구간은 과매도, 주황 구간은 과매수예요</p>
+    <ul class="rows">${items
       .map(
-        (t) => `<div class="tech-row">
-      <div class="tech-top"><b>${esc(t.label)}</b><span class="${t.status}">${esc(t.display)}</span></div>
+        (t) => `<li><div class="row-static row"><span class="name">${esc(t.label.replace(/\s*\(.*\)$/, ""))}${tip(
+          t.label,
+          t.note
+        )}</span><span class="chip ${esc(t.status)}">${esc(t.display)}</span></div>
       ${
         t.value !== undefined
           ? `<div class="meter" role="img" aria-label="${esc(t.label)} ${esc(t.display)}">
@@ -1252,153 +1398,156 @@
         ${t.value2 !== undefined ? `<i class="pin d" style="left:${Math.max(1, Math.min(99, t.value2))}%"></i>` : ""}
         <i class="pin" style="left:${Math.max(1, Math.min(99, t.value))}%"></i></div>`
           : ""
-      }
-      <p class="tech-note">${esc(t.note)}</p></div>`
+      }</li>`
       )
-      .join("")}
-  </div>`;
+      .join("")}</ul></section>`;
       }
 
       function judgeBlock(j) {
         const score = j.score ?? 0;
-        const color = score >= 65 ? "var(--on)" : score >= 45 ? "var(--neutral)" : "var(--off)";
+        const color = toneColor[scoreTone(score)];
         return `<div class="judge" id="j-${esc(j.key)}">
-    <div class="judge-head"><div><h3>${esc(j.name)}</h3><div class="idea">${esc(j.idea)}</div></div><div class="score">${
+    <div class="judge-head"><div><h3>${esc(j.name)}</h3><div class="idea">${esc(j.idea)}</div></div><div class="score" style="color:${color}">${
           j.score ?? "–"
         }</div></div>
     <div class="bar"><i style="width:${score}%;background:${color}"></i></div>
+    <p class="verdict">${esc(j.verdict)}</p>
+    <details class="more"><summary>판단 근거 ${j.checks.length}가지</summary><div class="body">
+      <ul class="checks">${j.checks
+        .map(
+          (c) => `<li><span class="name">${esc(c.label)}${tip(c.label, c.note)}</span><span class="v">${esc(c.value)}</span>
+        <span class="mark" style="background:${statusColor(c.grade)}" role="img" aria-label="${
+            c.grade === null ? "제외" : c.grade >= 1 ? "충족" : c.grade > 0 ? "보통" : "미달"
+          }"></span></li>`
+        )
+        .join("")}</ul></div></details>
     ${
       j.profile
-        ? `<details class="profile"><summary><span class="sub">어떤 투자자인가: ${esc(
-            j.profile.type
-          )}</span><span class="sub">보기</span></summary>
-      <div class="chipset"><span>보유 ${esc(j.profile.horizon)}</span><span>위험 ${esc(j.profile.risk)}</span><span>${esc(
-            j.profile.focus
-          )}</span></div>
-      <p>늘 던지는 질문: ${esc(j.profile.question)}</p><p>맹점: ${esc(j.profile.blindSpot)}</p></details>`
+        ? `<details class="more profile"><summary>${esc(withTopic(j.name.split(" ").pop()))} 어떤 투자자예요?</summary><div class="body">
+      <div class="profile-chips"><span class="chip blue">${esc(j.profile.type)}</span><span class="chip">보유 ${esc(
+            j.profile.horizon
+          )}</span><span class="chip">${esc(j.profile.risk)}</span></div>
+      <p><b>늘 던지는 질문</b> ${esc(j.profile.question)}</p><p><b>맹점</b> ${esc(j.profile.blindSpot)}</p></div></details>`
         : ""
     }
-    <p class="verdict">${esc(j.verdict)}</p>
-    <details><summary style="grid-template-columns:1fr auto;padding:4px 0"><span class="sub">판단 근거 ${
-      j.checks.length
-    }가지</span><span class="sub">근거 보기</span></summary>
-      <table class="checks"><tbody>${j.checks
-        .map(
-          (c) => `
-        <tr><td>${esc(c.label)}<span class="note">${esc(c.note)}</span></td><td>${esc(c.value)}</td>
-        <td><span class="mark" style="background:${statusColor(c.grade)}" aria-label="${
-            c.grade === null ? "제외" : c.grade >= 1 ? "충족" : c.grade > 0 ? "보통" : "미달"
-          }"></span></td></tr>`
-        )
-        .join("")}
-      </tbody></table>
-    </details>
   </div>`;
       }
 
-      async function loadStock(symbol) {
+      async function loadStock(symbol, scroll) {
         symbol = symbol.trim();
         if (/^[a-z.\-]+$/i.test(symbol)) symbol = symbol.toUpperCase();
         if (!symbol) return;
-        const box = $("#stock");
-        box.innerHTML = `<p class="empty">${esc(symbol)} 데이터를 불러오는 중</p>`;
+        const col = $("#col-stock");
+        col.innerHTML = `<section class="card"><p class="empty">${esc(symbol)} 데이터를 불러오는 중이에요</p></section>`;
+        if (scroll) col.scrollIntoView({ behavior: "smooth", block: "start" });
         location.hash = encodeURIComponent(symbol);
         remember(symbol);
         try {
           const s = await api(`/api/stock/${encodeURIComponent(symbol)}`);
           const st = s.stats;
-          box.innerHTML = `
-      <div class="stock-head">
-        <div><h2><span class="badge ${esc(s.market)}">${s.market === "KR" ? "한국" : "미국"}${
+          const money = (v) => (s.currency === "KRW" ? Math.round(v).toLocaleString("ko-KR") + "원" : "$" + fmt(v, 2));
+          const tone = pointTone(s.needle);
+          const t = s.street;
+          col.innerHTML = `
+      <section class="card" id="stock" aria-live="polite">
+        <div class="stock-head"><div style="min-width:0">
+          <span class="badge ${esc(s.market)}">${s.market === "KR" ? "국내" : "미국"}${
             s.marketName && s.marketName !== "한국" && s.marketName !== "미국" ? " " + esc(s.marketName) : ""
-          }</span>${s.market === "KR" ? esc(s.name) : esc(s.symbol)}</h2><p class="sub">${
-            s.market === "KR"
-              ? esc(s.symbol.replace(/\.(KS|KQ)$/, "")) + (s.source ? " · " + esc(s.source) : "")
-              : esc(s.name) + (s.sector ? ", " + esc(s.sector) : "")
-          }</p></div>
-        <div class="price"><strong>${
-          s.currency === "KRW" ? Math.round(s.price).toLocaleString("ko-KR") + "원" : "$" + fmt(s.price, 2)
-        }</strong><span class="${s.changePct >= 0 ? "up" : "down"}">${s.changePct >= 0 ? "+" : ""}${fmt(
+          }</span>
+          <h2>${s.market === "KR" ? esc(s.name) : esc(s.symbol)}</h2>
+          <p class="sub" style="margin:0">${
+            s.market === "KR" ? esc(s.symbol.replace(/\.(KS|KQ)$/, "")) : esc(s.name) + (s.sector ? " · " + esc(s.sector) : "")
+          }</p></div></div>
+        <div class="price"><strong>${money(s.price)}</strong><span class="${updown(s.changePct)}">${signed(
             s.changePct,
             2
-          )}%</span></div>
-      </div>
-      ${
-        s.market === "KR"
-          ? `<p class="note-kr">한국 종목입니다. 위의 시장 판독과 버핏의 국채 비교는 지금 미국 지표 기준이라, 한국 시장(기준금리, 국고채, 신용융자 잔고) 신호와는 다를 수 있습니다.</p>`
-          : ""
-      }
-      <div id="stock-dial">${dial(
-        s.needle,
-        s.position.label,
-        `가격 위치·시장·원칙 종합 ${s.needle > 0 ? "+" : ""}${s.needle}점`
-      )}</div>
-      ${spark(s.history, st.high52, s.currency)}
-      <dl class="stats">
-        <div><dt>1년 고점 대비</dt><dd class="${st.fromHigh < 0 ? "down" : ""}">${fmt(st.fromHigh)}%</dd></div>
-        <div><dt>RSI(14)</dt><dd>${fmt(st.rsi14, 0)}</dd></div>
-        <div><dt>200일선 대비</dt><dd>${fmt(st.vsMa200)}%</dd></div>
-      </dl>
-      ${techBlock(s.position.items)}
-      ${
-        s.street
-          ? (() => {
-              const t = s.street;
-              const money = (v) => (s.currency === "KRW" ? Math.round(v).toLocaleString("ko-KR") + "원" : "$" + fmt(v, 2));
-              return `<div class="street-stock"><h3>월가 애널리스트 의견</h3>
-        <dl class="street-nums"><div><dt>컨센서스</dt><dd>${esc(t.consensus || "–")}</dd></div>
-          <div><dt>평균 목표가</dt><dd>${t.target ? money(t.target) : "–"}</dd></div>
-          <div><dt>목표가까지</dt><dd class="${t.upside >= 0 ? "up" : "down"}">${
-                t.upside === null ? "–" : (t.upside >= 0 ? "+" : "") + fmt(t.upside) + "%"
-              }</dd></div></dl>
-        ${t.analysts ? `<p class="sub" style="margin-top:6px">애널리스트 ${t.analysts}명 기준</p>` : ""}
+          )}</span> <span class="sub" style="font-weight:400">오늘</span></div>
+        ${spark(s.history, st.high52, s.currency)}
+        <div class="tiles3">
+          <div class="tile"><small>1년 고점 대비${tip("1년 고점")}</small><strong class="${updown(st.fromHigh)}">${signed(
+            st.fromHigh,
+            1
+          )}</strong></div>
+          <div class="tile"><small>200일선${tip("200일")}</small><strong class="${updown(st.vsMa200)}">${signed(st.vsMa200, 1)}</strong></div>
+          <div class="tile"><small>RSI${tip("RSI")}</small><strong>${fmt(st.rsi14, 0)}</strong></div>
+        </div>
         ${
-          t.actions && t.actions.length
-            ? `<ul class="actions-list">${t.actions
-                .map(
-                  (a) =>
-                    `<li><span>${esc(a.firm)} <small style="color:var(--ink-3)">${esc(a.date)}</small></span><span>${esc(
-                      [a.from && a.to ? a.from + " → " + a.to : a.action, a.target ? "목표 " + money(a.target) : ""]
-                        .filter(Boolean)
-                        .join(", ")
-                    )}</span></li>`
-                )
-                .join("")}</ul>`
+          s.market === "KR"
+            ? `<p class="note-kr">시장 판독과 국채 비교는 지금 미국 지표 기준이라, 한국 시장 신호와 다를 수 있어요.</p>`
             : ""
         }
-        <p class="action">${esc(t.reading)}</p></div>`;
-            })()
-          : ""
-      }
-      <div class="consensus">
-        <p><b>일곱 명 중 ${s.consensus.favorable}명</b>이 우호적으로 판독했습니다${
-            s.consensus.names.length ? ` (${esc(s.consensus.names.join(", "))})` : ""
-          }. 의견이 갈리는 지점이 이 종목의 핵심 쟁점입니다.</p>
-        <div class="tiles">${s.judges
+      </section>
+
+      <section class="card">
+        <p class="eyebrow">가격 위치 종합</p>
+        <div class="hero"><strong class="big">${esc(s.position.label)}</strong><span class="score tone-${tone}">${signed(
+            s.needle,
+            0,
+            "점"
+          )}</span></div>
+        <div id="stock-dial">${dial(s.needle, s.position.label)}</div>
+        <p class="sub" style="text-align:center;margin-top:8px">가격 위치·시장 신호·투자 원칙을 합친 점수예요</p>
+      </section>
+
+      ${techBlock(s.position.items)}
+
+      <section class="card">
+        <p class="eyebrow">일곱 투자자의 판독</p>
+        <strong class="big">7명 중 ${s.consensus.favorable}명이 우호적이에요</strong>
+        ${s.consensus.names.length ? `<p class="sub">${esc(s.consensus.names.join(", "))}</p>` : ""}
+        <div class="judges-sum">${s.judges
           .map((j) => {
             const sc = j.score ?? 0;
-            const c = sc >= 65 ? "var(--on)" : sc >= 45 ? "var(--neutral)" : "var(--off)";
-            return `<a href="#j-${esc(
-              j.key
-            )}" style="border-top-color:${c}" onclick="event.preventDefault();document.getElementById('j-${esc(
-              j.key
-            )}').scrollIntoView({behavior:'smooth'})"><small>${esc(j.name.split(" ").pop())}</small><strong>${
-              j.score ?? "–"
-            }</strong></a>`;
+            return `<a href="#j-${esc(j.key)}" data-j="${esc(j.key)}"><small>${esc(j.name.split(" ").pop())}</small><strong style="color:${
+              toneColor[scoreTone(sc)]
+            }">${j.score ?? "–"}</strong></a>`;
           })
           .join("")}</div>
-      </div>
-      ${s.judges.map(judgeBlock).join("")}
-      ${config.ai ? `<div class="ai"><button type="button" id="ai-btn">AI 해설 받기</button><p id="ai-text"></p></div>` : ""}
-      <p class="foot">일곱 사람의 공개된 투자 원칙을 수치 규칙으로 옮긴 결과이며, 실제 인물의 의견이나 투자 권유가 아닙니다. 데이터 시각 ${esc(
+        ${s.judges.map(judgeBlock).join("")}
+        ${config.ai ? `<div class="ai"><button type="button" id="ai-btn">AI 해설 받기</button><p id="ai-text"></p></div>` : ""}
+      </section>
+
+      ${
+        t
+          ? `<section class="card"><h2>월가 애널리스트 의견</h2>
+        ${t.analysts ? `<p class="sub">애널리스트 ${t.analysts}명 기준</p>` : ""}
+        <div class="tiles3">
+          <div class="tile"><small>컨센서스${tip("컨센서스")}</small><strong>${esc(t.consensus || "–")}</strong></div>
+          <div class="tile"><small>평균 목표가${tip("목표가")}</small><strong>${t.target ? money(t.target) : "–"}</strong></div>
+          <div class="tile"><small>목표가까지</small><strong class="${updown(t.upside)}">${t.upside === null ? "–" : signed(t.upside, 1)}</strong></div>
+        </div>
+        <div class="callout">${esc(t.reading)}</div>
+        ${
+          t.actions && t.actions.length
+            ? `<details class="more"><summary>최근 의견 변경 ${t.actions.length}건</summary><div class="body"><ul class="checks">${t.actions
+                .map(
+                  (a) =>
+                    `<li><span class="name" style="display:block">${esc(a.firm)} <small style="color:var(--ink-3)">${esc(
+                      a.date
+                    )}</small></span><span class="v" style="font-weight:500">${esc(
+                      [a.from && a.to ? a.from + " → " + a.to : a.action, a.target ? "목표 " + money(a.target) : ""].filter(Boolean).join(", ")
+                    )}</span></li>`
+                )
+                .join("")}</ul></div></details>`
+            : ""
+        }</section>`
+          : ""
+      }
+      <p class="foot">공개된 투자 원칙을 수치 규칙으로 옮긴 결과예요. 실제 인물의 의견이나 투자 권유가 아니에요. 데이터 ${esc(
         new Date(s.fetchedAt).toLocaleString("ko-KR")
       )}</p>`;
           settleNeedles($("#stock-dial"));
+          col.querySelectorAll(".judges-sum a").forEach((a) =>
+            a.addEventListener("click", (e) => {
+              e.preventDefault();
+              document.getElementById("j-" + a.dataset.j)?.scrollIntoView({ behavior: "smooth", block: "start" });
+            })
+          );
           const btn = $("#ai-btn");
           if (btn)
             btn.addEventListener("click", async () => {
               btn.disabled = true;
-              btn.textContent = "해설을 쓰는 중";
+              btn.textContent = "해설을 쓰는 중이에요";
               try {
                 $("#ai-text").textContent = (await api(`/api/stock/${encodeURIComponent(s.symbol)}/commentary`)).text;
                 btn.remove();
@@ -1409,7 +1558,7 @@
               }
             });
         } catch (e) {
-          box.innerHTML = `<p class="empty error">${esc(e.message)}</p>`;
+          col.innerHTML = `<section class="card"><p class="empty error">${esc(e.message)}</p></section>`;
         }
       }
 
@@ -1482,7 +1631,7 @@
               )
               .join("")
           : `<li class="empty-row">${
-              loading ? "더 찾는 중…" : `'${esc(q)}'와 맞는 종목이 없습니다. Enter로 그대로 검색할 수 있어요.`
+              loading ? "더 찾는 중…" : `'${esc(q)}'와 맞는 종목이 없어요. Enter로 그대로 검색할 수 있어요.`
             }</li>`;
         $("#ac-panel").hidden = false;
         $("#q").setAttribute("aria-expanded", "true");
@@ -1502,7 +1651,7 @@
       function pick(x) {
         $("#q").value = x.n;
         closeAc();
-        loadStock(x.s);
+        loadStock(x.s, true);
         $("#q").blur();
       }
 
@@ -1590,20 +1739,20 @@
         const b = e.target.closest("button");
         if (b) {
           $("#q").value = b.textContent;
-          loadStock(b.dataset.s);
+          loadStock(b.dataset.s, true);
         }
       });
       $("#search").addEventListener("submit", (e) => {
         e.preventDefault();
         closeAc();
-        loadStock($("#q").value);
+        loadStock($("#q").value, true);
         $("#q").blur();
       });
 
       function showGate() {
         if ($("#gate")) return;
-        document.querySelector("main").innerHTML = `<section class="panel gate" id="gate"><h2>접근 코드를 입력하세요</h2>
-    <p class="sub">이 판독기는 코드가 있는 사람만 쓸 수 있습니다.</p>
+        document.querySelector("main").innerHTML = `<section class="card gate" id="gate"><h2>접근 코드를 입력해 주세요</h2>
+    <p class="sub">이 판독기는 코드가 있는 사람만 쓸 수 있어요.</p>
     <form id="gate-form"><input id="code" type="password" style="text-transform:none" aria-label="접근 코드"><button type="submit">확인</button></form></section>`;
         $("#gate-form").addEventListener("submit", (e) => {
           e.preventDefault();
@@ -1630,7 +1779,7 @@
         if (config.demo) {
           $("#demo").hidden = false;
           $("#demo").textContent =
-            "데모 모드입니다. 재무 지표는 2026년 10월 말 공개값, 주가·금리 곡선은 그에 맞춘 가상 경로입니다. .env에 API 키를 넣으면 실시간 데이터로 바뀝니다.";
+            "데모 모드예요. 재무 지표는 2026년 10월 말 공개값이고, 주가·금리 곡선은 가상 경로예요.";
         }
         renderChips();
         loadMarket();

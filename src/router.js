@@ -57,23 +57,23 @@ function houseViews(m) {
   const upside = ((avg - level) / level) * 100;
   let compare;
   if (bulls >= Math.ceil(hv.firms.length / 2) && m.score < 15)
-    compare = `월가 다수는 '이익이 시장을 끈다'에 모여 있지만, 판독기 신호는 ${m.score}점으로 확신하기 이르다고 봅니다. 차이는 연준과 빚투에 있습니다. 은행들은 이익을 보고, 판독기는 돈의 흐름과 과열을 봅니다.`;
+    compare = `월가 다수는 '이익이 시장을 끈다'에 모여 있지만, 판독기 신호는 ${m.score}점으로 확신하기 이르다고 봐요. 차이는 연준과 빚투에 있어요. 은행들은 이익을 보고, 판독기는 돈의 흐름과 과열을 봐요.`;
   else if (bulls >= Math.ceil(hv.firms.length / 2))
     compare =
-      "월가 다수와 판독기 신호가 같은 방향입니다. 다만 모두가 같은 쪽을 볼 때는 기대가 가격에 빨리 반영된다는 점을 기억하세요.";
-  else compare = "월가가 신중한 쪽으로 기울어 있습니다. 판독기 신호가 바닥 쪽이라면 역발상 기회가 될 수 있습니다.";
+      "월가 다수와 판독기 신호가 같은 방향이에요. 다만 모두가 같은 쪽을 볼 때는 기대가 가격에 빨리 반영된다는 점을 기억하세요.";
+  else compare = "월가가 신중한 쪽으로 기울어 있어요. 판독기 신호가 바닥 쪽이라면 역발상 기회가 될 수 있어요.";
   return {
     asOf: hv.asOf,
     index: hv.index,
     firms,
-    summary: `주요 ${hv.firms.length}곳 중 ${bulls}곳이 강세입니다. 목표치 평균은 ${Math.round(avg).toLocaleString(
+    summary: `주요 ${hv.firms.length}곳 중 ${bulls}곳이 강세예요. 목표치 평균은 ${Math.round(avg).toLocaleString(
       "en-US"
-    )}이고, 현재보다 ${upside >= 0 ? "+" : ""}${upside.toFixed(1)}% 여력을 봅니다.${
-      cautious.length ? ` ${cautious.join("·")}은 쏠림과 과열을 경계합니다.` : ""
+    )}이고, 현재보다 ${upside >= 0 ? "+" : ""}${upside.toFixed(1)}% 여력을 봐요.${
+      cautious.length ? ` ${cautious.join("·")}은 쏠림과 과열을 경계해요.` : ""
     }`,
     compare,
     caution:
-      "증권사의 연간 목표치는 자주 틀리고 시장을 뒤따라 수정되는 경향이 있습니다. 방향보다 '무엇을 근거로 보는지'를 참고하세요.",
+      "증권사의 연간 목표치는 자주 틀리고 시장을 뒤따라 수정되는 경향이 있어요. 방향보다 '무엇을 근거로 보는지'를 참고하세요.",
   };
 }
 
@@ -81,7 +81,7 @@ function houseViews(m) {
 async function fetchStock(target, demo) {
   if (demo) {
     if (target.market === "KR") {
-      const err = new Error("데모 모드에는 한국 종목 데이터가 없습니다. FMP 키를 넣으면 한국 종목도 조회합니다.");
+      const err = new Error("데모 모드에는 한국 종목 데이터가 없어요. FMP 키를 넣으면 한국 종목도 조회해요.");
       err.status = 404;
       throw err;
     }
@@ -105,7 +105,7 @@ async function fetchStock(target, demo) {
     }
   }
   if (target.market === "KR" && lastErr?.status === 404) {
-    lastErr.message = `${target.query} 종목을 찾지 못했습니다. 코드가 맞는지 확인하세요. 사용 중인 FMP 요금제가 한국 거래소를 지원하지 않을 수도 있습니다.`;
+    lastErr.message = `${target.query} 종목을 찾지 못했어요. 코드가 맞는지 확인하세요. 사용 중인 FMP 요금제가 한국 거래소를 지원하지 않을 수도 있어요.`;
   }
   throw lastErr;
 }
@@ -128,7 +128,7 @@ async function getStock(input) {
     raw.marketName = target.market === "KR" ? raw.exchange || marketLabel(raw.symbol) || "한국" : raw.exchange || "미국";
     raw.currency = target.market === "KR" ? "KRW" : "USD";
     if (raw.history.length < 60) {
-      const err = new Error(`${symbol}의 주가 이력이 충분하지 않습니다.`);
+      const err = new Error(`${symbol}의 주가 이력이 충분하지 않아요.`);
       err.status = 422;
       throw err;
     }
@@ -184,7 +184,7 @@ async function handle(path, headers = {}) {
     if (path === "config")
       return { status: 200, body: { demo, ai, needsCode: Boolean(code), demoSymbols: demo ? demoSymbols : [] }, maxAge: 0 };
     if (code && headers["x-access-code"] !== code)
-      return { status: 401, body: { error: "접근 코드가 맞지 않습니다." }, maxAge: 0 };
+      return { status: 401, body: { error: "접근 코드가 맞지 않아요." }, maxAge: 0 };
     if (path === "macro") return { status: 200, body: await getMacro(), maxAge: 1800 };
     // 자동완성: /api/search/검색어 (국내는 네이버, 미국은 FMP)
     const sm = path.match(/^search\/(.{1,40})$/);
@@ -204,7 +204,7 @@ async function handle(path, headers = {}) {
       if (demo)
         return {
           status: 200,
-          body: { mode: "demo", hint: "FRED_API_KEY와 FMP_API_KEY가 둘 다 설정돼야 실제 데이터 모드가 됩니다." },
+          body: { mode: "demo", hint: "FRED_API_KEY와 FMP_API_KEY가 둘 다 설정돼야 실제 데이터 모드가 돼요." },
           maxAge: 0,
         };
       const fredRes = await fetch(
@@ -220,12 +220,12 @@ async function handle(path, headers = {}) {
     if (m) {
       const symbol = decodeURIComponent(m[1]);
       if (m[2]) {
-        if (!ai) return { status: 400, body: { error: "ANTHROPIC_API_KEY가 설정되지 않았습니다." }, maxAge: 0 };
+        if (!ai) return { status: 400, body: { error: "ANTHROPIC_API_KEY가 설정되지 않았어요." }, maxAge: 0 };
         return { status: 200, body: await aiCommentary(symbol), maxAge: 0 };
       }
       return { status: 200, body: await getStock(symbol), maxAge: 300 };
     }
-    return { status: 404, body: { error: "없는 경로입니다." }, maxAge: 0 };
+    return { status: 404, body: { error: "없는 경로예요." }, maxAge: 0 };
   } catch (err) {
     console.error(err.message);
     return { status: err.status || 502, body: { error: err.message }, maxAge: 0 };
