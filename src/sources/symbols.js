@@ -46,14 +46,33 @@ const KR_NAMES = {
   HLB: "028300.KQ",
 };
 
+// 국내 ETF 브랜드. "KODEX 200", "TIGER 미국배당다우존스"처럼 영문으로 시작해서
+// 예전에는 미국 티커로 오해하고 미국 종목만 찾았어요.
+const ETF_BRANDS = ["KODEX", "TIGER", "ACE", "SOL", "RISE", "PLUS", "KBSTAR", "HANARO", "ARIRANG", "KOSEF", "KINDEX", "KIWOOM", "TIMEFOLIO", "KOACT", "TRUSTON", "BNK", "WON", "FOCUS"];
+// 한글로 친 브랜드 이름 → 영문 (뒤에 띄어쓰기가 있거나 브랜드만 쳤을 때만 바꿔요. '타이거일렉' 같은 종목은 그대로)
+const ETF_BRAND_KO = { 코덱스: "KODEX", 타이거: "TIGER", 에이스: "ACE", 솔: "SOL", 라이즈: "RISE", 플러스: "PLUS", 케이비스타: "KBSTAR", 하나로: "HANARO", 아리랑: "ARIRANG", 코세프: "KOSEF", 킨덱스: "KINDEX", 키움: "KIWOOM", 타임폴리오: "TIMEFOLIO" };
+function normalizeQuery(input) {
+  let q = String(input || "").trim().replace(/\s+/g, " ");
+  const m = q.match(/^([가-힣]+)(\s.*)?$/);
+  if (m && ETF_BRAND_KO[m[1]]) q = ETF_BRAND_KO[m[1]] + (m[2] || "");
+  return q;
+}
+// 국내 ETF 이름처럼 보이는지: 브랜드 + 뒤에 다른 글자, 또는 5글자 이상 브랜드만 (PLUS·SOL 같은 짧은 건 미국 티커일 수 있어요)
+function looksLikeKrEtf(q) {
+  const m = String(q || "").trim().toUpperCase().match(/^([A-Z]+)(\s*.*)$/);
+  if (!m || !ETF_BRANDS.includes(m[1])) return false;
+  return m[2].trim().length > 0 ? /^\s/.test(m[2]) || /^[\d가-힣]/.test(m[2]) : m[1].length >= 5;
+}
+
 function resolve(input) {
-  const q = decodeURIComponent(String(input || "")).trim();
+  const q = normalizeQuery(decodeURIComponent(String(input || "")));
   const upper = q.toUpperCase().replace(/\s+/g, "");
   if (/^\d{6}\.(KS|KQ)$/.test(upper)) return { market: "KR", candidates: [upper], query: q };
   if (/^\d{6}$/.test(upper)) return { market: "KR", candidates: [`${upper}.KS`, `${upper}.KQ`], query: q };
   const named = KR_NAMES[q] || KR_NAMES[upper] || Object.entries(KR_NAMES).find(([k]) => k.toUpperCase() === upper)?.[1];
   if (named) return { market: "KR", candidates: [named], query: q };
-  if (/[가-힣]/.test(q)) {
+  // 한글 이름이나 국내 ETF 이름, 띄어쓰기·숫자가 섞인 영문 이름은 검색으로 종목을 찾아요
+  if (/[가-힣]/.test(q) || looksLikeKrEtf(q) || (/[A-Za-z]/.test(q) && /[\s\d]/.test(q) && !/^\d{6}/.test(upper))) {
     const err = new Error(`'${q}' 종목을 찾지 못했어요. 6자리 종목코드(예: 005930)로 검색해 보세요.`);
     err.status = 404;
     err.code = "UNKNOWN_KR_NAME";
@@ -68,4 +87,4 @@ function resolve(input) {
 
 const marketLabel = (symbol) => (/\.KS$/.test(symbol) ? "코스피" : /\.KQ$/.test(symbol) ? "코스닥" : null);
 
-module.exports = { resolve, marketLabel, KR_NAMES };
+module.exports = { resolve, marketLabel, KR_NAMES, normalizeQuery, looksLikeKrEtf };

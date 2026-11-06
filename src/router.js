@@ -7,7 +7,7 @@ const { fetchCommodities } = require("./sources/commodities");
 const { evaluateMacro, fxSummary, kostolany } = require("./engine/macro");
 const { priceStats } = require("./engine/indicators");
 const { judgeStock, streetReading } = require("./engine/judges");
-const { resolve, marketLabel } = require("./sources/symbols");
+const { resolve, marketLabel, normalizeQuery, looksLikeKrEtf } = require("./sources/symbols");
 
 const env = () => ({
   demo: process.env.DEMO === "1" || !process.env.FRED_API_KEY || !process.env.FMP_API_KEY,
@@ -305,18 +305,21 @@ async function handle(path, headers = {}) {
     // 자동완성: /api/search/검색어 (국내는 네이버, 미국은 FMP)
     const sm = path.match(/^search\/(.{1,40})$/);
     if (sm) {
-      const q = decodeURIComponent(sm[1]).trim();
+      const q = normalizeQuery(decodeURIComponent(sm[1])); // '타이거 미국배당' → 'TIGER 미국배당'
       if (demo) return { status: 200, body: { results: [] }, maxAge: 0 };
       const kr = /[가-힣]|^\d{2,6}$/.test(q);
+      const etf = looksLikeKrEtf(q);
       // 미국 종목도 네이버 검색을 먼저 써요 (무료, 한글 이름 검색 가능). 안 되면 FMP
       const results = await cached(`search:${q}`, TTL.search * 1e3, async () => {
         // 한글이면 국내 + 미국(엔비디아, 마이크로소프트 등)을 함께, 숫자 코드는 국내만
         if (/^\d{2,6}$/.test(q)) return naver.search(q).catch(() => []);
-        if (kr) {
+        if (kr || etf) {
           const [k, w] = await Promise.all([naver.search(q).catch(() => []), naver.worldSearch(q).catch(() => [])]);
-          return [...k.slice(0, 6), ...w.slice(0, 4)].map((x) => ({ ...x, kr: /^\d{6}$/.test(x.s) }));
+          return [...k.slice(0, etf ? 8 : 6), ...w.slice(0, etf ? 2 : 4)].map((x) => ({ ...x, kr: /^\d{6}$/.test(x.s) }));
         }
-        const nv = await naver.worldSearch(q).catch(() => []);
+        // 영문 이름은 미국 종목이 먼저지만, 국내 종목·ETF도 함께 찾아요 (예: SK, LG, KB)
+        const [nv, dom] = await Promise.all([naver.worldSearch(q).catch(() => []), naver.search(q).catch(() => [])]);
+        if (dom.length) return [...nv.slice(0, 6), ...dom.slice(0, 4)].map((x) => ({ ...x, kr: /^\d{6}$/.test(x.s) }));
         if (nv.length || !fmpOk()) return nv;
         return fmpSearch(q, process.env.FMP_API_KEY).catch((e) => (noteFmpError(e), []));
       });

@@ -150,6 +150,36 @@
       }
       .ac input {
         width: 100%;
+        padding-right: 44px; /* 지우기 버튼 자리 */
+      }
+      .ac input::-webkit-search-cancel-button {
+        display: none;
+      }
+      .q-clear {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 44px;
+        height: 50px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        color: var(--ink-3);
+        border-radius: 14px;
+      }
+      .q-clear[hidden] {
+        display: none;
+      }
+      .q-clear span {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--fill-2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
       input {
         flex: 1;
@@ -1600,7 +1630,7 @@
           <input
             id="q"
             inputmode="text"
-            placeholder="종목명·티커 (애플, VZ, 삼성전자)"
+            placeholder="종목·ETF (애플, SCHD, KODEX 200)"
             aria-label="종목 검색"
             role="combobox"
             aria-autocomplete="list"
@@ -1610,6 +1640,11 @@
             autocapitalize="off"
             spellcheck="false"
           />
+          <button type="button" class="q-clear" id="q-clear" aria-label="검색어 지우기" hidden>
+            <span><svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true" focusable="false">
+              <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+            </svg></span>
+          </button>
           <div class="ac-panel" id="ac-panel" hidden>
             <div class="ac-tabs" role="tablist" aria-label="시장 선택">
               <button type="button" role="tab" data-f="all" aria-selected="true">전체</button>
@@ -2404,6 +2439,10 @@
             s.resolvedFrom
               ? `<p class="matched">'${esc(s.resolvedFrom)}' 검색어로 ${esc(s.name)} (${esc(key)})를 찾았어요. 원하던 종목이 아니면 자동완성에서 골라 주세요.</p>`
               : ""
+          }${
+            isEtf({ n: s.name, m: s.market === "KR" ? "KR" : "US" })
+              ? `<p class="matched">ETF는 기업 재무제표가 없어서 PER·ROE 같은 지표가 비어 있어요. 일부 투자자 점수는 '–'로 나오고, 가격 위치와 배당 위주로 판독해요.</p>`
+              : ""
           }</div></div>
         <div class="price"><strong>${money(s.price)}</strong><span class="${updown(s.changePct)}">${signed(
             s.changePct,
@@ -2533,6 +2572,8 @@
           .join("");
       const isCho = (q) => /^[ㄱ-ㅎ]+$/.test(q);
       const isKR = (x) => x.m !== "US";
+      const ETF_RE = /^(KODEX|TIGER|ACE|SOL|RISE|PLUS|KBSTAR|HANARO|ARIRANG|KOSEF|KINDEX|KIWOOM|TIMEFOLIO|KOACT|TRUSTON|BNK|WON|FOCUS)[\s\d가-힣]/i;
+      const isEtf = (x) => x.t === "ETF" || /\bETF\b/i.test(x.n || "") || (isKR(x) && ETF_RE.test(x.n || ""));
       const marketText = (m) =>
         m === "US" ? "미국" : /KOSDAQ|코스닥/i.test(m) ? "코스닥" : /KOSPI|코스피/i.test(m) ? "코스피" : "국내";
       let acFilter = "all",
@@ -2583,7 +2624,7 @@
           ? items
               .map(
                 (x, i) => `<li role="option" id="ac-${i}" aria-selected="${i === 0}" data-i="${i}">
-        <span class="mk ${isKR(x) ? "KR" : "US"}">${marketText(x.m)}</span>
+        <span class="mk ${isKR(x) ? "KR" : "US"}">${isEtf(x) ? (isKR(x) ? "국내 ETF" : "미국 ETF") : marketText(x.m)}</span>
         <span class="nm">${mark(x.n, q)}</span>
         <span class="sb">${esc(x.s)}${x.k ? " · " + mark(x.k, q) : ""}</span></li>`
               )
@@ -2607,7 +2648,7 @@
         $(`#ac-${acIndex}`)?.scrollIntoView({ block: "nearest" });
       }
       function pick(x) {
-        $("#q").value = x.n;
+        $("#q").value = x.n; syncClear();
         closeAc();
         loadStock(x.s, true);
         $("#q").blur();
@@ -2635,7 +2676,19 @@
           } catch {}
         }, kr ? 450 : 800);
       }
+      // 검색어 지우기(x): 글자가 있을 때만 보이고, 누르면 비운 뒤 바로 다시 입력할 수 있게 포커스를 둬요
+      const syncClear = () => ($("#q-clear").hidden = !$("#q").value);
+      $("#q-clear").addEventListener("mousedown", (e) => e.preventDefault()); // 입력창 포커스가 빠지지 않게
+      $("#q-clear").addEventListener("click", () => {
+        $("#q").value = "";
+        syncClear();
+        clearTimeout(acTimer);
+        clearTimeout(remoteTimer);
+        closeAc();
+        $("#q").focus();
+      });
       $("#q").addEventListener("input", () => {
+        syncClear();
         clearTimeout(acTimer);
         acTimer = setTimeout(runAc, 80);
       });
@@ -2732,7 +2785,7 @@
         const b = e.target.closest("button");
         if (!b) return;
         if (b.dataset.board) return openBoard();
-        $("#q").value = b.textContent;
+        $("#q").value = b.textContent; syncClear();
         showView("stock");
         loadStock(b.dataset.s, true);
       });
@@ -2816,7 +2869,7 @@
         }
         showView("stock");
         if (h && h !== shownKey) {
-          $("#q").value = board()[h]?.n || h;
+          $("#q").value = board()[h]?.n || h; syncClear();
           loadStock(h);
         }
       }
@@ -2951,7 +3004,7 @@
           return renderChips();
         }
         if (t.dataset.go) {
-          $("#q").value = board()[t.dataset.go]?.n || t.dataset.go;
+          $("#q").value = board()[t.dataset.go]?.n || t.dataset.go; syncClear();
           location.hash = encodeURIComponent(t.dataset.go);
         }
       });
