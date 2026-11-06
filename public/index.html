@@ -493,6 +493,108 @@
         font-size: 14px;
         font-weight: 600;
       }
+      .themes {
+        display: grid;
+      }
+      .theme {
+        border-bottom: 1px solid var(--line);
+      }
+      .theme:last-child {
+        border-bottom: 0;
+      }
+      .theme summary {
+        list-style: none;
+        cursor: pointer;
+        display: grid;
+        grid-template-columns: 1fr auto auto 18px;
+        align-items: center;
+        column-gap: 12px;
+        row-gap: 4px;
+        padding: 14px 0;
+      }
+      .theme summary::-webkit-details-marker {
+        display: none;
+      }
+      .theme summary::after {
+        content: "";
+        grid-column: 4;
+        grid-row: 1;
+        width: 8px;
+        height: 8px;
+        border-right: 2px solid var(--ink-3);
+        border-bottom: 2px solid var(--ink-3);
+        transform: rotate(45deg);
+        justify-self: center;
+        margin-top: -4px;
+        transition: transform 0.15s;
+      }
+      .theme[open] summary::after {
+        transform: rotate(225deg);
+        margin-top: 4px;
+      }
+      .tm-name {
+        font-size: 15px;
+        font-weight: 700;
+        min-width: 0;
+      }
+      .hot {
+        margin-left: 6px;
+        padding: 1px 6px;
+        border-radius: 6px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        font-size: 11px;
+        font-weight: 600;
+        vertical-align: 1px;
+      }
+      .tm-mk {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        min-width: 46px;
+      }
+      .tm-mk small {
+        color: var(--ink-3);
+        font-size: 11px;
+      }
+      .tm-mk strong {
+        font-size: 14px;
+        font-variant-numeric: tabular-nums;
+      }
+      .tm-sum {
+        grid-column: 1 / -1;
+        color: var(--ink-2);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+      .tm-body {
+        padding: 0 0 16px;
+      }
+      .tm-body .mini-label:first-child {
+        margin-top: 4px;
+      }
+      .tm-text {
+        margin: 0;
+        color: var(--ink-2);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      .tm-proxy {
+        margin: 12px 0 0;
+        font-size: 12px;
+      }
+      .tchips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .tchip {
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 600;
+        background: var(--fill);
+      }
       .brief-page {
         display: grid;
         gap: 12px;
@@ -3400,7 +3502,9 @@
         if (location.hash === "#/briefing") renderBriefPage();
       }
       function flowBars(f, key = "kospi") {
-        const vals = WHO.map(([k]) => f?.[k]?.[key]);
+        return flowBarsVals(WHO.map(([k]) => f?.[k]?.[key]));
+      }
+      function flowBarsVals(vals) {
         const max = Math.max(1, ...vals.filter(nz).map(Math.abs));
         return `<ul class="flow-bars">${WHO.map(([k, label], i) => {
           const v = vals[i];
@@ -3412,6 +3516,60 @@
       }
       const idxChip = (x) =>
         `<span class="ix"><small>${esc(x.name)}</small><strong class="${updown(x.changePct)}">${pct(x.changePct)}</strong></span>`;
+      // 테마 하나의 대표 등락: 미국·한국 중 있는 값의 평균 (정렬·칩용)
+      const themeMove = (t) => {
+        const v = [t.us?.changePct, t.kr?.changePct].filter(nz);
+        return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
+      };
+      const mkPct = (m, flag) =>
+        `<span class="tm-mk"><small>${flag}</small><strong class="${updown(m?.changePct)}">${nz(m?.changePct) ? signed(m.changePct, 1) : "–"}</strong></span>`;
+      function themeSection(themes) {
+        if (!themes?.length) return "";
+        return `<section class="card">
+          <h3>섹터 한눈에 <small>눌러서 수급 보기</small></h3>
+          <div class="themes">${themes
+            .map((t) => {
+              const leaders = (t.leaders || []).filter((x) => x && x.name);
+              return `<details class="theme">
+              <summary>
+                <span class="tm-name">${esc(t.name)}${t.hot ? '<span class="hot">오늘 주목</span>' : ""}</span>
+                ${mkPct(t.us, "미국")}${mkPct(t.kr, "한국")}
+                <span class="tm-sum">${esc(t.summary)}</span>
+              </summary>
+              <div class="tm-body">
+                ${
+                  t.flows && WHO.some(([k]) => nz(t.flows[k]))
+                    ? `<p class="mini-label">한국 수급 <small>순매수 금액</small></p>${flowBarsVals(WHO.map(([k]) => t.flows[k]))}`
+                    : `<p class="sub">이 테마의 한국 투자자별 수급은 확인하지 못했어요.</p>`
+                }
+                ${t.usFlow ? `<p class="mini-label">미국 자금 흐름</p><p class="tm-text">${esc(t.usFlow)}</p>` : ""}
+                ${
+                  leaders.length
+                    ? `<p class="mini-label">주도 종목</p><ul class="movers">${leaders
+                        .map((x) => `<li>${stockLink(x)}<strong class="${updown(x.changePct)}">${pct(x.changePct ?? null)}</strong></li>`)
+                        .join("")}</ul>`
+                    : ""
+                }
+                ${t.detail ? `<p class="mini-label">왜 움직였나</p><p class="tm-text">${esc(t.detail)}</p>` : ""}
+                ${
+                  [t.us?.proxy && "미국: " + t.us.proxy, t.kr?.proxy && "한국: " + t.kr.proxy].filter(Boolean).length
+                    ? `<p class="sub tm-proxy">기준 ${esc([t.us?.proxy && "미국 " + t.us.proxy, t.kr?.proxy && "한국 " + t.kr.proxy].filter(Boolean).join(" · "))}</p>`
+                    : ""
+                }
+              </div>
+            </details>`;
+            })
+            .join("")}</div>
+        </section>`;
+      }
+      function themeChips(themes) {
+        const list = (themes || []).map((t) => [t, themeMove(t)]).filter(([, v]) => nz(v)).sort((a, b) => b[1] - a[1]);
+        if (list.length < 2) return "";
+        const top = list.filter(([, v]) => v > 0).slice(0, 2);
+        const bottom = list.filter(([, v]) => v < 0).slice(-2).reverse();
+        const chip = ([t, v]) => `<span class="tchip ${v > 0 ? "up" : "down"}">${esc(t.name.replace(/\(.*\)/, ""))} ${signed(v, 1)}</span>`;
+        return `<div class="tchips">${[...top, ...bottom].map(chip).join("")}</div>`;
+      }
       function renderBriefCard() {
         const el = $("#brief-card");
         if (!BRIEF) return (el.hidden = true);
@@ -3429,6 +3587,7 @@
           }</p>
           <p class="brief-head">${esc(b.headline)}</p>
           ${idx.length ? `<div class="ix-row">${idx.map(idxChip).join("")}</div>` : ""}
+          ${b.themes?.length ? `<p class="mini-label">강한 섹터 · 약한 섹터</p>${themeChips(b.themes)}` : ""}
           ${
             b.kr?.flows && !b.kr.closed
               ? `<p class="mini-label">코스피 수급 <small>순매수 금액</small></p>${flowBars(b.kr.flows)}`
@@ -3462,7 +3621,7 @@
           )
           .join("")}</ul>`;
       }
-      function marketSection(m, title, extra = "") {
+      function marketSection(m, title, extra = "", withSectors = true) {
         if (!m) return "";
         if (m.closed)
           return `<section class="card"><h3>${title} <small>${esc(kDate(m.date))}</small></h3><p class="sub">휴장이었어요.</p></section>`;
@@ -3477,8 +3636,7 @@
             )
             .join("")}</div>
           ${extra}
-          <p class="mini-label" style="margin-top:20px">섹터·업종</p>
-          ${sectorList(m.sectors)}
+          ${withSectors && m.sectors ? `<p class="mini-label" style="margin-top:20px">섹터·업종</p>${sectorList(m.sectors)}` : ""}
           ${moverList(m.movers)}
         </section>`;
       }
@@ -3535,10 +3693,11 @@
             <h2 id="brief-page-title" class="brief-head big">${esc(b.headline)}</h2>
             ${age ? `<p class="stale">${esc(age)}</p>` : ""}
           </section>
-          ${marketSection(b.us, "미국 장", macroRow(b.us?.macro))}
-          ${b.usFlows ? `<section class="card"><h3>미국 자금 흐름</h3><p>${esc(b.usFlows)}</p></section>` : ""}
-          ${marketSection(b.kr, "한국 장", b.kr?.fx ? macroRow([b.kr.fx]) : "")}
+          ${themeSection(b.themes)}
           ${b.kr && !b.kr.closed ? flowDetail(b.kr.flows) : ""}
+          ${marketSection(b.us, "미국 장", macroRow(b.us?.macro), !b.themes?.length)}
+          ${b.usFlows ? `<section class="card"><h3>미국 자금 흐름</h3><p>${esc(b.usFlows)}</p></section>` : ""}
+          ${marketSection(b.kr, "한국 장", b.kr?.fx ? macroRow([b.kr.fx]) : "", !b.themes?.length)}
           ${
             b.issues?.length
               ? `<section class="card"><h3>주요 이슈</h3><ol class="issues">${b.issues

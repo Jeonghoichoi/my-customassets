@@ -7,89 +7,469 @@
     "date": "2026-11-06",
     "closed": false,
     "indices": [
-      { "name": "S&P 500", "value": 6812.45, "changePct": -1.23 },
-      { "name": "나스닥", "value": 23104.2, "changePct": -1.87 },
-      { "name": "다우", "value": 47210.6, "changePct": -0.42 },
-      { "name": "러셀2000", "value": 2480.3, "changePct": 0.35 }
+      {
+        "name": "S&P 500",
+        "value": 6812.45,
+        "changePct": -1.23
+      },
+      {
+        "name": "나스닥",
+        "value": 23104.2,
+        "changePct": -1.87
+      },
+      {
+        "name": "다우",
+        "value": 47210.6,
+        "changePct": -0.42
+      },
+      {
+        "name": "러셀2000",
+        "value": 2480.3,
+        "changePct": 0.35
+      }
     ],
     "macro": [
-      { "name": "미 10년물", "value": "4.12%", "change": "+0.04%p", "dir": 1 },
-      { "name": "달러인덱스", "value": "99.8", "change": "+0.2%", "dir": 1 },
-      { "name": "WTI", "value": "$61.2", "change": "-1.1%", "dir": -1 },
-      { "name": "금", "value": "$3,980", "change": "+0.6%", "dir": 1 },
-      { "name": "비트코인", "value": "$101,500", "change": "-2.3%", "dir": -1 },
-      { "name": "VIX", "value": "19.4", "change": "+8.1%", "dir": 1 }
+      {
+        "name": "미 10년물",
+        "value": "4.12%",
+        "change": "+0.04%p",
+        "dir": 1
+      },
+      {
+        "name": "달러인덱스",
+        "value": "99.8",
+        "change": "+0.2%",
+        "dir": 1
+      },
+      {
+        "name": "WTI",
+        "value": "$61.2",
+        "change": "-1.1%",
+        "dir": -1
+      },
+      {
+        "name": "금",
+        "value": "$3,980",
+        "change": "+0.6%",
+        "dir": 1
+      },
+      {
+        "name": "비트코인",
+        "value": "$101,500",
+        "change": "-2.3%",
+        "dir": -1
+      },
+      {
+        "name": "VIX",
+        "value": "19.4",
+        "change": "+8.1%",
+        "dir": 1
+      }
     ],
     "sectors": {
       "up": [
-        { "name": "필수소비재", "changePct": 0.8, "why": "경기 방어주로 자금이 옮겨갔어요" },
-        { "name": "유틸리티", "changePct": 0.6, "why": "금리 부담에도 배당 매력이 부각됐어요" },
-        { "name": "헬스케어", "changePct": 0.3, "why": "대형 제약사 실적이 예상보다 좋았어요" }
+        {
+          "name": "필수소비재",
+          "changePct": 0.8,
+          "why": "경기 방어주로 자금이 옮겨갔어요"
+        },
+        {
+          "name": "유틸리티",
+          "changePct": 0.6,
+          "why": "금리 부담에도 배당 매력이 부각됐어요"
+        },
+        {
+          "name": "헬스케어",
+          "changePct": 0.3,
+          "why": "대형 제약사 실적이 예상보다 좋았어요"
+        }
       ],
       "down": [
-        { "name": "정보기술", "changePct": -2.4, "why": "AI 반도체 차익실현이 이어졌어요" },
-        { "name": "커뮤니케이션", "changePct": -1.6, "why": "빅테크 투자 부담 우려가 나왔어요" },
-        { "name": "경기소비재", "changePct": -1.1, "why": "소비 둔화 지표에 약했어요" }
+        {
+          "name": "정보기술",
+          "changePct": -2.4,
+          "why": "AI 반도체 차익실현이 이어졌어요"
+        },
+        {
+          "name": "커뮤니케이션",
+          "changePct": -1.6,
+          "why": "빅테크 투자 부담 우려가 나왔어요"
+        },
+        {
+          "name": "경기소비재",
+          "changePct": -1.1,
+          "why": "소비 둔화 지표에 약했어요"
+        }
       ]
     },
     "movers": [
-      { "name": "엔비디아", "symbol": "NVDA", "changePct": -3.8, "why": "차익실현 매물이 나왔어요" },
-      { "name": "버라이즌", "symbol": "VZ", "changePct": 1.9, "why": "방어주 수요가 몰렸어요" }
+      {
+        "name": "엔비디아",
+        "symbol": "NVDA",
+        "changePct": -3.8,
+        "why": "차익실현 매물이 나왔어요"
+      },
+      {
+        "name": "버라이즌",
+        "symbol": "VZ",
+        "changePct": 1.9,
+        "why": "방어주 수요가 몰렸어요"
+      }
     ]
   },
   "kr": {
     "date": "2026-11-06",
     "closed": false,
     "indices": [
-      { "name": "코스피", "value": 3950.1, "changePct": -0.92 },
-      { "name": "코스닥", "value": 890.4, "changePct": 0.21 }
+      {
+        "name": "코스피",
+        "value": 3950.1,
+        "changePct": -0.92
+      },
+      {
+        "name": "코스닥",
+        "value": 890.4,
+        "changePct": 0.21
+      }
     ],
-    "fx": { "name": "원·달러", "value": "1,432.5원", "change": "+4.1원", "dir": 1 },
+    "fx": {
+      "name": "원·달러",
+      "value": "1,432.5원",
+      "change": "+4.1원",
+      "dir": 1
+    },
     "sectors": {
       "up": [
-        { "name": "보험", "changePct": 2.1, "why": "배당 확대 기대가 이어졌어요" },
-        { "name": "통신", "changePct": 1.2, "why": "방어주로 자금이 들어왔어요" }
+        {
+          "name": "보험",
+          "changePct": 2.1,
+          "why": "배당 확대 기대가 이어졌어요"
+        },
+        {
+          "name": "통신",
+          "changePct": 1.2,
+          "why": "방어주로 자금이 들어왔어요"
+        }
       ],
       "down": [
-        { "name": "반도체", "changePct": -2.6, "why": "미국 반도체 약세가 이어졌어요" },
-        { "name": "조선", "changePct": -1.4, "why": "차익실현이 나왔어요" }
+        {
+          "name": "반도체",
+          "changePct": -2.6,
+          "why": "미국 반도체 약세가 이어졌어요"
+        },
+        {
+          "name": "조선",
+          "changePct": -1.4,
+          "why": "차익실현이 나왔어요"
+        }
       ]
     },
     "movers": [
-      { "name": "SK하이닉스", "symbol": "000660", "changePct": -3.2, "why": "외국인 매도가 집중됐어요" },
-      { "name": "DB손해보험", "symbol": "005830", "changePct": 3.4, "why": "주주환원 기대가 커졌어요" }
+      {
+        "name": "SK하이닉스",
+        "symbol": "000660",
+        "changePct": -3.2,
+        "why": "외국인 매도가 집중됐어요"
+      },
+      {
+        "name": "DB손해보험",
+        "symbol": "005830",
+        "changePct": 3.4,
+        "why": "주주환원 기대가 커졌어요"
+      }
     ],
     "flows": {
       "foreign": {
-        "kospi": -4120, "kosdaq": 380,
-        "buy": [ { "name": "DB손해보험", "symbol": "005830", "amount": 310 }, { "name": "KT", "symbol": "030200", "amount": 210 } ],
-        "sell": [ { "name": "SK하이닉스", "symbol": "000660", "amount": -2850 }, { "name": "삼성전자", "symbol": "005930", "amount": -1620 } ],
-        "into": "보험·통신", "outOf": "반도체", "note": null
+        "kospi": -4120,
+        "kosdaq": 380,
+        "buy": [
+          {
+            "name": "DB손해보험",
+            "symbol": "005830",
+            "amount": 310
+          },
+          {
+            "name": "KT",
+            "symbol": "030200",
+            "amount": 210
+          }
+        ],
+        "sell": [
+          {
+            "name": "SK하이닉스",
+            "symbol": "000660",
+            "amount": -2850
+          },
+          {
+            "name": "삼성전자",
+            "symbol": "005930",
+            "amount": -1620
+          }
+        ],
+        "into": "보험·통신",
+        "outOf": "반도체",
+        "note": null
       },
       "institution": {
-        "kospi": -560, "kosdaq": -120,
-        "buy": [ { "name": "삼성전자", "symbol": "005930", "amount": 420 } ],
-        "sell": [ { "name": "HD현대중공업", "symbol": "329180", "amount": -380 } ],
-        "into": "반도체 대형주", "outOf": "조선", "note": "연기금이 680억 원 순매수했어요"
+        "kospi": -560,
+        "kosdaq": -120,
+        "buy": [
+          {
+            "name": "삼성전자",
+            "symbol": "005930",
+            "amount": 420
+          }
+        ],
+        "sell": [
+          {
+            "name": "HD현대중공업",
+            "symbol": "329180",
+            "amount": -380
+          }
+        ],
+        "into": "반도체 대형주",
+        "outOf": "조선",
+        "note": "연기금이 680억 원 순매수했어요"
       },
       "individual": {
-        "kospi": 4510, "kosdaq": -290,
-        "buy": [ { "name": "SK하이닉스", "symbol": "000660", "amount": 2610 }, { "name": "삼성전자", "symbol": "005930", "amount": 1150 } ],
-        "sell": [ { "name": "DB손해보험", "symbol": "005830", "amount": -260 } ],
-        "into": "반도체", "outOf": "보험", "note": null
+        "kospi": 4510,
+        "kosdaq": -290,
+        "buy": [
+          {
+            "name": "SK하이닉스",
+            "symbol": "000660",
+            "amount": 2610
+          },
+          {
+            "name": "삼성전자",
+            "symbol": "005930",
+            "amount": 1150
+          }
+        ],
+        "sell": [
+          {
+            "name": "DB손해보험",
+            "symbol": "005830",
+            "amount": -260
+          }
+        ],
+        "into": "반도체",
+        "outOf": "보험",
+        "note": null
       },
       "summary": "외국인이 반도체를 팔고 개인이 받아냈어요. 기관은 소폭 매도로 관망했어요."
     }
   },
   "usFlows": "지난주 미국 배당 ETF로 자금이 들어오고, 기술주 ETF에서는 빠졌다는 보도가 있었어요. (예시)",
   "issues": [
-    { "title": "AI 반도체 차익실현", "body": "연초 이후 크게 오른 반도체주에서 이익을 챙기는 매도가 나왔어요." },
-    { "title": "미 국채 금리 반등", "body": "고용 지표가 예상보다 강해 금리 인하 기대가 줄었어요." }
+    {
+      "title": "AI 반도체 차익실현",
+      "body": "연초 이후 크게 오른 반도체주에서 이익을 챙기는 매도가 나왔어요."
+    },
+    {
+      "title": "미 국채 금리 반등",
+      "body": "고용 지표가 예상보다 강해 금리 인하 기대가 줄었어요."
+    }
   ],
-  "dividend": [ "국내 보험주가 주주환원 기대에 강세였어요.", "SCHD는 시장 약세 속에서도 소폭 올랐어요." ],
+  "dividend": [
+    "국내 보험주가 주주환원 기대에 강세였어요.",
+    "SCHD는 시장 약세 속에서도 소폭 올랐어요."
+  ],
   "today": [
-    { "time": "22:30", "title": "미국 소비자물가지수(CPI)" },
-    { "time": "장 마감 후", "title": "주요 기업 실적 발표" }
+    {
+      "time": "22:30",
+      "title": "미국 소비자물가지수(CPI)"
+    },
+    {
+      "time": "장 마감 후",
+      "title": "주요 기업 실적 발표"
+    }
   ],
-  "sources": [ { "title": "예시 출처", "url": "https://example.com" } ]
+  "sources": [
+    {
+      "title": "예시 출처",
+      "url": "https://example.com"
+    }
+  ],
+  "themes": [
+    {
+      "key": "semis",
+      "name": "반도체",
+      "hot": true,
+      "us": {
+        "changePct": -2.9,
+        "proxy": "필라델피아 반도체 지수"
+      },
+      "kr": {
+        "changePct": -2.6,
+        "proxy": "KRX 반도체"
+      },
+      "summary": "양쪽 시장 모두 차익실현이 몰렸어요.",
+      "detail": "연초 이후 크게 오른 AI 메모리주에서 이익 실현이 이어졌어요. 한국은 외국인이 대형 반도체를 집중적으로 팔았고, 개인이 그 물량을 대부분 받아냈어요. (예시)",
+      "flows": {
+        "foreign": -4310,
+        "institution": 350,
+        "individual": 3820
+      },
+      "usFlow": "반도체 ETF(SOXX)에서 자금이 빠졌다는 보도가 있었어요. (예시)",
+      "leaders": [
+        {
+          "name": "엔비디아",
+          "symbol": "NVDA",
+          "changePct": -3.8
+        },
+        {
+          "name": "SK하이닉스",
+          "symbol": "000660",
+          "changePct": -3.2
+        },
+        {
+          "name": "삼성전자",
+          "symbol": "005930",
+          "changePct": -1.4
+        }
+      ]
+    },
+    {
+      "key": "bigtech",
+      "name": "빅테크(AI·플랫폼)",
+      "us": {
+        "changePct": -1.6,
+        "proxy": "나스닥 100"
+      },
+      "kr": {
+        "changePct": -0.8,
+        "proxy": "인터넷·플랫폼"
+      },
+      "summary": "AI 투자 부담 우려에 약했어요.",
+      "detail": "대형 플랫폼 기업들의 설비투자 증가가 수익성을 누를 수 있다는 우려가 나왔어요. (예시)",
+      "flows": {
+        "foreign": -320,
+        "institution": -110,
+        "individual": 420
+      },
+      "usFlow": null,
+      "leaders": [
+        {
+          "name": "마이크로소프트",
+          "symbol": "MSFT",
+          "changePct": -1.9
+        },
+        {
+          "name": "NAVER",
+          "symbol": "035420",
+          "changePct": -1.1
+        }
+      ]
+    },
+    {
+      "key": "security",
+      "name": "정보보안",
+      "us": {
+        "changePct": 0.9,
+        "proxy": "사이버보안 ETF"
+      },
+      "kr": {
+        "changePct": 1.5,
+        "proxy": "보안 테마"
+      },
+      "summary": "해킹 이슈로 보안주가 강했어요.",
+      "detail": "대형 해킹 사고 보도 이후 보안 솔루션 수요 기대가 커졌어요. (예시)",
+      "flows": null,
+      "usFlow": null,
+      "leaders": [
+        {
+          "name": "크라우드스트라이크",
+          "symbol": "CRWD",
+          "changePct": 1.8
+        }
+      ]
+    },
+    {
+      "key": "health",
+      "name": "헬스케어·바이오",
+      "us": {
+        "changePct": 0.3,
+        "proxy": "S&P 500 헬스케어"
+      },
+      "kr": {
+        "changePct": -0.4,
+        "proxy": "KRX 헬스케어"
+      },
+      "summary": "미국은 실적 덕에 버텼고, 한국은 보합권이었어요.",
+      "detail": "대형 제약사 실적이 예상보다 좋았어요. (예시)",
+      "flows": {
+        "foreign": 120,
+        "institution": -80,
+        "individual": -40
+      },
+      "usFlow": null,
+      "leaders": []
+    },
+    {
+      "key": "insurance",
+      "name": "금융·보험",
+      "hot": true,
+      "us": {
+        "changePct": 0.4,
+        "proxy": "S&P 500 금융"
+      },
+      "kr": {
+        "changePct": 2.1,
+        "proxy": "KRX 보험"
+      },
+      "summary": "한국 보험주에 외국인 매수가 몰렸어요.",
+      "detail": "주주환원 확대 기대가 이어지면서 배당 매력이 큰 보험주로 자금이 옮겨갔어요. (예시)",
+      "flows": {
+        "foreign": 980,
+        "institution": 210,
+        "individual": -1150
+      },
+      "usFlow": null,
+      "leaders": [
+        {
+          "name": "DB손해보험",
+          "symbol": "005830",
+          "changePct": 3.4
+        },
+        {
+          "name": "현대해상",
+          "symbol": "001450",
+          "changePct": 2.2
+        }
+      ]
+    },
+    {
+      "key": "defensive",
+      "name": "통신·유틸리티",
+      "us": {
+        "changePct": 0.6,
+        "proxy": "S&P 500 유틸리티"
+      },
+      "kr": {
+        "changePct": 1.2,
+        "proxy": "KRX 통신"
+      },
+      "summary": "방어주로 자금이 들어왔어요.",
+      "detail": "시장이 흔들리자 배당이 안정적인 통신·유틸리티가 강했어요. (예시)",
+      "flows": {
+        "foreign": 420,
+        "institution": 90,
+        "individual": -500
+      },
+      "usFlow": null,
+      "leaders": [
+        {
+          "name": "버라이즌",
+          "symbol": "VZ",
+          "changePct": 1.9
+        },
+        {
+          "name": "KT",
+          "symbol": "030200",
+          "changePct": 1.3
+        }
+      ]
+    }
+  ]
 }

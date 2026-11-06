@@ -28,8 +28,9 @@ function market(m, key) {
   ymd(m.date, `${key}.date`);
   if (m.closed) return;
   if (arr(m.indices, `${key}.indices`)) m.indices.forEach((x, i) => (str(x.name, `${key}.indices[${i}].name`), numOrNull(x.value, `${key}.indices[${i}].value`), numOrNull(x.changePct, `${key}.indices[${i}].changePct`)));
+  // sectors는 예전 형식이라 있으면만 검사해요 (지금은 themes가 섹터를 대신해요)
   for (const side of ["up", "down"])
-    if (arr(m.sectors?.[side], `${key}.sectors.${side}`)) m.sectors[side].forEach((x, i) => (str(x.name, `${key}.sectors.${side}[${i}].name`), numOrNull(x.changePct ?? null, `${key}.sectors.${side}[${i}].changePct`), str(x.why, `${key}.sectors.${side}[${i}].why`, true)));
+    if (m.sectors && arr(m.sectors?.[side], `${key}.sectors.${side}`)) m.sectors[side].forEach((x, i) => (str(x.name, `${key}.sectors.${side}[${i}].name`), numOrNull(x.changePct ?? null, `${key}.sectors.${side}[${i}].changePct`), str(x.why, `${key}.sectors.${side}[${i}].why`, true)));
   if (arr(m.movers, `${key}.movers`)) m.movers.forEach((x, i) => (str(x.name, `${key}.movers[${i}].name`), sym(x.symbol, `${key}.movers[${i}].symbol`), numOrNull(x.changePct ?? null, `${key}.movers[${i}].changePct`)));
 }
 market(b.us, "us");
@@ -53,6 +54,19 @@ if (b.kr && !b.kr.closed) {
     }
     str(f.summary, "kr.flows.summary", true);
   }
+}
+// 섹터·테마: 접힌 줄(이름, 미국·한국 등락, 한 줄 요약)과 펼친 상세(수급, 주도 종목, 설명)
+if (arr(b.themes, "themes")) {
+  if (!b.themes.length) errs.push("themes: 테마가 하나는 있어야 해요");
+  b.themes.forEach((t, i) => {
+    const w = `themes[${i}]`;
+    str(t.name, `${w}.name`);
+    str(t.summary, `${w}.summary`);
+    str(t.detail, `${w}.detail`, true);
+    for (const mk of ["us", "kr"]) if (t[mk] !== null && t[mk] !== undefined) numOrNull(t[mk].changePct ?? null, `${w}.${mk}.changePct`);
+    if (t.flows) for (const who of ["foreign", "institution", "individual"]) numOrNull(t.flows[who] ?? null, `${w}.flows.${who}`);
+    if (t.leaders !== undefined && arr(t.leaders, `${w}.leaders`)) t.leaders.forEach((x, j) => (str(x.name, `${w}.leaders[${j}].name`), sym(x.symbol, `${w}.leaders[${j}].symbol`), numOrNull(x.changePct ?? null, `${w}.leaders[${j}].changePct`)));
+  });
 }
 if (arr(b.issues, "issues")) b.issues.forEach((x, i) => (str(x.title, `issues[${i}].title`), str(x.body, `issues[${i}].body`)));
 if (b.dividend !== undefined && b.dividend !== null) arr(b.dividend, "dividend");
