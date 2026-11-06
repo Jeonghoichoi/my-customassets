@@ -345,6 +345,317 @@
         font-size: 13px;
       }
 
+      /* ---------- 아침 브리핑 ---------- */
+      .card.brief-card {
+        padding: 0;
+        overflow: hidden;
+      }
+      .brief-open {
+        display: block;
+        width: 100%;
+        padding: 20px;
+        background: none;
+        color: inherit;
+        text-align: left;
+        font-weight: 400;
+        border-radius: inherit;
+      }
+      .brief-open:active {
+        transform: none;
+        background: var(--fill);
+      }
+      .brief-head {
+        margin: 6px 0 0;
+        font-size: 17px;
+        font-weight: 700;
+        line-height: 1.45;
+        color: var(--ink);
+      }
+      .brief-head.big {
+        font-size: 20px;
+      }
+      .tag-sample {
+        margin-left: 4px;
+        padding: 1px 6px;
+        border-radius: 6px;
+        background: var(--mid-soft);
+        color: var(--mid);
+        font-size: 11px;
+      }
+      .stale {
+        color: var(--warn);
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .ix-row {
+        display: flex;
+        gap: 8px;
+        margin-top: 14px;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+      .ix-row::-webkit-scrollbar {
+        display: none;
+      }
+      .ix {
+        flex: none;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 8px 12px;
+        border-radius: 12px;
+        background: var(--fill);
+      }
+      .ix small {
+        color: var(--ink-3);
+        font-size: 12px;
+      }
+      .ix strong {
+        font-size: 15px;
+        font-variant-numeric: tabular-nums;
+      }
+      .mini-label {
+        margin: 16px 0 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ink-2);
+      }
+      .mini-label small {
+        color: var(--ink-3);
+        font-weight: 400;
+      }
+      .mini-label.up {
+        color: var(--up);
+      }
+      .mini-label.down {
+        color: var(--down);
+      }
+      .flow-bars {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 8px;
+      }
+      .flow-bars li {
+        display: grid;
+        grid-template-columns: 44px 1fr 84px;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+      }
+      .flow-bars .who {
+        color: var(--ink-2);
+      }
+      .flow-bars .fb-track {
+        display: block;
+        position: relative;
+        height: 10px;
+        border-radius: 5px;
+        background: var(--fill);
+      }
+      .flow-bars .fb-track::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: -3px;
+        bottom: -3px;
+        width: 1px;
+        background: var(--line);
+      }
+      .flow-bars .fb-bar {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        border-radius: 5px;
+      }
+      .flow-bars .fb-bar.up {
+        background: var(--up);
+      }
+      .flow-bars .fb-bar.down {
+        background: var(--down);
+      }
+      .flow-bars .amt {
+        text-align: right;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+      .more-link {
+        display: block;
+        margin-top: 16px;
+        color: var(--primary);
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .brief-page {
+        display: grid;
+        gap: 12px;
+      }
+      .brief-page .back {
+        justify-self: start;
+      }
+      #brief-page-body {
+        display: grid;
+        gap: 12px;
+        min-width: 0;
+      }
+      #brief-page-body h3 small {
+        color: var(--ink-3);
+        font-size: 13px;
+        font-weight: 500;
+        margin-left: 4px;
+      }
+      .ix-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .ix-grid .tile span {
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .macro-row {
+        list-style: none;
+        margin: 12px 0 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px 8px;
+      }
+      .macro-row li {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        min-width: 0;
+      }
+      .macro-row small {
+        color: var(--ink-3);
+        font-size: 12px;
+      }
+      .macro-row strong {
+        font-size: 14px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .macro-row span {
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .two {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+      .rank,
+      .movers,
+      .amts,
+      .sched,
+      .srcs {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .rank li,
+      .movers li {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        column-gap: 6px;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: 14px;
+      }
+      .rank li small,
+      .movers li small {
+        grid-column: 1 / -1;
+        color: var(--ink-3);
+        font-size: 12px;
+        line-height: 1.4;
+        margin-top: 2px;
+      }
+      .rank .nm {
+        font-weight: 600;
+      }
+      .slink {
+        background: none;
+        padding: 0;
+        min-height: 0;
+        color: var(--ink);
+        font: inherit;
+        font-weight: 600;
+        text-align: left;
+        text-decoration: underline;
+        text-decoration-color: var(--line);
+        text-underline-offset: 3px;
+      }
+      .amts li {
+        display: flex;
+        justify-content: space-between;
+        gap: 6px;
+        padding: 6px 0;
+        font-size: 14px;
+      }
+      .amts li span {
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+      .who-block {
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid var(--line);
+      }
+      .who-title {
+        margin: 0 0 4px;
+        font-size: 16px;
+        font-weight: 700;
+      }
+      .who-title small {
+        color: var(--ink-3);
+        font-size: 13px;
+        font-weight: 500;
+        margin-left: 4px;
+      }
+      .issues {
+        margin: 0;
+        padding-left: 20px;
+      }
+      .issues li {
+        margin-bottom: 12px;
+      }
+      .issues p {
+        margin: 4px 0 0;
+        color: var(--ink-2);
+        line-height: 1.55;
+      }
+      .dots {
+        margin: 0;
+        padding-left: 18px;
+        line-height: 1.6;
+      }
+      .sched li {
+        display: flex;
+        gap: 12px;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .sched .t {
+        flex: none;
+        min-width: 64px;
+        color: var(--primary);
+        font-weight: 700;
+      }
+      .srcs li {
+        padding: 4px 0;
+        font-size: 13px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .srcs a {
+        color: var(--ink-2);
+      }
+
       /* ---------- 판독표 ---------- */
       .chips .board-chip {
         background: var(--primary-soft);
@@ -1692,6 +2003,7 @@
 
     <main>
       <div class="col" id="col-stock">
+        <section class="card brief-card" id="brief-card" aria-labelledby="brief-title" hidden></section>
         <section class="card" id="stock" aria-live="polite">
           <p class="empty">종목을 검색하면<br />일곱 투자자의 원칙으로 판독해 드려요</p>
         </section>
@@ -1712,6 +2024,13 @@
         <section class="card" id="street-panel" aria-labelledby="street-title" hidden></section>
       </div>
     </main>
+
+    <section class="board-view" id="brief-view" aria-labelledby="brief-page-title" hidden>
+      <div class="brief-page">
+        <button type="button" class="back" id="brief-back">‹ 판독으로 돌아가기</button>
+        <div id="brief-page-body"></div>
+      </div>
+    </section>
 
     <section class="board-view" id="board-view" aria-labelledby="board-title" hidden>
       <div class="card">
@@ -2877,11 +3196,12 @@
         writeBoard(b);
       }
 
+      // 화면 3개: 판독(main) · 판독표(#/board) · 아침 브리핑(#/briefing)
       function showView(v) {
-        const isBoard = v === "board";
-        document.querySelector("main").hidden = isBoard;
-        $("#board-view").hidden = !isBoard;
-        if (!isBoard && location.hash === "#/board") history.pushState(null, "", location.pathname + location.search);
+        document.querySelector("main").hidden = v !== "stock";
+        $("#board-view").hidden = v !== "board";
+        $("#brief-view").hidden = v !== "briefing";
+        if (v === "stock" && /^#\/(board|briefing)$/.test(location.hash)) history.pushState(null, "", location.pathname + location.search);
       }
       function openBoard() {
         if (location.hash !== "#/board") location.hash = "/board";
@@ -2892,6 +3212,12 @@
         if (h === "/board") {
           showView("board");
           renderBoard();
+          window.scrollTo(0, 0);
+          return;
+        }
+        if (h === "/briefing") {
+          showView("briefing");
+          renderBriefPage();
           window.scrollTo(0, 0);
           return;
         }
@@ -3037,6 +3363,220 @@
         }
       });
 
+      // ---------- 아침 브리핑 (data/briefing.json, 매일 아침 예약 작업이 올려요) ----------
+      let BRIEF = null;
+      const WHO = [
+        ["foreign", "외국인"],
+        ["institution", "기관"],
+        ["individual", "개인"],
+      ];
+      const nz = (v) => v !== null && v !== undefined && Number.isFinite(v);
+      const eok = (v) => (nz(v) ? `${v > 0 ? "+" : ""}${Math.round(v).toLocaleString("ko-KR")}억` : "–");
+      const pct = (v) => (nz(v) ? signed(v, 2) : "–");
+      function kDate(ymd) {
+        if (!ymd) return "";
+        const [y, m, d] = ymd.split("-").map(Number);
+        const w = "일월화수목금토"[new Date(y, m - 1, d).getDay()];
+        return `${m}월 ${d}일(${w})`;
+      }
+      function briefAge(b) {
+        const today = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" });
+        const days = Math.round((new Date(today) - new Date(b.date)) / 864e5);
+        return days > 0 ? `${days === 1 ? "어제" : days + "일 전"} 브리핑이에요` : "";
+      }
+      async function loadBriefing() {
+        try {
+          BRIEF = await api("/api/briefing");
+        } catch {
+          BRIEF = null;
+        }
+        renderBriefCard();
+        if (location.hash === "#/briefing") renderBriefPage();
+      }
+      function flowBars(f, key = "kospi") {
+        const vals = WHO.map(([k]) => f?.[k]?.[key]);
+        const max = Math.max(1, ...vals.filter(nz).map(Math.abs));
+        return `<ul class="flow-bars">${WHO.map(([k, label], i) => {
+          const v = vals[i];
+          const w = nz(v) ? Math.max(4, (Math.abs(v) / max) * 50) : 0;
+          return `<li><span class="who">${label}</span><span class="fb-track"><span class="fb-bar ${v > 0 ? "up" : "down"}" style="${
+            v > 0 ? "left:50%" : `right:50%`
+          };width:${w}%"></span></span><span class="amt ${nz(v) ? (v > 0 ? "up" : v < 0 ? "down" : "") : ""}">${eok(v)}</span></li>`;
+        }).join("")}</ul>`;
+      }
+      const idxChip = (x) =>
+        `<span class="ix"><small>${esc(x.name)}</small><strong class="${updown(x.changePct)}">${pct(x.changePct)}</strong></span>`;
+      function renderBriefCard() {
+        const el = $("#brief-card");
+        if (!BRIEF) return (el.hidden = true);
+        el.hidden = false;
+        if (BRIEF.empty) {
+          el.innerHTML = `<p class="eyebrow" id="brief-title">아침 브리핑</p><p class="sub">매일 아침 7시쯤 어제 장 정리가 여기에 올라와요.</p>`;
+          return;
+        }
+        const b = BRIEF;
+        const idx = [...(b.kr?.indices || []), ...(b.us?.indices || []).slice(0, 2)];
+        const age = briefAge(b);
+        el.innerHTML = `<button type="button" class="brief-open" id="brief-open" aria-label="아침 브리핑 자세히 보기">
+          <p class="eyebrow" id="brief-title">아침 브리핑 · ${esc(kDate(b.date))}${b.sample ? ' <span class="tag-sample">예시</span>' : ""}${
+            age ? ` <span class="stale">${esc(age)}</span>` : ""
+          }</p>
+          <p class="brief-head">${esc(b.headline)}</p>
+          ${idx.length ? `<div class="ix-row">${idx.map(idxChip).join("")}</div>` : ""}
+          ${
+            b.kr?.flows && !b.kr.closed
+              ? `<p class="mini-label">코스피 수급 <small>순매수 금액</small></p>${flowBars(b.kr.flows)}`
+              : ""
+          }
+          <span class="more-link">자세히 보기 ›</span>
+        </button>`;
+      }
+      const stockLink = (x) =>
+        x.symbol
+          ? `<button type="button" class="slink" data-go="${esc(x.symbol)}">${esc(x.name)}</button>`
+          : `<span>${esc(x.name)}</span>`;
+      function sectorList(sec) {
+        const row = (x) =>
+          `<li><span class="nm">${esc(x.name)}</span><strong class="${updown(x.changePct)}">${pct(x.changePct ?? null)}</strong>${
+            x.why ? `<small>${esc(x.why)}</small>` : ""
+          }</li>`;
+        return `<div class="two">
+          <div><p class="mini-label up">강했어요</p><ul class="rank">${(sec?.up || []).map(row).join("") || "<li class='muted'>–</li>"}</ul></div>
+          <div><p class="mini-label down">약했어요</p><ul class="rank">${(sec?.down || []).map(row).join("") || "<li class='muted'>–</li>"}</ul></div>
+        </div>`;
+      }
+      function moverList(list) {
+        if (!list?.length) return "";
+        return `<p class="mini-label">눈에 띈 종목</p><ul class="movers">${list
+          .map(
+            (x) =>
+              `<li>${stockLink(x)}<strong class="${updown(x.changePct)}">${pct(x.changePct ?? null)}</strong>${
+                x.why ? `<small>${esc(x.why)}</small>` : ""
+              }</li>`
+          )
+          .join("")}</ul>`;
+      }
+      function marketSection(m, title, extra = "") {
+        if (!m) return "";
+        if (m.closed)
+          return `<section class="card"><h3>${title} <small>${esc(kDate(m.date))}</small></h3><p class="sub">휴장이었어요.</p></section>`;
+        return `<section class="card">
+          <h3>${title} <small>${esc(kDate(m.date))}</small></h3>
+          <div class="ix-grid">${(m.indices || [])
+            .map(
+              (x) =>
+                `<div class="tile"><small>${esc(x.name)}</small><strong>${nz(x.value) ? x.value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "–"}</strong><span class="${updown(
+                  x.changePct
+                )}">${pct(x.changePct)}</span></div>`
+            )
+            .join("")}</div>
+          ${extra}
+          <p class="mini-label" style="margin-top:20px">섹터·업종</p>
+          ${sectorList(m.sectors)}
+          ${moverList(m.movers)}
+        </section>`;
+      }
+      function macroRow(list) {
+        if (!list?.length) return "";
+        return `<ul class="macro-row">${list
+          .map(
+            (x) =>
+              `<li><small>${esc(x.name)}</small><strong>${esc(x.value || "–")}</strong>${
+                x.change ? `<span class="${x.dir > 0 ? "up" : x.dir < 0 ? "down" : ""}">${esc(x.change)}</span>` : ""
+              }</li>`
+          )
+          .join("")}</ul>`;
+      }
+      function flowDetail(f) {
+        if (!f) return "";
+        const amtRow = (x) =>
+          `<li>${stockLink(x)}<span class="${nz(x.amount) ? (x.amount > 0 ? "up" : "down") : ""}">${eok(x.amount ?? null)}</span></li>`;
+        return `<section class="card">
+          <h3>돈이 어디로 몰렸나 <small>한국 수급</small></h3>
+          ${f.summary ? `<div class="callout">${esc(f.summary)}</div>` : ""}
+          <p class="mini-label">코스피 순매수</p>${flowBars(f, "kospi")}
+          <p class="mini-label" style="margin-top:14px">코스닥 순매수</p>${flowBars(f, "kosdaq")}
+          ${WHO.map(([k, label]) => {
+            const w = f[k];
+            if (!w) return "";
+            return `<div class="who-block">
+              <p class="who-title">${label} <small>코스피 ${eok(w.kospi)} · 코스닥 ${eok(w.kosdaq)}</small></p>
+              ${w.into || w.outOf ? `<p class="sub">${w.into ? `몰린 곳 <b>${esc(w.into)}</b>` : ""}${w.into && w.outOf ? " · " : ""}${w.outOf ? `빠진 곳 <b>${esc(w.outOf)}</b>` : ""}</p>` : ""}
+              <div class="two">
+                <div><p class="mini-label up">많이 산 종목</p><ul class="amts">${(w.buy || []).map(amtRow).join("") || "<li class='muted'>–</li>"}</ul></div>
+                <div><p class="mini-label down">많이 판 종목</p><ul class="amts">${(w.sell || []).map(amtRow).join("") || "<li class='muted'>–</li>"}</ul></div>
+              </div>
+              ${w.note ? `<p class="sub">${esc(w.note)}</p>` : ""}
+            </div>`;
+          }).join("")}
+        </section>`;
+      }
+      function renderBriefPage() {
+        const el = $("#brief-page-body");
+        if (!BRIEF) {
+          el.innerHTML = `<section class="card"><div class="sk" style="height:24px;width:60%"></div><div class="sk" style="height:14px;width:80%;margin-top:12px"></div></section>`;
+          return;
+        }
+        if (BRIEF.empty) {
+          el.innerHTML = `<section class="card"><h2 id="brief-page-title">아침 브리핑</h2><p class="empty">아직 올라온 브리핑이 없어요.<br />매일 아침 7시쯤 어제 장 정리가 올라와요.</p></section>`;
+          return;
+        }
+        const b = BRIEF;
+        const age = briefAge(b);
+        el.innerHTML = `
+          <section class="card">
+            <p class="eyebrow">아침 브리핑 · ${esc(kDate(b.date))}${b.sample ? ' <span class="tag-sample">예시 데이터</span>' : ""}</p>
+            <h2 id="brief-page-title" class="brief-head big">${esc(b.headline)}</h2>
+            ${age ? `<p class="stale">${esc(age)}</p>` : ""}
+          </section>
+          ${marketSection(b.us, "미국 장", macroRow(b.us?.macro))}
+          ${b.usFlows ? `<section class="card"><h3>미국 자금 흐름</h3><p>${esc(b.usFlows)}</p></section>` : ""}
+          ${marketSection(b.kr, "한국 장", b.kr?.fx ? macroRow([b.kr.fx]) : "")}
+          ${b.kr && !b.kr.closed ? flowDetail(b.kr.flows) : ""}
+          ${
+            b.issues?.length
+              ? `<section class="card"><h3>주요 이슈</h3><ol class="issues">${b.issues
+                  .map((x) => `<li><strong>${esc(x.title)}</strong><p>${esc(x.body)}</p></li>`)
+                  .join("")}</ol></section>`
+              : ""
+          }
+          ${
+            b.dividend?.length
+              ? `<section class="card"><h3>배당·가치주 체크</h3><ul class="dots">${b.dividend.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></section>`
+              : ""
+          }
+          ${
+            b.today?.length
+              ? `<section class="card"><h3>오늘 볼 일정</h3><ul class="sched">${b.today
+                  .map((x) => `<li>${x.time ? `<span class="t">${esc(x.time)}</span>` : ""}<span>${esc(x.title)}</span></li>`)
+                  .join("")}</ul></section>`
+              : ""
+          }
+          ${
+            b.sources?.length
+              ? `<section class="card"><h3>출처</h3><ul class="srcs">${b.sources
+                  .map((x) => `<li><a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title)}</a></li>`)
+                  .join("")}</ul><p class="sub">숫자는 매일 아침 웹 검색으로 확인한 값이에요. 투자 추천이 아니에요.</p></section>`
+              : ""
+          }`;
+      }
+      $("#brief-card").addEventListener("click", (e) => {
+        if (e.target.closest("#brief-open")) location.hash = "/briefing";
+      });
+      $("#brief-view").addEventListener("click", (e) => {
+        const t = e.target.closest("button");
+        if (!t) return;
+        if (t.id === "brief-back") {
+          location.hash = shownKey ? encodeURIComponent(shownKey) : "";
+          return;
+        }
+        if (t.dataset.go) {
+          $("#q").value = t.textContent;
+          syncClear();
+          location.hash = encodeURIComponent(t.dataset.go);
+        }
+      });
+
       function showGate() {
         if ($("#gate")) return;
         document.querySelector("main").innerHTML = `<section class="card gate" id="gate"><h2>접근 코드를 입력해 주세요</h2>
@@ -3072,7 +3612,8 @@
         renderChips();
         loadMarket();
         loadTicker();
-        route(); // #종목코드 는 상세, #/board 는 판독표
+        loadBriefing();
+        route(); // #종목코드 는 상세, #/board 는 판독표, #/briefing 은 아침 브리핑
       })();
     </script>
   </body>

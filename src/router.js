@@ -72,6 +72,15 @@ async function getMacro() {
   });
 }
 
+function getBriefing() {
+  try {
+    if (env().demo) return require("../data/briefing.sample.json");
+    return require("../data/briefing.json");
+  } catch {
+    return { empty: true };
+  }
+}
+
 // 대형 증권사 시각 요약 + 판독기 신호와의 비교
 function houseViews(m) {
   let hv;
@@ -297,6 +306,8 @@ async function handle(path, headers = {}) {
     if (code && headers["x-access-code"] !== code)
       return { status: 401, body: { error: "접근 코드가 맞지 않아요." }, maxAge: 0 };
     if (path === "macro") return { status: 200, body: await getMacro(), maxAge: TTL.macro };
+    // 아침 브리핑: 매일 아침 예약 작업이 data/briefing.json을 올리면 배포와 함께 바뀌어요
+    if (path === "briefing") return { status: 200, body: getBriefing(), maxAge: 300 };
     // 화면 맨 위 롤링 지수 (네이버, 5분 캐시)
     if (path === "indices") {
       const items = await cached("indices", TTL.indices * 1e3, () => naver.indices());

@@ -15,6 +15,7 @@
   - API 로직은 `src/router.js`에 작성한다.
   - `api/router.js`는 Vercel 연결용이라 거의 건드리지 않는다.
 - `data/margin-debt.json`, `data/house-views.json`은 사용자가 직접 갱신하는 데이터 파일이다. 임의로 수정하지 않는다.
+- `data/briefing.json`은 매일 아침 '아침 시장 브리핑' 예약 작업이 자동으로 올리는 파일이다. 형식은 `data/briefing.sample.json`을 따르고, 올리기 전에 `node scripts/check-briefing.js`로 검사한다. 화면 작업 중에 손으로 고치지 않는다.
 
 ## 화면 디자인
 - 토스 앱 톤을 따른다: 흰 카드, 넓은 여백, 큰 숫자, Noto Sans KR 폰트.

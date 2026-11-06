@@ -1,0 +1,95 @@
+{
+  "date": "2026-11-07",
+  "generatedAt": "2026-11-06T21:55:00Z",
+  "sample": true,
+  "headline": "예시 데이터예요. 미국은 기술주 차익실현으로 내렸고, 한국은 외국인 매도에 코스피가 밀렸어요.",
+  "us": {
+    "date": "2026-11-06",
+    "closed": false,
+    "indices": [
+      { "name": "S&P 500", "value": 6812.45, "changePct": -1.23 },
+      { "name": "나스닥", "value": 23104.2, "changePct": -1.87 },
+      { "name": "다우", "value": 47210.6, "changePct": -0.42 },
+      { "name": "러셀2000", "value": 2480.3, "changePct": 0.35 }
+    ],
+    "macro": [
+      { "name": "미 10년물", "value": "4.12%", "change": "+0.04%p", "dir": 1 },
+      { "name": "달러인덱스", "value": "99.8", "change": "+0.2%", "dir": 1 },
+      { "name": "WTI", "value": "$61.2", "change": "-1.1%", "dir": -1 },
+      { "name": "금", "value": "$3,980", "change": "+0.6%", "dir": 1 },
+      { "name": "비트코인", "value": "$101,500", "change": "-2.3%", "dir": -1 },
+      { "name": "VIX", "value": "19.4", "change": "+8.1%", "dir": 1 }
+    ],
+    "sectors": {
+      "up": [
+        { "name": "필수소비재", "changePct": 0.8, "why": "경기 방어주로 자금이 옮겨갔어요" },
+        { "name": "유틸리티", "changePct": 0.6, "why": "금리 부담에도 배당 매력이 부각됐어요" },
+        { "name": "헬스케어", "changePct": 0.3, "why": "대형 제약사 실적이 예상보다 좋았어요" }
+      ],
+      "down": [
+        { "name": "정보기술", "changePct": -2.4, "why": "AI 반도체 차익실현이 이어졌어요" },
+        { "name": "커뮤니케이션", "changePct": -1.6, "why": "빅테크 투자 부담 우려가 나왔어요" },
+        { "name": "경기소비재", "changePct": -1.1, "why": "소비 둔화 지표에 약했어요" }
+      ]
+    },
+    "movers": [
+      { "name": "엔비디아", "symbol": "NVDA", "changePct": -3.8, "why": "차익실현 매물이 나왔어요" },
+      { "name": "버라이즌", "symbol": "VZ", "changePct": 1.9, "why": "방어주 수요가 몰렸어요" }
+    ]
+  },
+  "kr": {
+    "date": "2026-11-06",
+    "closed": false,
+    "indices": [
+      { "name": "코스피", "value": 3950.1, "changePct": -0.92 },
+      { "name": "코스닥", "value": 890.4, "changePct": 0.21 }
+    ],
+    "fx": { "name": "원·달러", "value": "1,432.5원", "change": "+4.1원", "dir": 1 },
+    "sectors": {
+      "up": [
+        { "name": "보험", "changePct": 2.1, "why": "배당 확대 기대가 이어졌어요" },
+        { "name": "통신", "changePct": 1.2, "why": "방어주로 자금이 들어왔어요" }
+      ],
+      "down": [
+        { "name": "반도체", "changePct": -2.6, "why": "미국 반도체 약세가 이어졌어요" },
+        { "name": "조선", "changePct": -1.4, "why": "차익실현이 나왔어요" }
+      ]
+    },
+    "movers": [
+      { "name": "SK하이닉스", "symbol": "000660", "changePct": -3.2, "why": "외국인 매도가 집중됐어요" },
+      { "name": "DB손해보험", "symbol": "005830", "changePct": 3.4, "why": "주주환원 기대가 커졌어요" }
+    ],
+    "flows": {
+      "foreign": {
+        "kospi": -4120, "kosdaq": 380,
+        "buy": [ { "name": "DB손해보험", "symbol": "005830", "amount": 310 }, { "name": "KT", "symbol": "030200", "amount": 210 } ],
+        "sell": [ { "name": "SK하이닉스", "symbol": "000660", "amount": -2850 }, { "name": "삼성전자", "symbol": "005930", "amount": -1620 } ],
+        "into": "보험·통신", "outOf": "반도체", "note": null
+      },
+      "institution": {
+        "kospi": -560, "kosdaq": -120,
+        "buy": [ { "name": "삼성전자", "symbol": "005930", "amount": 420 } ],
+        "sell": [ { "name": "HD현대중공업", "symbol": "329180", "amount": -380 } ],
+        "into": "반도체 대형주", "outOf": "조선", "note": "연기금이 680억 원 순매수했어요"
+      },
+      "individual": {
+        "kospi": 4510, "kosdaq": -290,
+        "buy": [ { "name": "SK하이닉스", "symbol": "000660", "amount": 2610 }, { "name": "삼성전자", "symbol": "005930", "amount": 1150 } ],
+        "sell": [ { "name": "DB손해보험", "symbol": "005830", "amount": -260 } ],
+        "into": "반도체", "outOf": "보험", "note": null
+      },
+      "summary": "외국인이 반도체를 팔고 개인이 받아냈어요. 기관은 소폭 매도로 관망했어요."
+    }
+  },
+  "usFlows": "지난주 미국 배당 ETF로 자금이 들어오고, 기술주 ETF에서는 빠졌다는 보도가 있었어요. (예시)",
+  "issues": [
+    { "title": "AI 반도체 차익실현", "body": "연초 이후 크게 오른 반도체주에서 이익을 챙기는 매도가 나왔어요." },
+    { "title": "미 국채 금리 반등", "body": "고용 지표가 예상보다 강해 금리 인하 기대가 줄었어요." }
+  ],
+  "dividend": [ "국내 보험주가 주주환원 기대에 강세였어요.", "SCHD는 시장 약세 속에서도 소폭 올랐어요." ],
+  "today": [
+    { "time": "22:30", "title": "미국 소비자물가지수(CPI)" },
+    { "time": "장 마감 후", "title": "주요 기업 실적 발표" }
+  ],
+  "sources": [ { "title": "예시 출처", "url": "https://example.com" } ]
+}
