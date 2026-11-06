@@ -54,14 +54,14 @@ function resolve(input) {
   const named = KR_NAMES[q] || KR_NAMES[upper] || Object.entries(KR_NAMES).find(([k]) => k.toUpperCase() === upper)?.[1];
   if (named) return { market: "KR", candidates: [named], query: q };
   if (/[가-힣]/.test(q)) {
-    const err = new Error(`'${q}' 종목을 찾지 못했습니다. 6자리 종목코드(예: 005930)로 검색하세요.`);
+    const err = new Error(`'${q}' 종목을 찾지 못했어요. 6자리 종목코드(예: 005930)로 검색해 보세요.`);
     err.status = 404;
     err.code = "UNKNOWN_KR_NAME";
     err.query = q;
     throw err;
   }
   if (/^[A-Z][A-Z.\-]{0,9}$/.test(upper)) return { market: "US", candidates: [upper], query: q };
-  const err = new Error("미국 티커(예: VZ) 또는 한국 종목코드(예: 005930)로 검색하세요.");
+  const err = new Error("미국 티커(예: VZ) 또는 한국 종목코드(예: 005930)로 검색해 주세요.");
   err.status = 400;
   throw err;
 }

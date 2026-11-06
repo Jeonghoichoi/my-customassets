@@ -1,12 +1,12 @@
 // API 처리: 로컬 서버(src/server.js)와 Vercel 함수(api/router.js)가 함께 씁니다
 const { macroSeries } = require("./sources/fred");
-const { stock: fmpStock, probe, search: fmpSearch } = require("./sources/fmp");
+const { stock: fmpStock, probe, search: fmpSearch, streetData } = require("./sources/fmp");
 const naver = require("./sources/naver");
 const { demoMacro, demoStock, demoSymbols, demoCommodities } = require("./sources/demo");
 const { fetchCommodities } = require("./sources/commodities");
 const { evaluateMacro } = require("./engine/macro");
 const { priceStats } = require("./engine/indicators");
-const { judgeStock } = require("./engine/judges");
+const { judgeStock, streetReading } = require("./engine/judges");
 const { resolve, marketLabel } = require("./sources/symbols");
 
 const env = () => ({
@@ -14,6 +14,9 @@ const env = () => ({
   ai: Boolean(process.env.ANTHROPIC_API_KEY),
   code: process.env.ACCESS_CODE || "",
 });
+
+// 캐시 시간: FMP 무료 한도(하루 약 250번)를 아끼려고 길게 잡아요
+const TTL = { macro: 6 * 3600, stock: 4 * 3600, street: 12 * 3600, search: 24 * 3600 };
 
 // 무료 API 한도를 아끼는 메모리 캐시 (서버리스에서는 인스턴스가 살아 있는 동안만 유지)
 const cache = new Map();
@@ -27,7 +30,7 @@ async function cached(key, ttlMs, fn) {
 
 async function getMacro() {
   const { demo } = env();
-  return cached("macro", 3 * 3600e3, async () => {
+  return cached("macro", TTL.macro * 1e3, async () => {
     const [data, commodities] = demo
       ? [demoMacro(), demoCommodities()]
       : await Promise.all([
@@ -110,7 +113,26 @@ async function fetchStock(target, demo) {
   throw lastErr;
 }
 
-async function getStock(input) {
+// Vercel에서는 서버가 자주 새로 떠서 메모리 캐시가 비어 있어요.
+// 그때마다 시장 판독을 다시 계산하면 원자재 때문에 FMP를 5번 더 쓰니, CDN에 캐시된 /api/macro를 먼저 읽어요.
+async function macroForStock(headers) {
+  const host = headers["x-forwarded-host"] || headers.host;
+  if (process.env.VERCEL && host) {
+    try {
+      const res = await fetch(`https://${host}/api/macro`, {
+        headers: headers["x-access-code"] ? { "x-access-code": headers["x-access-code"] } : {},
+        signal: AbortSignal.timeout(8000),
+      });
+      if (res.ok) {
+        const m = await res.json();
+        if (m && Array.isArray(m.signals)) return m;
+      }
+    } catch {}
+  }
+  return getMacro();
+}
+
+async function getStock(input, headers = {}) {
   const { demo } = env();
   let target;
   try {
@@ -122,26 +144,29 @@ async function getStock(input) {
     if (!hit) throw e;
     target = resolve(hit.s);
   }
-  return cached(`stock:${target.candidates.join("|")}`, 5 * 60e3, async () => {
-    const [macro, raw] = await Promise.all([getMacro(), fetchStock(target, demo)]);
+  return cached(`stock:${target.candidates.join("|")}`, TTL.stock * 1e3, async () => {
+    const [macro, raw] = await Promise.all([macroForStock(headers), fetchStock(target, demo)]);
+    // 미국 종목(FMP)과 데모는 월가 의견을 버튼으로 따로 불러와요 (호출 한도 절약)
+    if (demo) delete raw.street;
+    const streetLazy = !raw.street;
     raw.market = target.market;
     raw.marketName = target.market === "KR" ? raw.exchange || marketLabel(raw.symbol) || "한국" : raw.exchange || "미국";
     raw.currency = target.market === "KR" ? "KRW" : "USD";
     if (raw.history.length < 60) {
-      const err = new Error(`${symbol}의 주가 이력이 충분하지 않아요.`);
+      const err = new Error(`${target.query}의 주가 이력이 충분하지 않아요.`);
       err.status = 422;
       throw err;
     }
     const stats = priceStats(raw.history);
     const result = judgeStock(raw, stats, macro);
     const history = raw.history.slice(-252).map((p) => [p.date, p.close]);
-    return { ...raw, history, stats, ...result, macroScore: macro.score, fetchedAt: new Date().toISOString() };
+    return { ...raw, history, stats, ...result, streetLazy, macroScore: macro.score, fetchedAt: new Date().toISOString() };
   });
 }
 
-async function aiCommentary(symbol) {
+async function aiCommentary(symbol, headers) {
   // 판독 결과는 getStock에서 캐시된 것을 재사용
-  const s = await getStock(symbol);
+  const s = await getStock(symbol, headers);
   const macro = await getMacro();
   const facts = {
     종목: `${s.name} (${s.symbol})`,
@@ -185,17 +210,27 @@ async function handle(path, headers = {}) {
       return { status: 200, body: { demo, ai, needsCode: Boolean(code), demoSymbols: demo ? demoSymbols : [] }, maxAge: 0 };
     if (code && headers["x-access-code"] !== code)
       return { status: 401, body: { error: "접근 코드가 맞지 않아요." }, maxAge: 0 };
-    if (path === "macro") return { status: 200, body: await getMacro(), maxAge: 1800 };
+    if (path === "macro") return { status: 200, body: await getMacro(), maxAge: TTL.macro };
     // 자동완성: /api/search/검색어 (국내는 네이버, 미국은 FMP)
     const sm = path.match(/^search\/(.{1,40})$/);
     if (sm) {
       const q = decodeURIComponent(sm[1]).trim();
       if (demo) return { status: 200, body: { results: [] }, maxAge: 0 };
       const kr = /[가-힣]|^\d{2,6}$/.test(q);
-      const results = await cached(`search:${q}`, 24 * 3600e3, () =>
+      const results = await cached(`search:${q}`, TTL.search * 1e3, () =>
         (kr ? naver.search(q) : fmpSearch(q, process.env.FMP_API_KEY)).catch(() => [])
       );
-      return { status: 200, body: { results: results.map((r) => ({ ...r, kr })) }, maxAge: 86400 };
+      return { status: 200, body: { results: results.map((r) => ({ ...r, kr })) }, maxAge: TTL.search };
+    }
+    // 월가 애널리스트 의견 (버튼을 누를 때만): /api/street/종목/우호적인투자자수/현재가
+    const sv = path.match(/^street\/([A-Za-z0-9.\-]{1,20})\/([0-7])\/(\d+(?:\.\d+)?)$/);
+    if (sv) {
+      const [, sym, fav, price] = sv;
+      const raw = demo
+        ? demoStock(sym).street
+        : await cached(`street:${sym}`, TTL.street * 1e3, () => streetData(sym, process.env.FMP_API_KEY));
+      const view = streetReading(raw, Number(price), Number(fav));
+      return { status: 200, body: { street: view }, maxAge: TTL.street };
     }
     if (path === "check/KR") return { status: 200, body: { naver: await naver.probe("005930") }, maxAge: 0 };
     // 연동 점검: /api/check/VZ → 각 데이터가 들어오는지와 필드명을 보여준다 (키 값은 노출하지 않음)
@@ -221,14 +256,17 @@ async function handle(path, headers = {}) {
       const symbol = decodeURIComponent(m[1]);
       if (m[2]) {
         if (!ai) return { status: 400, body: { error: "ANTHROPIC_API_KEY가 설정되지 않았어요." }, maxAge: 0 };
-        return { status: 200, body: await aiCommentary(symbol), maxAge: 0 };
+        return { status: 200, body: await aiCommentary(symbol, headers), maxAge: 0 };
       }
-      return { status: 200, body: await getStock(symbol), maxAge: 300 };
+      return { status: 200, body: await getStock(symbol, headers), maxAge: TTL.stock };
     }
     return { status: 404, body: { error: "없는 경로예요." }, maxAge: 0 };
   } catch (err) {
     console.error(err.message);
-    return { status: err.status || 502, body: { error: err.message }, maxAge: 0 };
+    // 외부 데이터 오류(FMP·FRED·네이버 원문)는 쉬운 문구로 바꿔 보여줘요
+    const raw = /^(FMP|FRED|네이버)|fetch failed|timeout/i.test(err.message);
+    const message = raw ? "데이터를 불러오지 못했어요. 잠시 후 다시 시도해 주세요." : err.message;
+    return { status: err.status || 502, body: { error: message }, maxAge: 0 };
   }
 }
 

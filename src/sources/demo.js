@@ -94,7 +94,7 @@ const stocks = {
 function demoStock(symbol) {
   const s = stocks[symbol];
   if (!s) {
-    const err = new Error(`데모 모드에서는 ${Object.keys(stocks).join(", ")}만 볼 수 있습니다. 실제 데이터는 API 키를 넣고 실행하세요.`);
+    const err = new Error(`데모 모드에서는 ${Object.keys(stocks).join(", ")}만 볼 수 있어요.`);
     err.status = 404;
     throw err;
   }

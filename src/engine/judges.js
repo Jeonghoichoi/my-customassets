@@ -193,12 +193,14 @@ const PROFILES = {
 
 // 종목 단위 월가 의견과 원칙 판독을 비교
 function streetView(stock, judges) {
-  const st = stock.street;
+  return streetReading(stock.street, stock.price, judges.filter((j) => (j.score ?? 0) >= 65).length);
+}
+// 월가 의견 + 원칙 판독(우호적인 투자자 수 fav) 비교. 따로 불러올 때도 같은 규칙을 써요
+function streetReading(st, price, fav) {
   if (!st || (!st.consensus && !st.target)) return null;
-  const upside = st.target && stock.price ? ((st.target - stock.price) / stock.price) * 100 : null;
+  const upside = st.target && price ? ((st.target - price) / price) * 100 : null;
   const bull = /buy|outperform|overweight/i.test(st.consensus || "") || (st.buyShare ?? 0) >= 60;
   const bear = /sell|underperform|underweight/i.test(st.consensus || "");
-  const fav = judges.filter((j) => (j.score ?? 0) >= 65).length;
   let reading;
   if (bull && fav >= 4) reading = "월가와 원칙 판독이 같은 방향이에요. 의견이 모일수록 기대도 가격에 반영되니, 목표가까지 남은 여력을 함께 보세요.";
   else if (bull && fav <= 2) reading = "월가는 낙관하는데 원칙 판독은 경계해요. 윌리엄스와 버리의 눈으로 보면 모두가 좋다고 할 때 그 기대가 이미 가격에 들어가 있을 수 있어요.";
@@ -278,4 +280,4 @@ function judgeStock(stock, stats, macro) {
   return { judges, position, needle, consensus, street: streetView(stock, judges) };
 }
 
-module.exports = { judgeStock };
+module.exports = { judgeStock, streetReading };

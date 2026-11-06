@@ -3,14 +3,38 @@
 // 첫 실행 때 값이 비어 나오면 아래 pick(...) 후보 목록에 실제 필드명을 추가하세요.
 const BASE = "https://financialmodelingprep.com/stable";
 
-async function get(path, params, key) {
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+function limitError() {
+  const err = new Error("오늘 조회 한도를 다 썼어요. 잠시 후 다시 시도해 주세요.");
+  err.status = 429;
+  return err;
+}
+
+// 429(호출 한도 초과)면 잠깐 쉬었다 한 번만 다시 시도하고, 그래도 안 되면 쉬운 문구로 알려요
+async function get(path, params, key, retried = false) {
   const qs = new URLSearchParams({ ...params, apikey: key });
   const res = await fetch(`${BASE}/${path}?${qs}`);
-  if (!res.ok) throw new Error(`FMP ${path} 응답 ${res.status}`);
+  if (res.status === 429) {
+    if (retried) throw limitError();
+    await sleep(1500);
+    return get(path, params, key, true);
+  }
+  if (!res.ok) {
+    const err = new Error(`FMP ${path} 응답 ${res.status}`);
+    err.status = res.status === 404 ? 404 : 502;
+    throw err;
+  }
   const json = await res.json();
   if (json && json["Error Message"]) throw new Error(`FMP: ${json["Error Message"]}`);
   return json;
 }
+
+// 없어도 판독은 되는 호출: 실패하면 빈 값. 단, 한도 초과는 숨기지 않고 알려요
+const soft = (p) =>
+  p.catch((e) => {
+    if (e.status === 429) throw e;
+    return [];
+  });
 
 const first = (x) => (Array.isArray(x) ? x[0] : x) || null;
 const num = (v) => (v === undefined || v === null || v === "" || Number.isNaN(Number(v)) ? null : Number(v));
@@ -28,29 +52,18 @@ const pct = (v) => (v === null ? null : v * 100);
 
 async function stock(symbol, key) {
   const from = new Date(Date.now() - 400 * 864e5).toISOString().slice(0, 10);
-  const [q, prof, r, k, h, inc] = await Promise.all([
-    get("quote", { symbol }, key),
-    get("profile", { symbol }, key).catch(() => []),
-    get("ratios-ttm", { symbol }, key).catch(() => []),
-    get("key-metrics-ttm", { symbol }, key).catch(() => []),
-    get("historical-price-eod/full", { symbol, from }, key).catch(() =>
-      get("historical-price-eod/light", { symbol, from }, key).catch(() => [])
+  // 호출 한도를 아끼려고 5번만 불러요. 시세는 quote 대신 profile과 주가 이력으로 채워요.
+  // 애널리스트 의견은 화면에서 버튼을 누를 때 street()로 따로 불러요.
+  const [prof, r, k, h, inc] = await Promise.all([
+    soft(get("profile", { symbol }, key)),
+    soft(get("ratios-ttm", { symbol }, key)),
+    soft(get("key-metrics-ttm", { symbol }, key)),
+    get("historical-price-eod/full", { symbol, from }, key).catch((e) =>
+      e.status === 429 ? Promise.reject(e) : soft(get("historical-price-eod/light", { symbol, from }, key))
     ),
-    get("income-statement", { symbol, limit: 4 }, key).catch(() => []),
-  ]);
-  // 애널리스트 의견: 요금제에 따라 막혀 있을 수 있어 실패해도 판독은 계속한다
-  const [pt, gc, gr] = await Promise.all([
-    get("price-target-consensus", { symbol }, key).catch(() => []),
-    get("grades-consensus", { symbol }, key).catch(() => []),
-    get("grades", { symbol, limit: 40 }, key).catch(() => []),
+    soft(get("income-statement", { symbol, limit: 4 }, key)),
   ]);
 
-  const quote = first(q);
-  if (!quote) {
-    const err = new Error(`${symbol} 종목을 찾지 못했습니다.`);
-    err.status = 404;
-    throw err;
-  }
   const profile = first(prof) || {};
   const ratios = first(r) || {};
   const km = first(k) || {};
@@ -59,6 +72,14 @@ async function stock(symbol, key) {
     .map((p) => ({ date: p.date, close: num(p.close ?? p.price), high: num(p.high), low: num(p.low) }))
     .filter((p) => p.close)
     .sort((a, b) => (a.date < b.date ? -1 : 1));
+  if (!profile.symbol && !history.length) {
+    const err = new Error(`${symbol} 종목을 찾지 못했어요.`);
+    err.status = 404;
+    throw err;
+  }
+  const last = history[history.length - 1]?.close ?? null;
+  const prevClose = history[history.length - 2]?.close ?? null;
+  const price = num(profile.price) ?? last;
 
   const incs = Array.isArray(inc) ? inc : [];
   const [cur, prev] = incs;
@@ -74,14 +95,16 @@ async function stock(symbol, key) {
   const divPercent = pick(ratios, "dividendYieldPercentageTTM", "dividendYielPercentageTTM");
 
   return {
-    symbol: quote.symbol || symbol,
-    name: quote.name || profile.companyName || symbol,
+    symbol: profile.symbol || symbol,
+    name: profile.companyName || symbol,
     sector: profile.sector || null,
     industry: profile.industry || null,
-    exchange: quote.exchange || profile.exchange || null,
-    price: num(quote.price),
-    changePct: pick(quote, "changePercentage", "changesPercentage"),
-    marketCap: num(quote.marketCap ?? profile.marketCap),
+    exchange: profile.exchange || profile.exchangeShortName || null,
+    price,
+    changePct:
+      pick(profile, "changePercentage", "changesPercentage") ??
+      (price && prevClose ? ((price - prevClose) / prevClose) * 100 : null),
+    marketCap: num(profile.marketCap ?? profile.mktCap),
     metrics: {
       pe: pick(ratios, "priceToEarningsRatioTTM", "peRatioTTM"),
       pb: pick(ratios, "priceToBookRatioTTM", "priceBookValueRatioTTM"),
@@ -104,8 +127,17 @@ async function stock(symbol, key) {
       epsGrowthBasis: epsGrowth === null ? null : `최근 ${years}년 EPS 연평균`,
     },
     history,
-    street: street(first(pt), first(gc), Array.isArray(gr) ? gr : []),
   };
+}
+
+// 애널리스트 의견 (3번 호출): 화면에서 '불러오기'를 누를 때만 불러요
+async function streetData(symbol, key) {
+  const [pt, gc, gr] = await Promise.all([
+    soft(get("price-target-consensus", { symbol }, key)),
+    soft(get("grades-consensus", { symbol }, key)),
+    soft(get("grades", { symbol, limit: 40 }, key)),
+  ]);
+  return street(first(pt), first(gc), Array.isArray(gr) ? gr : []);
 }
 
 const MAJOR =
@@ -138,8 +170,8 @@ function street(pt, gc, grades) {
 // 미국 종목 자동완성 (호출 한도를 쓰므로 화면에서 꼭 필요할 때만 부른다)
 async function search(q, key) {
   const [a, b] = await Promise.all([
-    get("search-symbol", { query: q, limit: 10 }, key).catch(() => []),
-    get("search-name", { query: q, limit: 10 }, key).catch(() => []),
+    soft(get("search-symbol", { query: q, limit: 10 }, key)),
+    soft(get("search-name", { query: q, limit: 10 }, key)),
   ]);
   const seen = new Set();
   return [...(Array.isArray(a) ? a : []), ...(Array.isArray(b) ? b : [])]
@@ -149,7 +181,7 @@ async function search(q, key) {
     .map((x) => ({ s: x.symbol, n: x.name, m: x.exchange || x.exchangeShortName || "US" }));
 }
 
-module.exports = { stock, search };
+module.exports = { stock, search, streetData };
 
 // 첫 연동 점검용: 각 엔드포인트가 응답하는지, 어떤 필드명이 오는지 확인
 async function probe(symbol, key) {

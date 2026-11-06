@@ -1003,9 +1003,17 @@
         font-size: 14px;
         color: var(--ink-2);
       }
+      /* 보조 버튼: 연한 파랑 */
+      .ghost,
       .ai button {
         width: 100%;
         margin-top: 16px;
+        background: var(--primary-soft);
+        color: var(--primary);
+      }
+      .ghost:disabled,
+      .ai button:disabled {
+        opacity: 0.6;
       }
       .ai p {
         white-space: pre-wrap;
@@ -1086,8 +1094,17 @@
       const esc = (v) =>
         String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
       const fmt = (v, d = 1) => (v === null || v === undefined || Number.isNaN(v) ? "–" : v.toFixed(d));
-      const signed = (v, d = 1, unit = "%") => (v === null || v === undefined || Number.isNaN(v) ? "–" : `${v >= 0 ? "+" : ""}${v.toFixed(d)}${unit}`);
-      const updown = (v) => (v === null || v === undefined ? "" : v > 0 ? "up" : v < 0 ? "down" : "");
+      // 반올림해서 0이면 부호·색 없이 보여줘요 (-0.0% 방지)
+      const signed = (v, d = 1, unit = "%") => {
+        if (v === null || v === undefined || Number.isNaN(v)) return "–";
+        const r = Number(v.toFixed(d));
+        return `${r > 0 ? "+" : r < 0 ? "-" : ""}${Math.abs(r).toFixed(d)}${unit}`;
+      };
+      const updown = (v, d = 2) => {
+        if (v === null || v === undefined || Number.isNaN(v)) return "";
+        const r = Number(v.toFixed(d));
+        return r > 0 ? "up" : r < 0 ? "down" : "";
+      };
       const statusColor = (g) => (g === null ? "var(--fill-2)" : g >= 1 ? "var(--good)" : g > 0 ? "var(--mid)" : "var(--warn)");
       const scoreTone = (s) => (s >= 65 ? "on" : s >= 45 ? "mid" : "off");
       const toneColor = { on: "var(--good)", mid: "var(--mid)", off: "var(--warn)" };
@@ -1140,6 +1157,8 @@
         "10년 패턴": ["10년 패턴", "연도 끝자리별 과거 수익률 패턴이에요. 끝자리 5·7·8년이 강했어요."],
         유가: ["유가 (WTI)", "미국 원유 가격이에요. 오르면 물가와 금리 부담이 커지고, 꺾이면 주식에 순풍이에요."],
         구리: ["구리", "공장·건설·전력망에 두루 쓰여서 경기를 먼저 알려준다고 '닥터 코퍼'라고 불려요."],
+        브렌트: ["브렌트유", "유럽·중동 원유의 기준 가격이에요. WTI와 차이가 벌어지면 중동·유럽 공급 불안을 반영해요."],
+        천연가스: ["천연가스", "난방과 발전에 쓰이는 연료예요. 겨울에 급등하면 유럽·아시아 물가를 끌어올려요."],
         금: ["금", "대표적인 안전자산이에요. 불안할 때나 달러 가치가 떨어질 때 올라요."],
         컨센서스: ["컨센서스", "이 종목을 분석하는 증권사 애널리스트들의 평균 의견이에요."],
         목표가: ["평균 목표가", "애널리스트들이 제시한 1년 뒤 예상 주가의 평균이에요. 자주 틀리고 주가를 뒤따라 바뀌어요."],
@@ -1154,9 +1173,10 @@
         ["상대 강도", "상대 강도"], ["신용 스프레드", "신용 스프레드"], ["신용시장", "신용시장"], ["장단기", "장단기 금리차"],
         ["구리/금", "구리/금"], ["통화정책", "통화정책"], ["유동성", "유동성"], ["채권 금리", "채권 금리"], ["신용잔고", "신용잔고"],
         ["투자 심리", "투자 심리"], ["4년 주기", "4년 주기"], ["계절성", "계절성"], ["10년 패턴", "10년 패턴"], ["유가", "유가"],
+        ["WTI", "유가"], ["브렌트", "브렌트"], ["천연가스", "천연가스"],
         ["구리", "구리"], ["금 가격", "금"], ["컨센서스", "컨센서스"], ["목표가", "목표가"],
       ];
-      const termKey = (label) => (TERM_MATCH.find(([w]) => String(label).includes(w)) || [])[1];
+      const termKey = (label) => (TERMS[label] ? label : (TERM_MATCH.find(([w]) => String(label).includes(w)) || [])[1]);
       // 라벨 옆 ⓘ 버튼. now는 '지금 이 종목에서는' 같은 구체 설명
       function tip(label, now, nowTitle = "지금은") {
         const k = termKey(label);
@@ -1306,13 +1326,13 @@
             const cm = $("#commodities");
             cm.hidden = false;
             cm.innerHTML = `<h2 id="cmd-title">원자재로 보는 실물 경기</h2>
-        <p class="sub">${esc(m.commodities[0].date)} 기준 · 3개월 등락</p>
+        <p class="sub">${esc(m.commodities[0].date)} 기준 · 1년 등락</p>
         <div class="cmd-grid">${m.commodities
           .map(
             (c) => `<div class="cmd">
           <b>${esc(c.name)}${tip(c.name)}</b><small>${esc(c.unit)}</small>
-          <strong>${price(c)}</strong><span class="chg ${updown(c.m3)}">${signed(c.m3, 0)}</span>
-          <svg viewBox="0 0 200 28" preserveAspectRatio="none" class="${updown(c.y1) || "down"}" aria-hidden="true"><path d="${sparkPath(
+          <strong>${price(c)}</strong><span class="chg ${updown(c.y1, 0)}">${signed(c.y1, 0)}</span>
+          <svg viewBox="0 0 200 28" preserveAspectRatio="none" class="${updown(c.y1, 0) || "down"}" aria-hidden="true"><path d="${sparkPath(
               c.spark,
               200,
               28
@@ -1322,8 +1342,8 @@
         <details class="more"><summary>원자재가 말해주는 것</summary><div class="body"><dl class="defs">${m.commodities
           .map(
             (c) =>
-              `<div><dt>${esc(c.name)} <span class="sub" style="font-weight:400">1개월 ${signed(c.m1, 0)} · 1년 ${signed(
-                c.y1,
+              `<div><dt>${esc(c.name)} <span class="sub" style="font-weight:400">1개월 ${signed(c.m1, 0)} · 3개월 ${signed(
+                c.m3,
                 0
               )}</span></dt><dd>${esc(c.meaning)}</dd></div>`
           )
@@ -1347,7 +1367,7 @@
               f.stance
             )}</span></span><span class="val"><span class="num" style="color:var(--ink);font-weight:600">${
               f.target ? f.target.toLocaleString("en-US") : "–"
-            }</span><span class="num ${updown(f.upside)}" style="min-width:48px">${
+            }</span><span class="num ${updown(f.upside, 1)}" style="min-width:48px">${
               f.upside === null ? "–" : signed(f.upside, 1)
             }</span></span></summary>
           <p class="detail">${esc(f.thesis)}${
@@ -1433,6 +1453,31 @@
   </div>`;
       }
 
+      function streetBody(t, money) {
+        return `        ${t.analysts ? `<p class="sub">애널리스트 ${t.analysts}명 기준</p>` : ""}
+        <div class="tiles3">
+          <div class="tile"><small>컨센서스${tip("컨센서스")}</small><strong>${esc(t.consensus || "–")}</strong></div>
+          <div class="tile"><small>평균 목표가${tip("목표가")}</small><strong>${t.target ? money(t.target) : "–"}</strong></div>
+          <div class="tile"><small>목표가까지</small><strong class="${updown(t.upside, 1)}">${t.upside === null ? "–" : signed(t.upside, 1)}</strong></div>
+        </div>
+        <div class="callout">${esc(t.reading)}</div>
+        ${
+          t.actions && t.actions.length
+            ? `<details class="more"><summary>최근 의견 변경 ${t.actions.length}건</summary><div class="body"><ul class="checks">${t.actions
+                .map(
+                  (a) =>
+                    `<li><span class="name" style="display:block">${esc(a.firm)} <small style="color:var(--ink-3)">${esc(
+                      a.date
+                    )}</small></span><span class="v" style="font-weight:500">${esc(
+                      [a.from && a.to ? a.from + " → " + a.to : a.action, a.target ? "목표 " + money(a.target) : ""].filter(Boolean).join(", ")
+                    )}</span></li>`
+                )
+                .join("")}</ul></div></details>`
+            : ""
+        }`;
+      }
+
+      let stockReq = 0;
       async function loadStock(symbol, scroll) {
         symbol = symbol.trim();
         if (/^[a-z.\-]+$/i.test(symbol)) symbol = symbol.toUpperCase();
@@ -1442,8 +1487,10 @@
         if (scroll) col.scrollIntoView({ behavior: "smooth", block: "start" });
         location.hash = encodeURIComponent(symbol);
         remember(symbol);
+        const req = ++stockReq;
         try {
           const s = await api(`/api/stock/${encodeURIComponent(symbol)}`);
+          if (req !== stockReq) return; // 그사이 다른 종목을 검색했으면 버려요
           const st = s.stats;
           const money = (v) => (s.currency === "KRW" ? Math.round(v).toLocaleString("ko-KR") + "원" : "$" + fmt(v, 2));
           const tone = pointTone(s.needle);
@@ -1464,11 +1511,11 @@
           )}</span> <span class="sub" style="font-weight:400">오늘</span></div>
         ${spark(s.history, st.high52, s.currency)}
         <div class="tiles3">
-          <div class="tile"><small>1년 고점 대비${tip("1년 고점")}</small><strong class="${updown(st.fromHigh)}">${signed(
+          <div class="tile"><small>1년 고점 대비${tip("1년 고점")}</small><strong class="${updown(st.fromHigh, 1)}">${signed(
             st.fromHigh,
             1
           )}</strong></div>
-          <div class="tile"><small>200일선${tip("200일")}</small><strong class="${updown(st.vsMa200)}">${signed(st.vsMa200, 1)}</strong></div>
+          <div class="tile"><small>200일선${tip("200일")}</small><strong class="${updown(st.vsMa200, 1)}">${signed(st.vsMa200, 1)}</strong></div>
           <div class="tile"><small>RSI${tip("RSI")}</small><strong>${fmt(st.rsi14, 0)}</strong></div>
         </div>
         ${
@@ -1509,28 +1556,11 @@
 
       ${
         t
-          ? `<section class="card"><h2>월가 애널리스트 의견</h2>
-        ${t.analysts ? `<p class="sub">애널리스트 ${t.analysts}명 기준</p>` : ""}
-        <div class="tiles3">
-          <div class="tile"><small>컨센서스${tip("컨센서스")}</small><strong>${esc(t.consensus || "–")}</strong></div>
-          <div class="tile"><small>평균 목표가${tip("목표가")}</small><strong>${t.target ? money(t.target) : "–"}</strong></div>
-          <div class="tile"><small>목표가까지</small><strong class="${updown(t.upside)}">${t.upside === null ? "–" : signed(t.upside, 1)}</strong></div>
-        </div>
-        <div class="callout">${esc(t.reading)}</div>
-        ${
-          t.actions && t.actions.length
-            ? `<details class="more"><summary>최근 의견 변경 ${t.actions.length}건</summary><div class="body"><ul class="checks">${t.actions
-                .map(
-                  (a) =>
-                    `<li><span class="name" style="display:block">${esc(a.firm)} <small style="color:var(--ink-3)">${esc(
-                      a.date
-                    )}</small></span><span class="v" style="font-weight:500">${esc(
-                      [a.from && a.to ? a.from + " → " + a.to : a.action, a.target ? "목표 " + money(a.target) : ""].filter(Boolean).join(", ")
-                    )}</span></li>`
-                )
-                .join("")}</ul></div></details>`
-            : ""
-        }</section>`
+          ? `<section class="card" id="street-card"><h2>월가 애널리스트 의견</h2>${streetBody(t, money)}</section>`
+          : s.streetLazy
+          ? `<section class="card" id="street-card"><h2>월가 애널리스트 의견</h2>
+        <p class="sub">컨센서스·목표가·최근 의견 변경을 보여줘요</p>
+        <button type="button" class="ghost" id="street-btn">불러오기</button></section>`
           : ""
       }
       <p class="foot">공개된 투자 원칙을 수치 규칙으로 옮긴 결과예요. 실제 인물의 의견이나 투자 권유가 아니에요. 데이터 ${esc(
@@ -1543,6 +1573,24 @@
               document.getElementById("j-" + a.dataset.j)?.scrollIntoView({ behavior: "smooth", block: "start" });
             })
           );
+          const sb = $("#street-btn");
+          if (sb)
+            sb.addEventListener("click", async () => {
+              sb.disabled = true;
+              sb.textContent = "불러오는 중이에요";
+              try {
+                const r = await api(
+                  `/api/street/${encodeURIComponent(s.symbol)}/${s.consensus.favorable}/${Number(s.price).toFixed(2)}`
+                );
+                $("#street-card").innerHTML = r.street
+                  ? `<h2>월가 애널리스트 의견</h2>${streetBody(r.street, money)}`
+                  : `<h2>월가 애널리스트 의견</h2><p class="sub">이 종목은 애널리스트 의견 자료가 없어요</p>`;
+              } catch (e) {
+                sb.disabled = false;
+                sb.textContent = "다시 시도";
+                sb.insertAdjacentHTML("beforebegin", `<p class="sub error">${esc(e.message)}</p>`);
+              }
+            });
           const btn = $("#ai-btn");
           if (btn)
             btn.addEventListener("click", async () => {
@@ -1558,6 +1606,7 @@
               }
             });
         } catch (e) {
+          if (req !== stockReq) return;
           col.innerHTML = `<section class="card"><p class="empty error">${esc(e.message)}</p></section>`;
         }
       }
@@ -1668,7 +1717,9 @@
         renderAc(q, local, false);
         clearTimeout(remoteTimer);
         // 목록에 적을 때만 서버 검색 (미국은 FMP 호출 한도를 쓰므로 아끼기)
-        if (local.length >= 3 || config.demo || q.length < 2 || isCho(q)) return;
+        // 국내(한글·숫자)는 네이버라 2글자부터, 미국은 FMP 한도를 아끼려고 3글자부터 조금 더 기다렸다 찾아요
+        const kr = /[가-힣]|^\d{2,6}$/.test(q);
+        if (local.length >= 3 || config.demo || isCho(q) || q.length < (kr ? 2 : 3)) return;
         remoteTimer = setTimeout(async () => {
           try {
             const r = await api(`/api/search/${encodeURIComponent(q)}`);
@@ -1679,7 +1730,7 @@
               .filter((x) => !local.some((l) => l.s === x.s));
             renderAc(q, [...local, ...extra].slice(0, 10), false);
           } catch {}
-        }, 450);
+        }, kr ? 450 : 800);
       }
       $("#q").addEventListener("input", () => {
         clearTimeout(acTimer);
