@@ -9,8 +9,8 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="배당셰프" />
-    <title>배당셰프 판독기</title>
+    <meta name="apple-mobile-web-app-title" content="판독기" />
+    <title>판독기</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -1279,6 +1279,21 @@
         align-items: center;
         gap: 12px;
       }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex: none;
+        margin: 0;
+        font-size: 15px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--ink);
+      }
+      .logo svg {
+        display: block;
+        border-radius: 8px;
+      }
       .ticker {
         min-height: 0;
         padding: 0;
@@ -1620,7 +1635,16 @@
   <body>
     <header class="top">
       <div class="brand">
-        <h1 class="sr-only">배당셰프 판독기</h1>
+        <h1 class="logo"><svg width="26" height="26" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="logo-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4C97FF"/><stop offset="1" stop-color="#2272EB"/></linearGradient></defs><rect width="64" height="64" rx="14" fill="url(#logo-g)"/><g transform="translate(32 33) scale(0.84) translate(-32 -33)"><g>
+<circle cx="24" cy="15.5" r="6.8" fill="#fff"/><circle cx="32" cy="12" r="7.6" fill="#fff"/><circle cx="40" cy="15.5" r="6.8" fill="#fff"/>
+<path d="M21.5 18 H42.5 L41 22 H23 Z" fill="#fff"/>
+<path d="M23 21.5 H41 L40 34 H24 Z" fill="#fff"/>
+<path d="M22.5 21.6 H41.5" stroke="#2B7BF3" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M28 24.5 V31.5 M32 24.5 V31.5 M36 24.5 V31.5" stroke="#2B7BF3" stroke-width="1.8" stroke-linecap="round"/>
+</g>
+<rect x="16" y="45" width="8" height="8" rx="2" fill="#fff" fill-opacity=".6"/>
+<rect x="28" y="41" width="8" height="12" rx="2" fill="#fff" fill-opacity=".8"/>
+<rect x="40" y="37" width="8" height="16" rx="2" fill="#fff"/></g></svg><span>판독기</span></h1>
         <button type="button" class="ticker" id="ticker" aria-label="주요 지수, 누르면 다음 지수" hidden></button>
         <span id="asof"></span>
       </div>
@@ -1630,7 +1654,7 @@
           <input
             id="q"
             inputmode="text"
-            placeholder="종목·ETF (애플, SCHD, KODEX 200)"
+            placeholder="종목·ETF 이름이나 코드"
             aria-label="종목 검색"
             role="combobox"
             aria-autocomplete="list"
@@ -1933,7 +1957,11 @@
       async function loadMarket() {
         try {
           const m = await api("/api/macro");
-          $("#asof").textContent = m.updatedAt ? `업데이트 ${timeText(m.updatedAt)}` : `${m.asOf} 기준`;
+          // 머리줄이 좁아서 오늘이면 시각만 보여줘요 (전체 날짜는 title로)
+          const upd = m.updatedAt ? new Date(m.updatedAt) : null;
+          const today = upd && upd.toDateString() === new Date().toDateString();
+          $("#asof").textContent = upd ? (today ? timeText(m.updatedAt).split(" ").pop() : timeText(m.updatedAt)) : `${m.asOf} 기준`;
+          $("#asof").title = upd ? `업데이트 ${timeText(m.updatedAt)}` : "";
           FX = m.fx || null;
           MACRO = m;
           fillKrw();

@@ -1,1 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#16202A"/><path d="M12 44a20 20 0 0 1 40 0" fill="none" stroke="#2F7A55" stroke-width="5" stroke-linecap="round"/><path d="M12 44a20 20 0 0 1 10-17.3" fill="none" stroke="#B3402F" stroke-width="5" stroke-linecap="round"/><line x1="32" y1="44" x2="46" y2="30" stroke="#D2AE5C" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="44" r="4" fill="#D2AE5C"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4C97FF"/><stop offset="1" stop-color="#2272EB"/></linearGradient></defs><rect width="64" height="64" rx="14" fill="url(#g)"/><g transform="translate(32 33) scale(0.84) translate(-32 -33)"><g>
+<circle cx="24" cy="15.5" r="6.8" fill="#fff"/><circle cx="32" cy="12" r="7.6" fill="#fff"/><circle cx="40" cy="15.5" r="6.8" fill="#fff"/>
+<path d="M21.5 18 H42.5 L41 22 H23 Z" fill="#fff"/>
+<path d="M23 21.5 H41 L40 34 H24 Z" fill="#fff"/>
+<path d="M22.5 21.6 H41.5" stroke="#2B7BF3" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M28 24.5 V31.5 M32 24.5 V31.5 M36 24.5 V31.5" stroke="#2B7BF3" stroke-width="1.8" stroke-linecap="round"/>
+</g>
+<rect x="16" y="45" width="8" height="8" rx="2" fill="#fff" fill-opacity=".6"/>
+<rect x="28" y="41" width="8" height="12" rx="2" fill="#fff" fill-opacity=".8"/>
+<rect x="40" y="37" width="8" height="16" rx="2" fill="#fff"/></g></svg>

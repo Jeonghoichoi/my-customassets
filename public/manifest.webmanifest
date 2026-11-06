@@ -1,6 +1,6 @@
 {
-  "name": "배당셰프 판독기",
-  "short_name": "배당셰프",
+  "name": "판독기",
+  "short_name": "판독기",
   "description": "윌리엄스·버핏·멍거·린치·드러켄밀러·애크먼·버리의 원칙으로 지금 가격을 판독해요",
   "id": "/",
   "start_url": "/",
@@ -8,7 +8,7 @@
   "display": "standalone",
   "orientation": "portrait",
   "lang": "ko",
-  "background_color": "#F2F4F6",
+  "background_color": "#3182F6",
   "theme_color": "#F2F4F6",
   "icons": [
     {
