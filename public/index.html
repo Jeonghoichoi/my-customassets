@@ -603,7 +603,7 @@
       }
       .hero {
         display: flex;
-        align-items: flex-end;
+        align-items: center;
         justify-content: space-between;
         gap: 12px;
       }
@@ -1056,8 +1056,12 @@
         white-space: nowrap;
         color: #fff;
       }
-      /* 숫자 강조 */
-      b.hl {
+      /* 숫자 강조: 회색 상자(.callout)의 제목 스타일을 이어받지 않게 줄 안에 그대로 둬요 */
+      b.hl,
+      .callout b.hl {
+        display: inline;
+        margin: 0;
+        font-size: inherit;
         font-weight: 700;
         color: var(--primary);
       }
