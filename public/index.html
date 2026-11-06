@@ -1503,7 +1503,8 @@
           }</span>
           <h2>${s.market === "KR" ? esc(s.name) : esc(s.symbol)}</h2>
           <p class="sub" style="margin:0">${
-            s.market === "KR" ? esc(s.symbol.replace(/\.(KS|KQ)$/, "")) : esc(s.name) + (s.sector ? " · " + esc(s.sector) : "")
+            (s.market === "KR" ? esc(s.symbol.replace(/\.(KS|KQ)$/, "")) : esc(s.name) + (s.sector ? " · " + esc(s.sector) : "")) +
+            ` · 출처 ${esc(s.source || (config.demo ? "데모 데이터" : "FMP"))}`
           }</p></div></div>
         <div class="price"><strong>${money(s.price)}</strong><span class="${updown(s.changePct)}">${signed(
             s.changePct,

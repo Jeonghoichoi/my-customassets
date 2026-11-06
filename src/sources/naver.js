@@ -9,7 +9,8 @@ async function getJson(url) {
   const res = await fetch(url, { headers: UA });
   if (!res.ok) {
     const e = new Error(`네이버 ${res.status}`);
-    e.status = res.status === 404 ? 404 : 502;
+    // 409는 네이버가 '없는 종목'일 때 주는 응답이에요
+    e.status = res.status === 404 || res.status === 409 ? 404 : 502;
     throw e;
   }
   return res.json();
@@ -220,4 +221,135 @@ async function probe(code) {
   return out;
 }
 
-module.exports = { stock, search, probe };
+// ---------- 미국 종목: 네이버 증권 해외주식 (키 불필요, FMP 한도가 바닥났을 때 대신 써요) ----------
+const W = "https://api.stock.naver.com";
+// 톰슨로이터 업종 코드 앞 두 자리 → 판독에서 쓰는 영문 업종명
+const SECTOR = {
+  50: "Energy", 51: "Basic Materials", 52: "Industrials", 53: "Consumer Cyclical", 54: "Consumer Defensive",
+  55: "Financial Services", 56: "Healthcare", 57: "Technology", 59: "Utilities", 60: "Real Estate",
+};
+const ymd = (d) => d.toISOString().slice(0, 10).replace(/-/g, "");
+
+// 티커(JPM) → 네이버 코드(JPM, AAPL.O 등)
+async function worldCode(ticker) {
+  const t = ticker.toUpperCase();
+  const json = await getJson(`https://ac.stock.naver.com/ac?q=${encodeURIComponent(t)}&target=stock`).catch(() => ({}));
+  const hit = (json.items || []).find((x) => x.nationCode === "USA" && String(x.code).toUpperCase() === t);
+  if (hit?.reutersCode) return hit.reutersCode;
+  const e = new Error(`${t} 종목을 찾지 못했어요.`);
+  e.status = 404;
+  throw e;
+}
+
+// 연간 재무 표의 한 줄을 [오래된 해 → 최근 해] 숫자 배열로
+function yearly(fin, title) {
+  const row = (fin.rowList || []).find((r) => r.title === title);
+  if (!row) return [];
+  return Object.keys(row.columns || {})
+    .sort()
+    .map((k) => n(row.columns[k]?.value))
+    .filter((v) => v !== null);
+}
+
+function consensusOf(cons) {
+  const recomm = n(cons?.recommMean);
+  const target = n(cons?.priceTargetMean);
+  if (!target && !recomm) return null;
+  return {
+    consensus: recomm === null ? null : recomm >= 3.5 ? "매수" : recomm >= 2.5 ? "중립" : "매도",
+    analysts: null,
+    buyShare: null,
+    target,
+    targetHigh: n(cons?.priceTargetHigh),
+    targetLow: n(cons?.priceTargetLow),
+    actions: [],
+  };
+}
+
+async function worldStock(ticker) {
+  const code = await worldCode(ticker);
+  const now = new Date();
+  const from = new Date(Date.now() - 420 * 864e5);
+  const [basic, fin, integ, chart] = await Promise.all([
+    getJson(`${W}/stock/${code}/basic`),
+    getJson(`${W}/stock/${code}/finance/annual`).catch(() => ({})),
+    getJson(`${W}/stock/${code}/integration`).catch(() => ({})),
+    getJson(`${W}/chart/foreign/item/${code}/day?startDateTime=${ymd(from)}0000&endDateTime=${ymd(now)}2359`),
+  ]);
+  const info = Object.fromEntries((basic.stockItemTotalInfos || []).map((x) => [x.code, x.value]));
+  const history = (Array.isArray(chart) ? chart : [])
+    .map((p) => ({
+      date: `${p.localDate.slice(0, 4)}-${p.localDate.slice(4, 6)}-${p.localDate.slice(6, 8)}`,
+      close: n(p.closePrice),
+      high: n(p.highPrice),
+      low: n(p.lowPrice),
+    }))
+    .filter((p) => p.close > 0)
+    .sort((a, b) => (a.date < b.date ? -1 : 1));
+
+  const price = n(basic.closePriceRaw ?? basic.closePrice) ?? history[history.length - 1]?.close ?? null;
+  const marketCap = n(basic.marketValueFullRaw);
+  const pe = n(info.per);
+  const eps = n(info.eps), bps = n(info.bps);
+  const rev = yearly(fin, "매출액"); // 단위: USD 백만
+  const ni = yearly(fin, "당기순이익");
+  const last = (a) => a[a.length - 1] ?? null;
+  const prev = (a) => a[a.length - 2] ?? null;
+  const years = ni.length - 1;
+  // 네이버 해외주식은 연도별 EPS가 없어 순이익 증가율로 대신해요
+  const epsGrowth = years >= 1 && ni[0] > 0 && last(ni) > 0 ? (Math.pow(last(ni) / ni[0], 1 / years) - 1) * 100 : null;
+  const industryKor = basic.industryCodeType?.industryGroupKor || null;
+
+  return {
+    symbol: basic.symbolCode || ticker.toUpperCase(),
+    name: basic.stockNameEng || basic.stockName || ticker,
+    sector: SECTOR[String(basic.industryCodeType?.code || "").slice(0, 2)] || null,
+    industry: industryKor && /금광|귀금속/.test(industryKor) ? `Gold (${industryKor})` : industryKor,
+    exchange: basic.stockExchangeType?.name || basic.stockExchangeName || null,
+    price,
+    changePct: n(basic.fluctuationsRatioRaw ?? basic.fluctuationsRatio),
+    marketCap,
+    metrics: {
+      pe,
+      pb: n(info.pbr),
+      pcf: null,
+      ps: marketCap && last(rev) ? marketCap / (last(rev) * 1e6) : null,
+      divYield: n(info.dividendYieldRatio),
+      roe: eps !== null && bps > 0 ? (eps / bps) * 100 : null,
+      roic: null,
+      debtToEquity: null,
+      grossMargin: null,
+      netMargin: last(ni) !== null && last(rev) ? (last(ni) / last(rev)) * 100 : null,
+      fcfYield: null,
+      earningsYield: pe > 0 ? 100 / pe : null,
+      evToEbitda: null,
+    },
+    growth: {
+      revenueYoY: last(rev) !== null && prev(rev) ? ((last(rev) - prev(rev)) / Math.abs(prev(rev))) * 100 : null,
+      sharesYoY: null,
+      epsGrowth,
+      epsGrowthBasis: epsGrowth === null ? null : `최근 ${years}년 순이익 연평균 (네이버)`,
+    },
+    history,
+    street: consensusOf(integ.consensusInfo),
+    source: "네이버 증권",
+  };
+}
+
+// 월가 의견만 (FMP가 막혔을 때 '불러오기' 대체)
+async function worldStreet(ticker) {
+  const code = await worldCode(ticker);
+  const integ = await getJson(`${W}/stock/${code}/integration`);
+  return consensusOf(integ.consensusInfo);
+}
+
+// 미국 종목 자동완성 (한글 이름도 돼요: 마이크로소프트 → MSFT)
+async function worldSearch(q) {
+  const json = await getJson(`https://ac.stock.naver.com/ac?q=${encodeURIComponent(q)}&target=stock`);
+  return (json.items || [])
+    .filter((x) => x.nationCode === "USA" && x.category === "stock" && !/\s/.test(x.code || ""))
+    .slice(0, 8)
+    .map((x) => ({ s: x.code, n: x.name, m: x.typeName || x.typeCode || "미국" }));
+}
+
+module.exports = { stock, search, probe, worldStock, worldStreet, worldSearch };

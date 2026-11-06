@@ -80,6 +80,13 @@ function houseViews(m) {
   };
 }
 
+// FMP 한도가 바닥나면(429) 1시간 동안은 FMP를 건너뛰고 바로 네이버를 써요 (기다리는 시간 절약)
+let fmpPausedUntil = 0;
+const fmpOk = () => Date.now() > fmpPausedUntil;
+function noteFmpError(e) {
+  if (e?.status === 429) fmpPausedUntil = Date.now() + 3600e3;
+}
+
 // 한국 종목은 코스피(.KS)로 먼저 찾고 없으면 코스닥(.KQ)으로
 async function fetchStock(target, demo) {
   if (demo) {
@@ -99,12 +106,22 @@ async function fetchStock(target, demo) {
     }
   }
   let lastErr;
-  for (const sym of target.candidates) {
+  for (const sym of fmpOk() ? target.candidates : []) {
     try {
       return await fmpStock(sym, process.env.FMP_API_KEY);
     } catch (e) {
       lastErr = e;
+      noteFmpError(e);
       if (e.status !== 404) break;
+    }
+  }
+  // 미국 종목: FMP가 막히거나 실패하면 네이버 증권 해외주식으로
+  if (target.market !== "KR") {
+    try {
+      return await naver.worldStock(target.candidates[0]);
+    } catch (e) {
+      console.error("네이버 해외주식 조회 실패:", e.message);
+      if (!lastErr || lastErr.status === 429) lastErr = e;
     }
   }
   if (target.market === "KR" && lastErr?.status === 404) {
@@ -217,10 +234,19 @@ async function handle(path, headers = {}) {
       const q = decodeURIComponent(sm[1]).trim();
       if (demo) return { status: 200, body: { results: [] }, maxAge: 0 };
       const kr = /[가-힣]|^\d{2,6}$/.test(q);
-      const results = await cached(`search:${q}`, TTL.search * 1e3, () =>
-        (kr ? naver.search(q) : fmpSearch(q, process.env.FMP_API_KEY)).catch(() => [])
-      );
-      return { status: 200, body: { results: results.map((r) => ({ ...r, kr })) }, maxAge: TTL.search };
+      // 미국 종목도 네이버 검색을 먼저 써요 (무료, 한글 이름 검색 가능). 안 되면 FMP
+      const results = await cached(`search:${q}`, TTL.search * 1e3, async () => {
+        // 한글이면 국내 + 미국(엔비디아, 마이크로소프트 등)을 함께, 숫자 코드는 국내만
+        if (/^\d{2,6}$/.test(q)) return naver.search(q).catch(() => []);
+        if (kr) {
+          const [k, w] = await Promise.all([naver.search(q).catch(() => []), naver.worldSearch(q).catch(() => [])]);
+          return [...k.slice(0, 6), ...w.slice(0, 4)].map((x) => ({ ...x, kr: /^\d{6}$/.test(x.s) }));
+        }
+        const nv = await naver.worldSearch(q).catch(() => []);
+        if (nv.length || !fmpOk()) return nv;
+        return fmpSearch(q, process.env.FMP_API_KEY).catch((e) => (noteFmpError(e), []));
+      });
+      return { status: 200, body: { results: results.map((r) => ({ kr, ...r })) }, maxAge: TTL.search };
     }
     // 월가 애널리스트 의견 (버튼을 누를 때만): /api/street/종목/우호적인투자자수/현재가
     const sv = path.match(/^street\/([A-Za-z0-9.\-]{1,20})\/([0-7])\/(\d+(?:\.\d+)?)$/);
@@ -228,7 +254,17 @@ async function handle(path, headers = {}) {
       const [, sym, fav, price] = sv;
       const raw = demo
         ? demoStock(sym).street
-        : await cached(`street:${sym}`, TTL.street * 1e3, () => streetData(sym, process.env.FMP_API_KEY));
+        : await cached(`street:${sym}`, TTL.street * 1e3, async () => {
+            if (fmpOk()) {
+              try {
+                const st = await streetData(sym, process.env.FMP_API_KEY);
+                if (st && (st.consensus || st.target)) return st;
+              } catch (e) {
+                noteFmpError(e);
+              }
+            }
+            return naver.worldStreet(sym); // FMP가 막혔으면 네이버 컨센서스로
+          });
       const view = streetReading(raw, Number(price), Number(fav));
       return { status: 200, body: { street: view }, maxAge: TTL.street };
     }
