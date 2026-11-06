@@ -1096,6 +1096,113 @@
           animation: none;
         }
       }
+      /* 코스톨라니 달걀 */
+      .egg {
+        display: block;
+        width: 100%;
+        max-width: 420px;
+        margin: 16px auto 0;
+      }
+      .egg .shell {
+        fill: var(--fill);
+        stroke: var(--fill-2);
+        stroke-width: 2;
+      }
+      .egg .pt {
+        fill: var(--card);
+        stroke: var(--ink-3);
+        stroke-width: 2;
+      }
+      .egg .pt.now {
+        fill: var(--primary);
+        stroke: var(--primary);
+      }
+      .egg .ring {
+        fill: none;
+        stroke: var(--primary);
+        stroke-width: 2;
+        opacity: 0.35;
+      }
+      .egg text {
+        font: 700 15px var(--sans);
+        fill: var(--ink-2);
+      }
+      .egg text.now {
+        fill: var(--primary);
+        font-weight: 700;
+      }
+      .egg text tspan.asset {
+        font-size: 15px;
+        font-weight: 600;
+      }
+      .egg tspan.asset.buy {
+        fill: var(--good);
+      }
+      .egg tspan.asset.sell {
+        fill: var(--warn);
+      }
+      .egg tspan.asset.hold {
+        fill: var(--ink-3);
+      }
+      .egg text.axis {
+        font-weight: 500;
+        fill: var(--ink-3);
+        font-size: 13px;
+      }
+      .egg .egg-pt {
+        cursor: pointer;
+      }
+      .egg .egg-pt.picked .pt:not(.now) {
+        stroke: var(--primary);
+        stroke-width: 3;
+      }
+      .egg .egg-pt:focus {
+        outline: none;
+      }
+      .egg .egg-pt:focus-visible .pt {
+        stroke: var(--primary);
+        stroke-width: 3;
+      }
+      .egg .arrow {
+        fill: none;
+        stroke: var(--ink-3);
+        stroke-width: 1.5;
+        stroke-dasharray: 3 4;
+      }
+      .fit {
+        font-weight: 700;
+        min-width: 20px;
+        text-align: center;
+      }
+      .fit.y {
+        color: var(--good);
+      }
+      .fit.p {
+        color: var(--s3);
+      }
+      .fit.n {
+        color: var(--ink-3);
+      }
+      .egg-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      .egg-table th,
+      .egg-table td {
+        padding: 8px 4px;
+        text-align: left;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+      .egg-table th {
+        color: var(--ink-3);
+        font-weight: 500;
+      }
+      .egg-table tr.cur td {
+        color: var(--primary);
+        font-weight: 700;
+      }
       /* 상단 로딩바: 서버 조회 중일 때만 보여요 */
       .progress {
         position: fixed;
@@ -1332,6 +1439,7 @@
             <span class="sr-only">시장 신호를 불러오는 중이에요</span>
           </div>
         </section>
+        <section class="card" id="egg-card" aria-labelledby="egg-title" hidden></section>
         <section class="card" id="signals-card" aria-labelledby="signals-title" hidden></section>
         <section class="card" id="commodities" aria-labelledby="cmd-title" hidden></section>
         <section class="card" id="street-panel" aria-labelledby="street-title" hidden></section>
@@ -1421,6 +1529,10 @@
         환율: ["원·달러 환율", "1달러를 사는 데 드는 원화예요. 오르면 원화로 미국 주식을 살 때 비싸지고, 나중에 환율이 내리면 원화 기준 수익이 줄어요(환차손)."],
         배당성향: ["배당성향", "회사가 번 이익 중 배당으로 나눠주는 비율이에요. 100%가 넘으면 번 돈보다 많이 주는 것이라 오래 이어지기 어려울 수 있어요."],
         배당락일: ["배당락일", "이날부터 주식을 사면 이번 배당을 받지 못해요. 배당을 받으려면 배당락일 전날까지 사야 해요."],
+        "코스톨라니 달걀": [
+          "코스톨라니 달걀 모형",
+          "헝가리 출신 투자자 앙드레 코스톨라니가 만든 시장 순환 그림이에요. 금리가 오르내리는 흐름에 따라 시장이 A(상승) 세 단계와 B(하락) 세 단계를 달걀 모양으로 돈다고 봐요. 금리 고점에서 인하가 시작되고 사람들이 비관할 때(A1) 사고, 금리 저점에서 모두가 탐욕스러울 때(A3) 팔 준비를 하라는 역발상 원칙이에요.",
+        ],
         컨센서스: ["컨센서스", "이 종목을 분석하는 증권사 애널리스트들의 평균 의견이에요."],
         목표가: ["평균 목표가", "애널리스트들이 제시한 1년 뒤 예상 주가의 평균이에요. 자주 틀리고 주가를 뒤따라 바뀌어요."],
       };
@@ -1604,6 +1716,8 @@
         </div>`
             : ""
         }`;
+
+          renderEgg(m.egg);
 
           const cnt = (st) => m.signals.filter((s) => s.status === st).length;
           const sc = $("#signals-card");
@@ -1831,6 +1945,123 @@
             el.dataset.kr === "1" ? " (한국 종목이라 참고만 해요)" : ""
           }`
         );
+      }
+
+      // ---------- 코스톨라니 달걀 ----------
+      const EGG_POS = {
+        A1: [200, 232, "start"], A2: [222, 150, "start"], A3: [196, 70, "start"],
+        B1: [64, 70, "end"], B2: [38, 150, "end"], B3: [60, 232, "end"],
+      };
+      function eggSvg(e) {
+        const cur = e.phase;
+        const pts = Object.entries(EGG_POS)
+          .map(([id, [x, y, anchor]]) => {
+            const now = id === cur;
+            const dx = anchor === "start" ? 14 : -14;
+            const a = (e.table.find((t) => t.id === id) || {}).asset;
+            // 좌표 옆 포지션: 'A · B'는 두 줄로 나눠요
+            const lines = a ? a.label.split(" · ") : [];
+            const assetText = lines
+              .map((l, i) => `<tspan x="${x + dx}" dy="${i === 0 ? 19 : 17}" class="asset ${a.kind}">${esc(l)}</tspan>`)
+              .join("");
+            return `<g class="egg-pt" data-id="${id}" role="button" tabindex="0" aria-label="${id} 국면 행동 보기">${
+              now ? `<circle class="ring" cx="${x}" cy="${y}" r="15"/>` : ""
+            }<circle cx="${x}" cy="${y}" r="20" fill="transparent"/><circle class="pt${now ? " now" : ""}" cx="${x}" cy="${y}" r="${
+              now ? 8 : 6
+            }"/><text x="${x + dx}" y="${y - 2}" text-anchor="${anchor}" class="${now ? "now" : ""}"><tspan>${id}${now ? " 지금" : ""}</tspan>${assetText}</text></g>`;
+          })
+          .join("");
+        return `<svg class="egg" viewBox="-110 0 480 305" role="img" aria-label="코스톨라니 달걀, 지금 위치 ${esc(cur)}">
+      <path class="shell" d="M130 22 C 200 22, 232 120, 232 175 C 232 240, 190 278, 130 278 C 70 278, 28 240, 28 175 C 28 120, 60 22, 130 22 Z"/>
+      <path class="arrow" d="M150 262 C 205 250, 218 205, 218 160"/>
+      <path class="arrow" d="M110 38 C 55 50, 42 95, 42 140"/>
+      <text class="axis" x="130" y="14" text-anchor="middle">시장 고점 · 금리 저점</text>
+      <text class="axis" x="130" y="296" text-anchor="middle">시장 저점 · 금리 고점</text>
+      <text class="axis" x="130" y="150" text-anchor="middle">A 상승 ↑ · ↓ B 하락</text>
+      ${pts}
+    </svg>`;
+      }
+      let EGG_DATA = null;
+      // 좌표를 누르면 그 국면의 조건과 행동을 보여줘요
+      function showEggPick(id) {
+        const box = document.getElementById("egg-pick");
+        if (!box || !EGG_DATA) return;
+        const x = EGG_DATA.table.find((t) => t.id === id);
+        if (!x) return;
+        const cur = id === EGG_DATA.phase;
+        box.hidden = false;
+        box.innerHTML = `<b>${esc(x.name)}${cur ? " · 지금 국면" : ""} → ${esc(x.action)}${x.asset ? ` · ${esc(x.asset.label)}` : ""}</b><span style="display:block;margin-bottom:6px;font-size:13px">금리 ${esc(
+          x.rate
+        )} · 거래량 ${esc(x.volume)} · 심리 ${esc(x.mood)}</span>이럴 땐 보통 이렇게 행동해요. ${esc(x.guide)}${
+          x.asset ? `<span style="display:block;margin-top:8px;font-weight:600;color:var(--ink)">자산 이동: ${esc(x.asset.flow)}</span>` : ""
+        }`;
+        document.querySelectorAll("#egg-card .egg-pt").forEach((g) => g.classList.toggle("picked", g.dataset.id === id));
+      }
+      document.addEventListener("click", (ev) => {
+        const g = ev.target.closest && ev.target.closest("#egg-card .egg-pt");
+        if (g) showEggPick(g.dataset.id);
+      });
+      document.addEventListener("keydown", (ev) => {
+        const g = ev.target.closest && ev.target.closest("#egg-card .egg-pt");
+        if (g && (ev.key === "Enter" || ev.key === " ")) {
+          ev.preventDefault();
+          showEggPick(g.dataset.id);
+        }
+      });
+      function renderEgg(e) {
+        EGG_DATA = e;
+        const card = $("#egg-card");
+        if (!e) return;
+        const ex = e.table.find((x) => x.id === e.phase);
+        const fitOf = e.phases.find((p) => p.id === e.phase).fit;
+        const mark = (v) => (v >= 1 ? `<span class="fit y" aria-label="일치">✓</span>` : v > 0 ? `<span class="fit p" aria-label="일부 일치">△</span>` : `<span class="fit n" aria-label="불일치">✗</span>`);
+        const i = e.inputs;
+        const pct = (v, d = 2) => (v === null || v === undefined ? "–" : `${v >= 0 ? "+" : ""}${v.toFixed(d)}`);
+        const rows = [
+          ["금리", e.now.rate, ex.rate, fitOf[0],
+            `10년물 ${i.tenYear ?? "–"}% (1년 범위 ${i.tenYearPos ?? "–"}% 위치, 3개월 ${pct(i.tenYear3m)}%p) · 정책금리 ${i.fedNow ?? "–"}% (6개월 ${pct(i.fed6m)}%p)`],
+          ["거래량·참여도", e.now.volume, ex.volume, fitOf[1],
+            `S&P 500 거래량 ${i.volToday ?? "–"}배 (50일 평균 대비, ${i.volDate ? dayText(i.volDate) : "–"} 지수 ${pct(i.spxDay)}%) · 20일 평균 ${i.vol20 ?? "–"}배 · 신용잔고 최고치 대비 ${pct(i.marginFromRecord, 1)}%`],
+          ["심리", e.now.mood, ex.mood, fitOf[2], `VIX ${i.vix ?? "–"} (3개월 최고 ${i.vixPeak3m ?? "–"}, 전날 대비 ${pct(i.vixJump, 0)}%)`],
+        ];
+        card.hidden = false;
+        card.innerHTML = `<p class="eyebrow" id="egg-title">코스톨라니 달걀${tip("코스톨라니 달걀")}</p>
+        <strong class="stance">지금은 <span style="color:var(--primary)">${esc(e.name)}</span> 국면에 가까워요</strong>
+        <div class="tally"><span class="chip">세 축 중 ${e.score}점 일치</span>${
+          e.runnerUp ? `<span class="chip">차순위 ${esc(e.runnerUp.name)} (${e.runnerUp.score}점)</span>` : ""
+        }</div>
+        <div class="callout"><b>이럴 땐 보통 이렇게 행동해요 · ${esc(e.action)}</b>${esc(e.guide || "")}${
+          e.asset ? `<span style="display:block;margin-top:8px;font-weight:600;color:var(--ink)">자산 포지션: ${esc(e.asset.label)} (${esc(e.asset.flow)})</span>` : ""
+        }</div>
+        ${eggSvg(e)}
+        <p class="sub" style="text-align:center;margin-top:4px">좌표를 누르면 그 국면의 행동을 볼 수 있어요</p>
+        <div class="callout" id="egg-pick" aria-live="polite" hidden></div>
+        <ul class="rows">${rows
+          .map(
+            ([axis, now, want, f, detail]) => `<li><details class="row">
+          <summary><span class="name">${axis}</span><span class="val"><span>${esc(now)}</span>${mark(f)}</span></summary>
+          <p class="detail"><b style="display:block;color:var(--ink);font-size:13px;margin-bottom:4px">${esc(e.phase)}에서 기대하는 모습: ${esc(
+              want
+            )}</b>${esc(detail)}</p></details></li>`
+          )
+          .join("")}</ul>
+        <details class="more"><summary>여섯 국면별 행동 보기</summary><div class="body">
+          <ul class="rows" style="margin-top:0">${e.table
+            .map(
+              (x) => `<li><details class="row"${x.id === e.phase ? " open" : ""}>
+            <summary><span class="name"${x.id === e.phase ? ' style="color:var(--primary);font-weight:700"' : ""}>${esc(x.name)}${
+                x.id === e.phase ? " · 지금" : ""
+              }</span><span class="val"><span>${esc(x.asset ? x.asset.label : x.action)}</span><span class="pts">${e.phases.find((p) => p.id === x.id).score}점</span></span></summary>
+            <p class="detail"><span style="display:block;margin-bottom:6px;font-size:13px;color:var(--ink-3)">금리 ${esc(x.rate)} · 거래량 ${esc(
+                x.volume
+              )} · 심리 ${esc(x.mood)}</span>${esc(x.guide)}${
+                x.asset ? `<span style="display:block;margin-top:8px;font-weight:600;color:var(--ink)">자산 이동: ${esc(x.asset.flow)} · 행동: ${esc(x.action)}</span>` : ""
+              }</p></details></li>`
+            )
+            .join("")}</ul>
+          <p class="foot" style="margin:12px 0 0">금리·거래량·심리 세 축이 각 국면의 모습과 얼마나 맞는지 단순 규칙(맞음 1, 일부 0.5)으로 채점해 가장 가까운 국면을 골랐어요. 실제 국면 판단이나 투자 권유가 아니에요. 자산 포지션(예금 → 채권 → 주식 → 부동산 → 예금)은 코스톨라니의 주식 원칙을 여러 자산으로 넓힌, 국내에서 널리 쓰는 해석이에요.</p>
+        </div></details>`;
+        document.querySelectorAll("#egg-card .egg-pt").forEach((g) => g.classList.remove("picked"));
       }
 
       // ---------- 맨 위 롤링 지수 ----------

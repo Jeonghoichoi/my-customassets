@@ -275,4 +275,110 @@ function fxSummary(series) {
   };
 }
 
-module.exports = { evaluateMacro, fxSummary };
+// ---------- 코스톨라니 달걀: 금리 · 거래량(참여도) · 심리 세 축으로 지금 국면을 고른다 ----------
+// 각 국면이 기대하는 모습과 지금 데이터가 얼마나 맞는지 축마다 1(맞음)·0.5(일부)·0(아님)으로 채점해
+// 합계가 가장 높은 국면을 지금 위치로 본다. 규칙이 단순한 만큼 '가장 가까운 국면' 정도로 읽어야 한다.
+// guide: 그 국면에서 코스톨라니식으로 '보통 이렇게 행동한다'는 안내 (화면 문구라 해요체)
+// asset: 국내에서 널리 쓰는 '자산 이동' 해석 (예금 → 채권 → 주식 → 부동산 → 예금)
+const EGG = [
+  { id: "A1", name: "A1 조정", rate: "고점 → 인하 시작", volume: "적음", mood: "비관", action: "매수", asset: { label: "채권 매수", flow: "예금 → 채권", kind: "buy" },
+    guide: "금리가 정점을 지나 내려가기 시작했는데 사람들은 아직 비관하고 거래도 적어요. 보통 이때 좋은 종목을 나눠서 사 모아요. 남들이 외면할 때 싸게 담는 구간이에요." },
+  { id: "A2", name: "A2 동행", rate: "하락 중", volume: "증가", mood: "회복", action: "보유", asset: { label: "주식 매수", flow: "채권 → 주식", kind: "buy" },
+    guide: "금리가 내려가고 투자자들이 돌아오며 가격이 따라 올라요. 보통 이미 산 주식은 그대로 들고 가요. 새로 살 때는 오른 만큼 신중하게 해요." },
+  { id: "A3", name: "A3 과장", rate: "저점 부근", volume: "폭증", mood: "탐욕", action: "매도 준비", asset: { label: "주식 매도 · 부동산 매수", flow: "주식 → 부동산", kind: "sell" },
+    guide: "금리는 바닥이고 거래가 폭증하며 모두가 낙관해요. 보통 새로 사지 않고, 어떤 종목을 언제 팔지 계획을 세워요. 빚을 낸 투자는 줄여요." },
+  { id: "B1", name: "B1 조정", rate: "저점 → 인상 시작", volume: "감소", mood: "아직 낙관", action: "매도", asset: { label: "부동산 매도", flow: "부동산 → 예금", kind: "sell" },
+    guide: "금리가 오르기 시작했는데 분위기는 아직 낙관적이에요. 보통 이때 비중을 줄이고 차익을 실현해요. 분위기보다 금리 방향을 먼저 봐요." },
+  { id: "B2", name: "B2 동행", rate: "상승 중", volume: "감소", mood: "불안", action: "관망·현금", asset: { label: "예금 보유", flow: "현금·예금 유지", kind: "hold" },
+    guide: "금리가 계속 오르고 거래가 줄며 불안이 커져요. 보통 새로 사기보다 현금을 늘리고 지켜봐요. 떨어진다고 서둘러 사지 않아요." },
+  { id: "B3", name: "B3 과장", rate: "고점 부근", volume: "투매로 급증", mood: "공포", action: "매수 준비", asset: { label: "예금 인출 · 채권 준비", flow: "예금 → 채권 준비", kind: "buy" },
+    guide: "금리가 높은 곳에서 투매와 공포가 터져 나와요. 보통 바로 다 사기보다 살 종목과 현금을 준비해 두고, 금리 인하 신호(A1으로 넘어가는 신호)가 보이면 나눠서 사기 시작해요." },
+];
+
+function kostolany(data, spx) {
+  const r = (v, d = 2) => (v === null || v === undefined || Number.isNaN(v) ? null : Number(v.toFixed(d)));
+  // 금리: 방향은 연준 정책금리 6개월 변화(없으면 10년물 3개월 변화), 높낮이는 10년물의 1년 범위 위치
+  const ty = data.tenYear || [];
+  const year = ty.slice(-252).map((p) => p.value);
+  const tyNow = ty.length ? last(ty).value : null;
+  const hi = year.length ? Math.max(...year) : null, lo = year.length ? Math.min(...year) : null;
+  const pos = tyNow !== null && hi > lo ? ((tyNow - lo) / (hi - lo)) * 100 : null;
+  const ty3m = tyNow !== null && valueDaysAgo(ty, 90) ? tyNow - valueDaysAgo(ty, 90) : null;
+  const fed6m = data.fedFunds?.length && valueDaysAgo(data.fedFunds, 180) ? last(data.fedFunds).value - valueDaysAgo(data.fedFunds, 180) : null;
+  const dir = fed6m !== null && Math.abs(fed6m) >= 0.25 ? (fed6m > 0 ? "up" : "down") : ty3m !== null && Math.abs(ty3m) >= 0.15 ? (ty3m > 0 ? "up" : "down") : "flat";
+  const level = pos === null ? null : pos >= 65 ? "high" : pos <= 35 ? "low" : "mid";
+  const offHigh = tyNow !== null && hi !== null ? hi - tyNow : null;
+
+  // 거래량: S&P 500 지수 거래량 (오늘 ÷ 50일 평균, 20일 평균 ÷ 50일 평균) + 신용잔고(참여도)
+  let volToday = null, vol20 = null, dayChg = null;
+  const vs = (spx || []).filter((p) => p.volume > 0);
+  if (vs.length >= 55) {
+    const avg50 = vs.slice(-51, -1).reduce((a, p) => a + p.volume, 0) / 50;
+    const avg20 = vs.slice(-20).reduce((a, p) => a + p.volume, 0) / 20;
+    volToday = last(vs).volume / avg50;
+    vol20 = avg20 / avg50;
+    const prev = vs[vs.length - 2].value;
+    dayChg = ((last(vs).value - prev) / prev) * 100;
+  }
+  let marginFromRecord = null, marginYoy = null;
+  try {
+    const m = require("../../data/margin-debt.json");
+    marginFromRecord = ((m.latest - m.record) / m.record) * 100;
+    marginYoy = ((m.latest - m.yearAgo) / m.yearAgo) * 100;
+  } catch {}
+  const spike = volToday !== null && volToday >= 1.5;
+  const selloff = spike && dayChg !== null && dayChg <= -2;
+  const volUp = vol20 !== null && vol20 >= 1.05;
+  const volDown = vol20 !== null && vol20 < 0.95;
+  const volBoom = (vol20 !== null && vol20 >= 1.2 && !selloff) || (marginFromRecord !== null && marginFromRecord >= -3 && marginYoy >= 25 && !selloff);
+
+  // 심리: VIX
+  const vx = data.vix || [];
+  const vix = vx.length ? last(vx).value : null;
+  const vixPeak = vx.length ? Math.max(...vx.slice(-63).map((p) => p.value)) : null;
+  const vixPrev = vx.length > 1 ? vx[vx.length - 2].value : null;
+  const vixJump = vix !== null && vixPrev ? ((vix - vixPrev) / vixPrev) * 100 : null;
+  const fear = vix !== null && (vix >= 28 || (vixJump !== null && vixJump >= 30 && vix >= 22));
+  const pessim = vix !== null && vix >= 24;
+  const recovering = vix !== null && vixPeak >= 25 && vix < vixPeak * 0.8 && vix < 25;
+  const greed = vix !== null && vix < 14;
+  const optim = vix !== null && vix < 18;
+  const anxious = vix !== null && vix >= 18 && vix < 28;
+
+  const has = { rate: level !== null, volume: volToday !== null || marginFromRecord !== null, mood: vix !== null };
+  const sc = (cond1, cond05) => (cond1 ? 1 : cond05 ? 0.5 : 0);
+  const fit = {
+    A1: [sc(level === "high" && dir !== "up" && offHigh >= 0.2, level === "high" || dir === "down"), sc(volDown && !spike, !volUp && !spike), sc(pessim && !fear, fear)],
+    A2: [sc(dir === "down" && level !== "high", dir === "down"), sc(volUp && !selloff, false), sc(recovering, anxious && !fear)],
+    A3: [sc(level === "low" && dir !== "up", level === "low"), sc(volBoom, volUp && !selloff), sc(greed, optim)],
+    B1: [sc(level !== "high" && dir === "up" && (fed6m === null || fed6m <= 0.5), dir === "up"), sc(volDown, !volUp && !spike), sc(optim && !greed, greed)],
+    B2: [sc(dir === "up" && level === "mid", dir === "up"), sc(volDown && !spike, !volUp && !spike), sc(anxious, fear)],
+    B3: [sc(level === "high", level === "mid" && dir === "up"), sc(selloff, spike), sc(fear, anxious && vixJump >= 15)],
+  };
+  const ranked = EGG.map((e) => ({ ...e, fit: fit[e.id], score: fit[e.id].reduce((a, b) => a + b, 0) })).sort((a, b) => b.score - a.score);
+  const best = ranked[0], second = ranked[1];
+
+  // 지금 데이터를 표의 말로 옮긴 것 (화면 표시용)
+  const now = {
+    rate:
+      level === null ? "자료 없음" :
+      `${{ high: "1년 범위 상단", mid: "1년 범위 중간", low: "1년 범위 하단" }[level]}, ${{ up: "인상·상승 쪽", down: "인하·하락 쪽", flat: "방향 없음" }[dir]}`,
+    volume: !has.volume ? "자료 없음" : selloff ? "투매로 급증" : spike ? "급증" : volBoom ? "폭증" : volUp ? "증가" : volDown ? "감소" : "보통",
+    mood: vix === null ? "자료 없음" : fear ? "공포" : pessim ? "비관" : recovering ? "회복" : greed ? "탐욕" : optim ? "낙관" : "불안",
+  };
+  return {
+    phase: best.id, name: best.name, action: best.action, guide: best.guide, asset: best.asset, score: best.score,
+    runnerUp: second.score >= best.score - 0.5 ? { id: second.id, name: second.name, score: second.score } : null,
+    now,
+    inputs: {
+      tenYear: r(tyNow), tenYearPos: r(pos, 0), tenYear3m: r(ty3m), fed6m: r(fed6m), fedNow: data.fedFunds?.length ? r(last(data.fedFunds).value) : null,
+      volToday: r(volToday), vol20: r(vol20), spxDay: r(dayChg), volDate: vs.length ? last(vs).date : null,
+      marginFromRecord: r(marginFromRecord, 1), marginYoy: r(marginYoy, 0),
+      vix: r(vix, 1), vixPeak3m: r(vixPeak, 1), vixJump: r(vixJump, 0),
+    },
+    phases: ranked.map((x) => ({ id: x.id, score: x.score, fit: x.fit })),
+    table: EGG,
+  };
+}
+
+module.exports = { evaluateMacro, fxSummary, kostolany };

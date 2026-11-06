@@ -4,7 +4,7 @@ const { stock: fmpStock, probe, search: fmpSearch, streetData } = require("./sou
 const naver = require("./sources/naver");
 const { demoMacro, demoStock, demoSymbols, demoCommodities } = require("./sources/demo");
 const { fetchCommodities } = require("./sources/commodities");
-const { evaluateMacro, fxSummary } = require("./engine/macro");
+const { evaluateMacro, fxSummary, kostolany } = require("./engine/macro");
 const { priceStats } = require("./engine/indicators");
 const { judgeStock, streetReading } = require("./engine/judges");
 const { resolve, marketLabel } = require("./sources/symbols");
@@ -33,6 +33,7 @@ async function getMacro() {
   return cached("macro", TTL.macro * 1e3, async () => {
     // VIX·환율은 네이버가 FRED보다 1~2일 빨라요. 네이버가 안 되면 FRED 값을 그대로 써요
     const fxP = naver.marketIndexSeries("exchange/FX_USDKRW").catch(() => null);
+    const spxP = naver.indexSeries(".INX", 200).catch(() => null); // 코스톨라니 달걀의 거래량 축
     const [data, commodities, vixNv, fxSeries] = demo
       ? [demoMacro(), demoCommodities(), null, await fxP]
       : await Promise.all([
@@ -52,6 +53,7 @@ async function getMacro() {
     }
     const m = evaluateMacro(data, commodities);
     m.fx = fxSummary(fxSeries);
+    m.egg = kostolany(data, await spxP);
     m.updatedAt = new Date().toISOString();
     // 신호마다 데이터 날짜·출처를 붙여요 (FRED는 1~2일 늦게 발표돼요)
     const lastDate = (sr) => (sr && sr.length ? sr[sr.length - 1].date : null);

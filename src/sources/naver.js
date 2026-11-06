@@ -377,7 +377,11 @@ async function indexSeries(code, days = 420) {
   const from = new Date(Date.now() - days * 864e5);
   const rows = await getJson(`${W}/chart/foreign/index/${code}/day?startDateTime=${ymd(from)}0000&endDateTime=${ymd(new Date())}2359`);
   return (Array.isArray(rows) ? rows : [])
-    .map((p) => ({ date: `${p.localDate.slice(0, 4)}-${p.localDate.slice(4, 6)}-${p.localDate.slice(6, 8)}`, value: n(p.closePrice) }))
+    .map((p) => ({
+      date: `${p.localDate.slice(0, 4)}-${p.localDate.slice(4, 6)}-${p.localDate.slice(6, 8)}`,
+      value: n(p.closePrice),
+      volume: n(p.accumulatedTradingVolume),
+    }))
     .filter((p) => p.value > 0)
     .sort((a, b) => (a.date < b.date ? -1 : 1));
 }
