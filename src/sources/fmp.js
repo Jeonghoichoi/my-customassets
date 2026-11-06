@@ -33,7 +33,9 @@ async function stock(symbol, key) {
     get("profile", { symbol }, key).catch(() => []),
     get("ratios-ttm", { symbol }, key).catch(() => []),
     get("key-metrics-ttm", { symbol }, key).catch(() => []),
-    get("historical-price-eod/full", { symbol, from }, key).catch(() => get("historical-price-eod/light", { symbol, from }, key).catch(() => [])),
+    get("historical-price-eod/full", { symbol, from }, key).catch(() =>
+      get("historical-price-eod/light", { symbol, from }, key).catch(() => [])
+    ),
     get("income-statement", { symbol, limit: 4 }, key).catch(() => []),
   ]);
   // 애널리스트 의견: 요금제에 따라 막혀 있을 수 있어 실패해도 판독은 계속한다
@@ -65,7 +67,8 @@ async function stock(symbol, key) {
   const eps = (x) => num(x?.epsDiluted ?? x?.epsdiluted ?? x?.eps);
   // 피터 린치의 PEG용 EPS 연평균 성장률 (최근 연간 실적 기준, 최대 3년)
   const years = incs.length - 1;
-  const epsGrowth = years >= 1 && eps(cur) > 0 && eps(oldest) > 0 ? (Math.pow(eps(cur) / eps(oldest), 1 / years) - 1) * 100 : null;
+  const epsGrowth =
+    years >= 1 && eps(cur) > 0 && eps(oldest) > 0 ? (Math.pow(eps(cur) / eps(oldest), 1 / years) - 1) * 100 : null;
 
   const divFraction = pick(ratios, "dividendYieldTTM", "dividendYield");
   const divPercent = pick(ratios, "dividendYieldPercentageTTM", "dividendYielPercentageTTM");
@@ -105,14 +108,22 @@ async function stock(symbol, key) {
   };
 }
 
-const MAJOR = /j\.?p\.?\s?morgan|goldman|morgan stanley|bank of america|bofa|citi|wells fargo|ubs|barclays|schwab|jefferies|deutsche/i;
+const MAJOR =
+  /j\.?p\.?\s?morgan|goldman|morgan stanley|bank of america|bofa|citi|wells fargo|ubs|barclays|schwab|jefferies|deutsche/i;
 function street(pt, gc, grades) {
   const counts = gc ? ["strongBuy", "buy", "hold", "sell", "strongSell"].map((k) => num(gc[k]) || 0) : null;
   const total = counts ? counts.reduce((a, b) => a + b, 0) : 0;
   const actions = grades
     .filter((g) => MAJOR.test(g.gradingCompany || g.gradingcompany || ""))
     .slice(0, 6)
-    .map((g) => ({ date: String(g.date || "").slice(0, 10), firm: g.gradingCompany || g.gradingcompany, from: g.previousGrade || null, to: g.newGrade || null, action: g.action || null, target: null }));
+    .map((g) => ({
+      date: String(g.date || "").slice(0, 10),
+      firm: g.gradingCompany || g.gradingcompany,
+      from: g.previousGrade || null,
+      to: g.newGrade || null,
+      action: g.action || null,
+      target: null,
+    }));
   return {
     consensus: gc?.consensus || null,
     analysts: total || null,
@@ -124,18 +135,35 @@ function street(pt, gc, grades) {
   };
 }
 
-module.exports = { stock };
+// 미국 종목 자동완성 (호출 한도를 쓰므로 화면에서 꼭 필요할 때만 부른다)
+async function search(q, key) {
+  const [a, b] = await Promise.all([
+    get("search-symbol", { query: q, limit: 10 }, key).catch(() => []),
+    get("search-name", { query: q, limit: 10 }, key).catch(() => []),
+  ]);
+  const seen = new Set();
+  return [...(Array.isArray(a) ? a : []), ...(Array.isArray(b) ? b : [])]
+    .filter((x) => /NASDAQ|NYSE|AMEX/i.test(`${x.exchange || ""} ${x.exchangeShortName || ""} ${x.exchangeFullName || ""}`))
+    .filter((x) => !seen.has(x.symbol) && seen.add(x.symbol))
+    .slice(0, 8)
+    .map((x) => ({ s: x.symbol, n: x.name, m: x.exchange || x.exchangeShortName || "US" }));
+}
+
+module.exports = { stock, search };
 
 // 첫 연동 점검용: 각 엔드포인트가 응답하는지, 어떤 필드명이 오는지 확인
 async function probe(symbol, key) {
   const from = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
   const targets = {
-    quote: ["quote", { symbol }], profile: ["profile", { symbol }],
-    "ratios-ttm": ["ratios-ttm", { symbol }], "key-metrics-ttm": ["key-metrics-ttm", { symbol }],
+    quote: ["quote", { symbol }],
+    profile: ["profile", { symbol }],
+    "ratios-ttm": ["ratios-ttm", { symbol }],
+    "key-metrics-ttm": ["key-metrics-ttm", { symbol }],
     "historical-full": ["historical-price-eod/full", { symbol, from }],
     "income-statement": ["income-statement", { symbol, limit: 1 }],
     "price-target-consensus": ["price-target-consensus", { symbol }],
-    "grades-consensus": ["grades-consensus", { symbol }], grades: ["grades", { symbol, limit: 2 }],
+    "grades-consensus": ["grades-consensus", { symbol }],
+    grades: ["grades", { symbol, limit: 2 }],
     "commodity-CLUSD": ["historical-price-eod/light", { symbol: "CLUSD", from }],
     "commodity-HGUSD": ["historical-price-eod/light", { symbol: "HGUSD", from }],
     "commodity-GCUSD": ["historical-price-eod/light", { symbol: "GCUSD", from }],
@@ -145,10 +173,22 @@ async function probe(symbol, key) {
     try {
       const res = await fetch(`${BASE}/${path}?${new URLSearchParams({ ...params, apikey: key })}`);
       const text = await res.text();
-      let body; try { body = JSON.parse(text); } catch { body = text.slice(0, 200); }
+      let body;
+      try {
+        body = JSON.parse(text);
+      } catch {
+        body = text.slice(0, 200);
+      }
       const item = Array.isArray(body) ? body[0] : body;
-      out[name] = { status: res.status, rows: Array.isArray(body) ? body.length : null, fields: item && typeof item === "object" ? Object.keys(item) : null, message: typeof body === "string" ? body : body?.["Error Message"] || null };
-    } catch (e) { out[name] = { error: e.message }; }
+      out[name] = {
+        status: res.status,
+        rows: Array.isArray(body) ? body.length : null,
+        fields: item && typeof item === "object" ? Object.keys(item) : null,
+        message: typeof body === "string" ? body : body?.["Error Message"] || null,
+      };
+    } catch (e) {
+      out[name] = { error: e.message };
+    }
   }
   return out;
 }

@@ -1,237 +1,1081 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#EEF0EB" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#12181D" media="(prefers-color-scheme: dark)">
-<link rel="manifest" href="/manifest.webmanifest">
-<link rel="icon" href="/icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="판독기">
-<title>저점 판독기</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500&display=swap" rel="stylesheet">
-<style>
-:root {
-  color-scheme: light;
-  --bg: #EEF0EB; --surface: #F8F9F6; --ink: #16202A; --ink-2: #4A5560; --ink-3: #7A858F; --rule: #D4D9D2;
-  --brass: #94742A; --on: #2F7A55; --neutral: #A8771A; --off: #B3402F;
-  --on-soft: #DCEBE2; --neutral-soft: #F3E7CC; --off-soft: #F4DEDA;
-  --sans: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
-  --serif: "Noto Serif KR", "AppleMyungjo", "Batang", serif;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --bg: #12181D; --surface: #1A2229; --ink: #E4E8E3; --ink-2: #A9B2B9; --ink-3: #78838C; --rule: #2B353E;
-    --brass: #D2AE5C; --on: #6CC497; --neutral: #E2B357; --off: #EE8A7A;
-    --on-soft: #183025; --neutral-soft: #352A12; --off-soft: #3A1F1B;
-  }
-}
-* { box-sizing: border-box; }
-html, body { margin: 0; }
-body { background: var(--bg); color: var(--ink); font: 15px/1.6 var(--sans); padding-bottom: env(safe-area-inset-bottom); }
-.top > * { max-width: 1048px; margin-left: auto; margin-right: auto; }
-.top { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: calc(env(safe-area-inset-top) + 12px) 16px 10px; border-bottom: 1px solid var(--rule); }
-.brand { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
-.brand h1 { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
-.brand span { font-size: 12px; color: var(--ink-3); }
-form { display: flex; gap: 8px; }
-input { flex: 1; min-width: 0; font: 600 17px var(--sans); letter-spacing: 0.02em; text-transform: uppercase; padding: 11px 14px; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); color: var(--ink); }
-input::placeholder { text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--ink-3); }
-button { font: 600 15px var(--sans); border-radius: 10px; border: 0; padding: 0 18px; background: var(--ink); color: var(--bg); cursor: pointer; min-height: 46px; }
-:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
-.chips { display: flex; gap: 6px; overflow-x: auto; margin-top: 10px; scrollbar-width: none; }
-.chips button { min-height: 32px; padding: 0 12px; font-size: 13px; font-weight: 500; background: var(--surface); color: var(--ink-2); border: 1px solid var(--rule); flex: none; }
-.demo { max-width: 1048px; margin: 12px auto 0; margin-inline: max(16px, calc((100% - 1048px) / 2)); padding: 10px 12px; border-radius: 10px; background: var(--neutral-soft); color: var(--ink); font-size: 13px; }
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#EEF0EB" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#12181D" media="(prefers-color-scheme: dark)" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="판독기" />
+    <title>저점 판독기</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #eef0eb;
+        --surface: #f8f9f6;
+        --ink: #16202a;
+        --ink-2: #4a5560;
+        --ink-3: #7a858f;
+        --rule: #d4d9d2;
+        --brass: #94742a;
+        --on: #2f7a55;
+        --neutral: #a8771a;
+        --off: #b3402f;
+        --on-soft: #dcebe2;
+        --neutral-soft: #f3e7cc;
+        --off-soft: #f4deda;
+        --sans: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+        --serif: "Noto Serif KR", "AppleMyungjo", "Batang", serif;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          color-scheme: dark;
+          --bg: #12181d;
+          --surface: #1a2229;
+          --ink: #e4e8e3;
+          --ink-2: #a9b2b9;
+          --ink-3: #78838c;
+          --rule: #2b353e;
+          --brass: #d2ae5c;
+          --on: #6cc497;
+          --neutral: #e2b357;
+          --off: #ee8a7a;
+          --on-soft: #183025;
+          --neutral-soft: #352a12;
+          --off-soft: #3a1f1b;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font: 15px/1.6 var(--sans);
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+      .top > * {
+        max-width: 1048px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .top {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        background: var(--bg);
+        padding: calc(env(safe-area-inset-top) + 12px) 16px 10px;
+        border-bottom: 1px solid var(--rule);
+      }
+      .brand {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 10px;
+      }
+      .brand h1 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      .brand span {
+        font-size: 12px;
+        color: var(--ink-3);
+      }
+      form {
+        display: flex;
+        gap: 8px;
+      }
+      .ac {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+        display: flex;
+      }
+      .ac input {
+        width: 100%;
+      }
+      .ac-panel {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: calc(100% + 6px);
+        z-index: 20;
+        background: var(--surface);
+        border: 1px solid var(--rule);
+        border-radius: 12px;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+        overflow: hidden;
+      }
+      .ac-tabs {
+        display: flex;
+        gap: 4px;
+        padding: 8px 8px 4px;
+        border-bottom: 1px solid var(--rule);
+      }
+      .ac-tabs button {
+        min-height: 30px;
+        padding: 0 12px;
+        font-size: 13px;
+        font-weight: 500;
+        background: transparent;
+        color: var(--ink-2);
+        border: 1px solid transparent;
+        border-radius: 8px;
+      }
+      .ac-tabs button[aria-selected="true"] {
+        background: var(--ink);
+        color: var(--bg);
+      }
+      #ac-list {
+        list-style: none;
+        margin: 0;
+        padding: 4px;
+        max-height: min(60vh, 380px);
+        overflow-y: auto;
+      }
+      #ac-list li {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 2px 10px;
+        align-items: center;
+        padding: 9px 10px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      #ac-list li[aria-selected="true"],
+      #ac-list li:hover {
+        background: var(--bg);
+      }
+      #ac-list .mk {
+        grid-row: span 2;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 5px;
+        text-align: center;
+        min-width: 46px;
+      }
+      #ac-list .mk.US {
+        background: var(--on-soft);
+        color: var(--on);
+      }
+      #ac-list .mk.KR {
+        background: var(--neutral-soft);
+        color: var(--neutral);
+      }
+      #ac-list .nm {
+        font-weight: 600;
+        font-size: 14.5px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      #ac-list .nm mark {
+        background: none;
+        color: var(--brass);
+      }
+      #ac-list .sb {
+        font-size: 12px;
+        color: var(--ink-3);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+      }
+      #ac-list .empty-row {
+        display: block;
+        color: var(--ink-3);
+        font-size: 13px;
+        cursor: default;
+      }
+      #ac-list .empty-row:hover {
+        background: none;
+      }
+      input {
+        flex: 1;
+        min-width: 0;
+        font: 600 17px var(--sans);
+        letter-spacing: 0.01em;
+        padding: 11px 14px;
+        border: 1px solid var(--rule);
+        border-radius: 10px;
+        background: var(--surface);
+        color: var(--ink);
+      }
+      input::placeholder {
+        text-transform: none;
+        letter-spacing: 0;
+        font-weight: 400;
+        color: var(--ink-3);
+      }
+      button {
+        font: 600 15px var(--sans);
+        border-radius: 10px;
+        border: 0;
+        padding: 0 18px;
+        background: var(--ink);
+        color: var(--bg);
+        cursor: pointer;
+        min-height: 46px;
+      }
+      :focus-visible {
+        outline: 2px solid var(--brass);
+        outline-offset: 2px;
+      }
+      .chips {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        margin-top: 10px;
+        scrollbar-width: none;
+      }
+      .chips button {
+        min-height: 32px;
+        padding: 0 12px;
+        font-size: 13px;
+        font-weight: 500;
+        background: var(--surface);
+        color: var(--ink-2);
+        border: 1px solid var(--rule);
+        flex: none;
+      }
+      .demo {
+        max-width: 1048px;
+        margin: 12px auto 0;
+        margin-inline: max(16px, calc((100% - 1048px) / 2));
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: var(--neutral-soft);
+        color: var(--ink);
+        font-size: 13px;
+      }
 
-main { padding: 16px; display: grid; gap: 16px; max-width: 1080px; margin: 0 auto; }
-@media (min-width: 900px) { main { grid-template-columns: 400px 1fr; align-items: start; } #market { position: sticky; top: 140px; } }
-main > * { min-width: 0; }
-section.panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 18px 16px; }
-h2 { margin: 0; font-size: 15px; font-weight: 600; }
-.sub { color: var(--ink-3); font-size: 12.5px; margin: 2px 0 0; }
+      main {
+        padding: 16px;
+        display: grid;
+        gap: 16px;
+        max-width: 1080px;
+        margin: 0 auto;
+      }
+      @media (min-width: 900px) {
+        main {
+          grid-template-columns: 400px 1fr;
+          align-items: start;
+        }
+        #market {
+          position: sticky;
+          top: 140px;
+        }
+      }
+      main > * {
+        min-width: 0;
+      }
+      section.panel {
+        background: var(--surface);
+        border: 1px solid var(--rule);
+        border-radius: 16px;
+        padding: 18px 16px;
+      }
+      h2 {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 600;
+      }
+      .sub {
+        color: var(--ink-3);
+        font-size: 12.5px;
+        margin: 2px 0 0;
+      }
 
-/* 판독 다이얼: 이 화면의 중심 */
-.dial { display: block; width: 100%; max-width: 340px; margin: 8px auto 0; }
-.dial .arc-off { stroke: var(--off); } .dial .arc-neutral { stroke: var(--neutral); } .dial .arc-on { stroke: var(--on); }
-.dial .tick { fill: var(--ink-3); font: 500 11px var(--sans); }
-.dial .needle { stroke: var(--brass); stroke-width: 3; stroke-linecap: round; transform-origin: 160px 150px; transition: transform 900ms cubic-bezier(.2,.8,.2,1); }
-@media (prefers-reduced-motion: reduce) { .dial .needle { transition: none; } }
-.dial .hub { fill: var(--brass); }
-.reading { text-align: center; margin-top: -4px; }
-.reading strong { display: block; font-size: 20px; font-weight: 600; }
-.reading small { color: var(--ink-3); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+      /* 판독 다이얼: 이 화면의 중심 */
+      .dial {
+        display: block;
+        width: 100%;
+        max-width: 340px;
+        margin: 8px auto 0;
+      }
+      .dial .arc-off {
+        stroke: var(--off);
+      }
+      .dial .arc-neutral {
+        stroke: var(--neutral);
+      }
+      .dial .arc-on {
+        stroke: var(--on);
+      }
+      .dial .tick {
+        fill: var(--ink-3);
+        font: 500 11px var(--sans);
+      }
+      .dial .needle {
+        stroke: var(--brass);
+        stroke-width: 3;
+        stroke-linecap: round;
+        transform-origin: 160px 150px;
+        transition: transform 900ms cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .dial .needle {
+          transition: none;
+        }
+      }
+      .dial .hub {
+        fill: var(--brass);
+      }
+      .reading {
+        text-align: center;
+        margin-top: -4px;
+      }
+      .reading strong {
+        display: block;
+        font-size: 20px;
+        font-weight: 600;
+      }
+      .reading small {
+        color: var(--ink-3);
+        font-size: 12.5px;
+        font-variant-numeric: tabular-nums;
+      }
 
-.signals { list-style: none; padding: 0; margin: 14px 0 0; border-top: 1px solid var(--rule); }
-.signals li { border-bottom: 1px solid var(--rule); }
-details summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 10px 1fr auto; gap: 10px; align-items: center; padding: 11px 2px; }
-details summary::-webkit-details-marker { display: none; }
-.dot { width: 10px; height: 10px; border-radius: 50%; }
-.dot.on { background: var(--on); } .dot.neutral { background: var(--neutral); } .dot.off { background: var(--off); }
-.sig-title { font-weight: 500; white-space: nowrap; }
-.sig-value { color: var(--ink-2); font-size: 12.5px; text-align: right; font-variant-numeric: tabular-nums; }
-details p { margin: 0 0 12px 20px; color: var(--ink-2); font-size: 13.5px; }
+      .signals {
+        list-style: none;
+        padding: 0;
+        margin: 14px 0 0;
+        border-top: 1px solid var(--rule);
+      }
+      .signals li {
+        border-bottom: 1px solid var(--rule);
+      }
+      details summary {
+        list-style: none;
+        cursor: pointer;
+        display: grid;
+        grid-template-columns: 10px 1fr auto;
+        gap: 10px;
+        align-items: center;
+        padding: 11px 2px;
+      }
+      details summary::-webkit-details-marker {
+        display: none;
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      .dot.on {
+        background: var(--on);
+      }
+      .dot.neutral {
+        background: var(--neutral);
+      }
+      .dot.off {
+        background: var(--off);
+      }
+      .sig-title {
+        font-weight: 500;
+        white-space: nowrap;
+      }
+      .sig-value {
+        color: var(--ink-2);
+        font-size: 12.5px;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      details p {
+        margin: 0 0 12px 20px;
+        color: var(--ink-2);
+        font-size: 13.5px;
+      }
 
-.empty { color: var(--ink-2); padding: 28px 8px; text-align: center; }
-.stock-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-.stock-head h2 { font-size: 20px; }
-.price { text-align: right; font-variant-numeric: tabular-nums; }
-.price strong { font-size: 20px; font-weight: 600; display: block; }
-.badge { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 6px; margin-right: 6px; vertical-align: 2px; }
-.badge.US { background: var(--on-soft); color: var(--on); } .badge.KR { background: var(--neutral-soft); color: var(--neutral); }
-.note-kr { margin: 12px 0 0; padding: 10px 12px; border-radius: 10px; background: var(--neutral-soft); font-size: 13px; }
-.up { color: var(--on); } .down { color: var(--off); }
-.spark { width: 100%; height: 84px; display: block; margin-top: 12px; }
-.spark .line { fill: none; stroke: var(--ink); stroke-width: 1.6; }
-.spark .hi { stroke: var(--ink-3); stroke-dasharray: 3 4; }
-.spark-labels { display: flex; justify-content: space-between; color: var(--ink-3); font-size: 11.5px; margin-top: 4px; font-variant-numeric: tabular-nums; }
-.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 14px 0 0; }
-.stats div { background: var(--bg); border-radius: 10px; padding: 9px 10px; }
-.stats dt { font-size: 11.5px; color: var(--ink-3); }
-.stats dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+      .empty {
+        color: var(--ink-2);
+        padding: 28px 8px;
+        text-align: center;
+      }
+      .stock-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      .stock-head h2 {
+        font-size: 20px;
+      }
+      .price {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .price strong {
+        font-size: 20px;
+        font-weight: 600;
+        display: block;
+      }
+      .badge {
+        display: inline-block;
+        font-size: 11.5px;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 6px;
+        margin-right: 6px;
+        vertical-align: 2px;
+      }
+      .badge.US {
+        background: var(--on-soft);
+        color: var(--on);
+      }
+      .badge.KR {
+        background: var(--neutral-soft);
+        color: var(--neutral);
+      }
+      .note-kr {
+        margin: 12px 0 0;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: var(--neutral-soft);
+        font-size: 13px;
+      }
+      .up {
+        color: var(--on);
+      }
+      .down {
+        color: var(--off);
+      }
+      .spark {
+        width: 100%;
+        height: 84px;
+        display: block;
+        margin-top: 12px;
+      }
+      .spark .line {
+        fill: none;
+        stroke: var(--ink);
+        stroke-width: 1.6;
+      }
+      .spark .hi {
+        stroke: var(--ink-3);
+        stroke-dasharray: 3 4;
+      }
+      .spark-labels {
+        display: flex;
+        justify-content: space-between;
+        color: var(--ink-3);
+        font-size: 11.5px;
+        margin-top: 4px;
+        font-variant-numeric: tabular-nums;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin: 14px 0 0;
+      }
+      .stats div {
+        background: var(--bg);
+        border-radius: 10px;
+        padding: 9px 10px;
+      }
+      .stats dt {
+        font-size: 11.5px;
+        color: var(--ink-3);
+      }
+      .stats dd {
+        margin: 0;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
 
-.tech { border-top: 1px solid var(--rule); padding-top: 16px; margin-top: 18px; }
-.tech h3 { margin: 0 0 4px; font-size: 15px; font-weight: 600; }
-.tech-row { padding: 10px 0; border-bottom: 1px solid var(--rule); }
-.tech-row:last-child { border-bottom: 0; }
-.tech-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
-.tech-top b { font-weight: 500; font-size: 14px; }
-.tech-top span { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
-.tech-top span.on { color: var(--on); } .tech-top span.off { color: var(--off); }
-.meter { position: relative; height: 10px; margin: 8px 0 6px; border-radius: 5px; background: var(--bg); overflow: hidden; }
-.meter .zl, .meter .zh { position: absolute; top: 0; bottom: 0; }
-.meter .zl { left: 0; background: var(--on-soft); } .meter .zh { right: 0; background: var(--off-soft); }
-.meter .pin { position: absolute; top: -1px; bottom: -1px; width: 4px; margin-left: -2px; border-radius: 2px; background: var(--ink); }
-.meter .pin.d { background: var(--brass); width: 3px; }
-.tech-note { margin: 0; color: var(--ink-2); font-size: 13px; }
-#view { padding: 20px 18px; }
-@media (min-width: 900px) { #view { grid-column: 1 / -1; } }
-#view .headline { font-family: var(--serif); font-size: 19px; line-height: 1.65; margin: 6px 0 14px; }
-.lenses { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-@media (min-width: 700px) { .lenses { grid-template-columns: 1fr 1fr; } }
-.lenses li { background: var(--bg); border-radius: 12px; padding: 11px 13px; font-size: 13.5px; color: var(--ink-2); }
-.lenses b { display: block; color: var(--ink); font-weight: 600; font-size: 13px; margin-bottom: 2px; }
-.action { margin: 14px 0 0; padding: 12px 14px; border-left: 3px solid var(--brass); background: var(--bg); border-radius: 0 10px 10px 0; font-size: 14px; }
-.watch { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; font-size: 12.5px; color: var(--ink-2); align-items: center; }
-.watch span { border: 1px solid var(--rule); border-radius: 999px; padding: 3px 10px; }
-.consensus { margin: 18px 0 0; padding-top: 16px; border-top: 1px solid var(--rule); }
-.consensus p { margin: 0 0 10px; font-size: 14px; }
-.tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-@media (min-width: 600px) { .tiles { grid-template-columns: repeat(7, 1fr); } }
-.tiles a { text-decoration: none; color: var(--ink); background: var(--bg); border-radius: 10px; padding: 8px 6px; text-align: center; border-top: 3px solid var(--rule); }
-.tiles a small { display: block; font-size: 11px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.tiles a strong { font-variant-numeric: tabular-nums; font-size: 16px; }
-.gate { max-width: 360px; margin: 40px auto; text-align: center; }
-.gate form { margin-top: 12px; }
-#commodities { padding: 18px 0 16px; }
-#commodities > h2, #commodities > .sub { padding: 0 16px; }
-@media (min-width: 900px) { #commodities { grid-column: 1 / -1; } }
-.cmd-row { display: flex; gap: 10px; overflow-x: auto; padding: 12px 16px 4px; scroll-snap-type: x mandatory; scrollbar-width: thin; }
-.cmd { flex: 0 0 210px; scroll-snap-align: start; background: var(--bg); border-radius: 12px; padding: 12px; }
-@media (min-width: 900px) { .cmd-row { display: grid; grid-template-columns: repeat(5, 1fr); overflow: visible; } .cmd { flex: none; } }
-.cmd-top { display: flex; justify-content: space-between; align-items: baseline; }
-.cmd-top b { font-size: 14px; font-weight: 600; }
-.cmd-top small { color: var(--ink-3); font-size: 11px; }
-.cmd-price { font-size: 19px; font-weight: 600; font-variant-numeric: tabular-nums; margin: 2px 0 6px; }
-.cmd svg { width: 100%; height: 34px; display: block; }
-.cmd svg path { fill: none; stroke: var(--ink-2); stroke-width: 1.4; }
-.pills { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0; }
-.pills span { white-space: nowrap; font-size: 11.5px; font-variant-numeric: tabular-nums; padding: 1px 6px; border-radius: 5px; background: var(--surface); }
-.cmd p { margin: 4px 0 0; font-size: 12px; color: var(--ink-3); line-height: 1.5; }
-@media (min-width: 900px) { #street-panel { grid-column: 1 / -1; } }
-.firms { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 10px; }
-.firms th { text-align: left; font-weight: 500; color: var(--ink-3); font-size: 12px; padding: 6px 0; border-bottom: 1px solid var(--rule); }
-.firms td { padding: 9px 0 2px; vertical-align: top; }
-.firms td.thesis-row { padding: 0 0 10px; border-bottom: 1px solid var(--rule); }
-.firms td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; padding-left: 8px; }
-.firms .thesis { display: block; color: var(--ink-2); font-size: 12.5px; margin-top: 3px; }
-.firms a { color: var(--ink-3); font-size: 11.5px; }
-.stance { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 1px 7px; border-radius: 6px; margin-left: 6px; }
-.stance.bull { background: var(--on-soft); color: var(--on); } .stance.mid { background: var(--neutral-soft); color: var(--neutral); } .stance.bear { background: var(--off-soft); color: var(--off); }
-.street-stock { border-top: 1px solid var(--rule); padding-top: 16px; margin-top: 18px; }
-.street-stock h3 { margin: 0 0 8px; font-size: 15px; font-weight: 600; }
-.street-nums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.street-nums div { background: var(--bg); border-radius: 10px; padding: 8px 10px; }
-.street-nums dt { font-size: 11.5px; color: var(--ink-3); } .street-nums dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
-.actions-list { list-style: none; padding: 0; margin: 10px 0 0; font-size: 13px; }
-.actions-list li { padding: 6px 0; border-bottom: 1px solid var(--rule); display: flex; justify-content: space-between; gap: 8px; }
-.profile { margin: 4px 0 10px; }
-.profile summary { grid-template-columns: 1fr auto !important; padding: 2px 0 !important; }
-.chipset { display: flex; flex-wrap: wrap; gap: 5px; margin: 6px 0 8px; }
-.chipset span { font-size: 12px; background: var(--bg); border-radius: 6px; padding: 2px 8px; color: var(--ink-2); }
-.profile p { margin: 0 0 6px !important; font-size: 13px; color: var(--ink-2); }
-.judge { scroll-margin-top: 150px; border-top: 1px solid var(--rule); padding-top: 16px; margin-top: 18px; }
-.judge-head { display: flex; justify-content: space-between; align-items: baseline; }
-.judge-head h3 { margin: 0; font-size: 15px; font-weight: 600; }
-.judge-head .idea { color: var(--ink-3); font-size: 12.5px; }
-.score { font-weight: 600; font-size: 18px; font-variant-numeric: tabular-nums; }
-.bar { height: 6px; border-radius: 3px; background: var(--rule); margin: 8px 0 12px; overflow: hidden; }
-.bar i { display: block; height: 100%; border-radius: 3px; }
-.verdict { font-family: var(--serif); font-size: 15.5px; line-height: 1.75; margin: 0 0 8px; }
-.checks { width: 100%; border-collapse: collapse; font-size: 13px; }
-.checks td { padding: 7px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
-.checks td:nth-child(2) { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; padding-left: 10px; }
-.checks td:nth-child(3) { width: 22px; text-align: right; }
-.checks .note { display: block; color: var(--ink-3); font-size: 11.5px; }
-.mark { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
-.ai { margin-top: 18px; }
-.ai button { width: 100%; background: var(--surface); color: var(--ink); border: 1px solid var(--rule); }
-.ai p { white-space: pre-wrap; font-size: 14px; color: var(--ink-2); }
-.foot { color: var(--ink-3); font-size: 12px; margin: 16px 0 0; }
-.error { color: var(--off); }
-</style>
-</head>
-<body>
-<header class="top">
-  <div class="brand"><h1>저점 판독기</h1><span id="asof"></span></div>
-  <form id="search" autocomplete="off">
-    <input id="q" inputmode="text" placeholder="VZ, 005930, 삼성전자" aria-label="미국 티커, 한국 종목코드 또는 종목명">
-    <button type="submit">판독</button>
-  </form>
-  <div class="chips" id="chips" aria-label="최근 검색"></div>
-</header>
-<div id="demo" class="demo" hidden></div>
+      .tech {
+        border-top: 1px solid var(--rule);
+        padding-top: 16px;
+        margin-top: 18px;
+      }
+      .tech h3 {
+        margin: 0 0 4px;
+        font-size: 15px;
+        font-weight: 600;
+      }
+      .tech-row {
+        padding: 10px 0;
+        border-bottom: 1px solid var(--rule);
+      }
+      .tech-row:last-child {
+        border-bottom: 0;
+      }
+      .tech-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 10px;
+      }
+      .tech-top b {
+        font-weight: 500;
+        font-size: 14px;
+      }
+      .tech-top span {
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .tech-top span.on {
+        color: var(--on);
+      }
+      .tech-top span.off {
+        color: var(--off);
+      }
+      .meter {
+        position: relative;
+        height: 10px;
+        margin: 8px 0 6px;
+        border-radius: 5px;
+        background: var(--bg);
+        overflow: hidden;
+      }
+      .meter .zl,
+      .meter .zh {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+      }
+      .meter .zl {
+        left: 0;
+        background: var(--on-soft);
+      }
+      .meter .zh {
+        right: 0;
+        background: var(--off-soft);
+      }
+      .meter .pin {
+        position: absolute;
+        top: -1px;
+        bottom: -1px;
+        width: 4px;
+        margin-left: -2px;
+        border-radius: 2px;
+        background: var(--ink);
+      }
+      .meter .pin.d {
+        background: var(--brass);
+        width: 3px;
+      }
+      .tech-note {
+        margin: 0;
+        color: var(--ink-2);
+        font-size: 13px;
+      }
+      #view {
+        padding: 20px 18px;
+      }
+      @media (min-width: 900px) {
+        #view {
+          grid-column: 1 / -1;
+        }
+      }
+      #view .headline {
+        font-family: var(--serif);
+        font-size: 19px;
+        line-height: 1.65;
+        margin: 6px 0 14px;
+      }
+      .lenses {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 10px;
+      }
+      @media (min-width: 700px) {
+        .lenses {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      .lenses li {
+        background: var(--bg);
+        border-radius: 12px;
+        padding: 11px 13px;
+        font-size: 13.5px;
+        color: var(--ink-2);
+      }
+      .lenses b {
+        display: block;
+        color: var(--ink);
+        font-weight: 600;
+        font-size: 13px;
+        margin-bottom: 2px;
+      }
+      .action {
+        margin: 14px 0 0;
+        padding: 12px 14px;
+        border-left: 3px solid var(--brass);
+        background: var(--bg);
+        border-radius: 0 10px 10px 0;
+        font-size: 14px;
+      }
+      .watch {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 10px;
+        font-size: 12.5px;
+        color: var(--ink-2);
+        align-items: center;
+      }
+      .watch span {
+        border: 1px solid var(--rule);
+        border-radius: 999px;
+        padding: 3px 10px;
+      }
+      .consensus {
+        margin: 18px 0 0;
+        padding-top: 16px;
+        border-top: 1px solid var(--rule);
+      }
+      .consensus p {
+        margin: 0 0 10px;
+        font-size: 14px;
+      }
+      .tiles {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+      }
+      @media (min-width: 600px) {
+        .tiles {
+          grid-template-columns: repeat(7, 1fr);
+        }
+      }
+      .tiles a {
+        text-decoration: none;
+        color: var(--ink);
+        background: var(--bg);
+        border-radius: 10px;
+        padding: 8px 6px;
+        text-align: center;
+        border-top: 3px solid var(--rule);
+      }
+      .tiles a small {
+        display: block;
+        font-size: 11px;
+        color: var(--ink-3);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .tiles a strong {
+        font-variant-numeric: tabular-nums;
+        font-size: 16px;
+      }
+      .gate {
+        max-width: 360px;
+        margin: 40px auto;
+        text-align: center;
+      }
+      .gate form {
+        margin-top: 12px;
+      }
+      #commodities {
+        padding: 18px 0 16px;
+      }
+      #commodities > h2,
+      #commodities > .sub {
+        padding: 0 16px;
+      }
+      @media (min-width: 900px) {
+        #commodities {
+          grid-column: 1 / -1;
+        }
+      }
+      .cmd-row {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 12px 16px 4px;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: thin;
+      }
+      .cmd {
+        flex: 0 0 210px;
+        scroll-snap-align: start;
+        background: var(--bg);
+        border-radius: 12px;
+        padding: 12px;
+      }
+      @media (min-width: 900px) {
+        .cmd-row {
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          overflow: visible;
+        }
+        .cmd {
+          flex: none;
+        }
+      }
+      .cmd-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+      }
+      .cmd-top b {
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .cmd-top small {
+        color: var(--ink-3);
+        font-size: 11px;
+      }
+      .cmd-price {
+        font-size: 19px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        margin: 2px 0 6px;
+      }
+      .cmd svg {
+        width: 100%;
+        height: 34px;
+        display: block;
+      }
+      .cmd svg path {
+        fill: none;
+        stroke: var(--ink-2);
+        stroke-width: 1.4;
+      }
+      .pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin: 6px 0;
+      }
+      .pills span {
+        white-space: nowrap;
+        font-size: 11.5px;
+        font-variant-numeric: tabular-nums;
+        padding: 1px 6px;
+        border-radius: 5px;
+        background: var(--surface);
+      }
+      .cmd p {
+        margin: 4px 0 0;
+        font-size: 12px;
+        color: var(--ink-3);
+        line-height: 1.5;
+      }
+      @media (min-width: 900px) {
+        #street-panel {
+          grid-column: 1 / -1;
+        }
+      }
+      .firms {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13.5px;
+        margin-top: 10px;
+      }
+      .firms th {
+        text-align: left;
+        font-weight: 500;
+        color: var(--ink-3);
+        font-size: 12px;
+        padding: 6px 0;
+        border-bottom: 1px solid var(--rule);
+      }
+      .firms td {
+        padding: 9px 0 2px;
+        vertical-align: top;
+      }
+      .firms td.thesis-row {
+        padding: 0 0 10px;
+        border-bottom: 1px solid var(--rule);
+      }
+      .firms td.num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        padding-left: 8px;
+      }
+      .firms .thesis {
+        display: block;
+        color: var(--ink-2);
+        font-size: 12.5px;
+        margin-top: 3px;
+      }
+      .firms a {
+        color: var(--ink-3);
+        font-size: 11.5px;
+      }
+      .stance {
+        display: inline-block;
+        font-size: 11.5px;
+        font-weight: 600;
+        padding: 1px 7px;
+        border-radius: 6px;
+        margin-left: 6px;
+      }
+      .stance.bull {
+        background: var(--on-soft);
+        color: var(--on);
+      }
+      .stance.mid {
+        background: var(--neutral-soft);
+        color: var(--neutral);
+      }
+      .stance.bear {
+        background: var(--off-soft);
+        color: var(--off);
+      }
+      .street-stock {
+        border-top: 1px solid var(--rule);
+        padding-top: 16px;
+        margin-top: 18px;
+      }
+      .street-stock h3 {
+        margin: 0 0 8px;
+        font-size: 15px;
+        font-weight: 600;
+      }
+      .street-nums {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+      .street-nums div {
+        background: var(--bg);
+        border-radius: 10px;
+        padding: 8px 10px;
+      }
+      .street-nums dt {
+        font-size: 11.5px;
+        color: var(--ink-3);
+      }
+      .street-nums dd {
+        margin: 0;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
+      .actions-list {
+        list-style: none;
+        padding: 0;
+        margin: 10px 0 0;
+        font-size: 13px;
+      }
+      .actions-list li {
+        padding: 6px 0;
+        border-bottom: 1px solid var(--rule);
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .profile {
+        margin: 4px 0 10px;
+      }
+      .profile summary {
+        grid-template-columns: 1fr auto !important;
+        padding: 2px 0 !important;
+      }
+      .chipset {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin: 6px 0 8px;
+      }
+      .chipset span {
+        font-size: 12px;
+        background: var(--bg);
+        border-radius: 6px;
+        padding: 2px 8px;
+        color: var(--ink-2);
+      }
+      .profile p {
+        margin: 0 0 6px !important;
+        font-size: 13px;
+        color: var(--ink-2);
+      }
+      .judge {
+        scroll-margin-top: 150px;
+        border-top: 1px solid var(--rule);
+        padding-top: 16px;
+        margin-top: 18px;
+      }
+      .judge-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+      }
+      .judge-head h3 {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 600;
+      }
+      .judge-head .idea {
+        color: var(--ink-3);
+        font-size: 12.5px;
+      }
+      .score {
+        font-weight: 600;
+        font-size: 18px;
+        font-variant-numeric: tabular-nums;
+      }
+      .bar {
+        height: 6px;
+        border-radius: 3px;
+        background: var(--rule);
+        margin: 8px 0 12px;
+        overflow: hidden;
+      }
+      .bar i {
+        display: block;
+        height: 100%;
+        border-radius: 3px;
+      }
+      .verdict {
+        font-family: var(--serif);
+        font-size: 15.5px;
+        line-height: 1.75;
+        margin: 0 0 8px;
+      }
+      .checks {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      .checks td {
+        padding: 7px 0;
+        border-bottom: 1px solid var(--rule);
+        vertical-align: top;
+      }
+      .checks td:nth-child(2) {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        padding-left: 10px;
+      }
+      .checks td:nth-child(3) {
+        width: 22px;
+        text-align: right;
+      }
+      .checks .note {
+        display: block;
+        color: var(--ink-3);
+        font-size: 11.5px;
+      }
+      .mark {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+      .ai {
+        margin-top: 18px;
+      }
+      .ai button {
+        width: 100%;
+        background: var(--surface);
+        color: var(--ink);
+        border: 1px solid var(--rule);
+      }
+      .ai p {
+        white-space: pre-wrap;
+        font-size: 14px;
+        color: var(--ink-2);
+      }
+      .foot {
+        color: var(--ink-3);
+        font-size: 12px;
+        margin: 16px 0 0;
+      }
+      .error {
+        color: var(--off);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand">
+        <h1>저점 판독기</h1>
+        <span id="asof"></span>
+      </div>
+      <form id="search" autocomplete="off">
+        <div class="ac">
+          <input
+            id="q"
+            inputmode="text"
+            placeholder="종목명·티커·코드 (애플, VZ, 삼성전자, ㅅㅅㅈㅈ)"
+            aria-label="종목 검색"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded="false"
+            aria-controls="ac-list"
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+          />
+          <div class="ac-panel" id="ac-panel" hidden>
+            <div class="ac-tabs" role="tablist" aria-label="시장 선택">
+              <button type="button" role="tab" data-f="all" aria-selected="true">전체</button>
+              <button type="button" role="tab" data-f="US" aria-selected="false">미국</button>
+              <button type="button" role="tab" data-f="KR" aria-selected="false">국내</button>
+            </div>
+            <ul id="ac-list" role="listbox"></ul>
+          </div>
+        </div>
+        <button type="submit">판독</button>
+      </form>
+      <div class="chips" id="chips" aria-label="최근 검색"></div>
+    </header>
+    <div id="demo" class="demo" hidden></div>
 
-<main>
-  <section class="panel" id="view" aria-labelledby="view-title" hidden></section>
+    <main>
+      <section class="panel" id="view" aria-labelledby="view-title" hidden></section>
 
-  <section class="panel" id="commodities" aria-labelledby="cmd-title" hidden></section>
+      <section class="panel" id="commodities" aria-labelledby="cmd-title" hidden></section>
 
-  <section class="panel" id="street-panel" aria-labelledby="street-title" hidden></section>
+      <section class="panel" id="street-panel" aria-labelledby="street-title" hidden></section>
 
-  <section class="panel" id="market" aria-labelledby="market-title">
-    <h2 id="market-title">지금 시장은 바닥인가</h2>
-    <p class="sub">윌리엄스의 시장 주기와 바닥 확인 신호</p>
-    <div id="market-dial"></div>
-    <ul class="signals" id="signals"></ul>
-  </section>
+      <section class="panel" id="market" aria-labelledby="market-title">
+        <h2 id="market-title">지금 시장은 바닥인가</h2>
+        <p class="sub">윌리엄스의 시장 주기와 바닥 확인 신호</p>
+        <div id="market-dial"></div>
+        <ul class="signals" id="signals"></ul>
+      </section>
 
-  <section class="panel" id="stock" aria-live="polite">
-    <p class="empty">종목을 검색하면 일곱 투자자의 원칙으로 지금 가격을 판독합니다.</p>
-  </section>
-</main>
+      <section class="panel" id="stock" aria-live="polite">
+        <p class="empty">종목을 검색하면 일곱 투자자의 원칙으로 지금 가격을 판독합니다.</p>
+      </section>
+    </main>
 
-<script>
-const $ = (s) => document.querySelector(s);
-const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const fmt = (v, d = 1) => (v === null || v === undefined || Number.isNaN(v) ? "–" : v.toFixed(d));
-const statusColor = (g) => (g === null ? "var(--rule)" : g >= 1 ? "var(--on)" : g > 0 ? "var(--neutral)" : "var(--off)");
-let config = { ai: false };
+    <script>
+      const $ = (s) => document.querySelector(s);
+      const esc = (v) =>
+        String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+      const fmt = (v, d = 1) => (v === null || v === undefined || Number.isNaN(v) ? "–" : v.toFixed(d));
+      const statusColor = (g) => (g === null ? "var(--rule)" : g >= 1 ? "var(--on)" : g > 0 ? "var(--neutral)" : "var(--off)");
+      let config = { ai: false };
 
-// 반원 다이얼: 왼쪽 과열, 오른쪽 저점. value는 -100(과열) ~ +100(저점)
-function dial(value, label, sub) {
-  const angle = Math.max(-90, Math.min(90, (value / 100) * 90));
-  const arc = (a0, a1) => {
-    const p = (a) => [160 + 120 * Math.cos(Math.PI - a), 150 - 120 * Math.sin(Math.PI - a)];
-    const [x0, y0] = p(a0), [x1, y1] = p(a1);
-    return `M${x0.toFixed(1)} ${y0.toFixed(1)} A120 120 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`;
-  };
-  const r = (deg) => (deg * Math.PI) / 180;
-  return `
+      // 반원 다이얼: 왼쪽 과열, 오른쪽 저점. value는 -100(과열) ~ +100(저점)
+      function dial(value, label, sub) {
+        const angle = Math.max(-90, Math.min(90, (value / 100) * 90));
+        const arc = (a0, a1) => {
+          const p = (a) => [160 + 120 * Math.cos(Math.PI - a), 150 - 120 * Math.sin(Math.PI - a)];
+          const [x0, y0] = p(a0),
+            [x1, y1] = p(a1);
+          return `M${x0.toFixed(1)} ${y0.toFixed(1)} A120 120 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`;
+        };
+        const r = (deg) => (deg * Math.PI) / 180;
+        return `
     <svg class="dial" viewBox="0 0 320 175" role="img" aria-label="판독 ${esc(label)}, ${value}점">
       <path d="${arc(r(2), r(58))}" class="arc-off" stroke-width="14" fill="none" stroke-linecap="round"/>
       <path d="${arc(r(62), r(118))}" class="arc-neutral" stroke-width="14" fill="none"/>
@@ -243,148 +1087,252 @@ function dial(value, label, sub) {
       <circle class="hub" cx="160" cy="150" r="7"/>
     </svg>
     <div class="reading"><strong>${esc(label)}</strong><small>${esc(sub)}</small></div>`;
-}
-function settleNeedles(root) {
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    root.querySelectorAll(".needle").forEach((n) => { n.style.transform = `rotate(${n.dataset.angle}deg)`; });
-  }));
-}
+      }
+      function settleNeedles(root) {
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => {
+            root.querySelectorAll(".needle").forEach((n) => {
+              n.style.transform = `rotate(${n.dataset.angle}deg)`;
+            });
+          })
+        );
+      }
 
-async function api(path) {
-  let code = "";
-  try { code = localStorage.getItem("accessCode") || ""; } catch {}
-  const res = await fetch(path, { headers: code ? { "x-access-code": code } : {} });
-  if (res.status === 401) { showGate(); throw new Error("접근 코드가 필요합니다."); }
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || `요청 실패 (${res.status})`);
-  return data;
-}
+      async function api(path) {
+        let code = "";
+        try {
+          code = localStorage.getItem("accessCode") || "";
+        } catch {}
+        const res = await fetch(path, { headers: code ? { "x-access-code": code } : {} });
+        if (res.status === 401) {
+          showGate();
+          throw new Error("접근 코드가 필요합니다.");
+        }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || `요청 실패 (${res.status})`);
+        return data;
+      }
 
-async function loadMarket() {
-  try {
-    const m = await api("/api/macro");
-    $("#asof").textContent = `금리 기준일 ${m.asOf}`;
-    const v = m.view;
-    if (v) {
-      const view = $("#view");
-      view.hidden = false;
-      view.innerHTML = `
+      async function loadMarket() {
+        try {
+          const m = await api("/api/macro");
+          $("#asof").textContent = `금리 기준일 ${m.asOf}`;
+          const v = m.view;
+          if (v) {
+            const view = $("#view");
+            view.hidden = false;
+            view.innerHTML = `
         <h2 id="view-title">오늘 시장을 읽는 법</h2>
         <p class="headline">${esc(v.headline)}</p>
         <ul class="lenses">${v.lenses.map((l) => `<li><b>${esc(l.who)}</b>${esc(l.text)}</li>`).join("")}</ul>
         <p class="action">${esc(v.action)}</p>
-        ${v.watch.length ? `<div class="watch">켜지면 비중을 늘릴 신호 ${v.watch.map((w) => `<span>${esc(w)}</span>`).join("")}</div>` : ""}`;
-    }
-    const el = $("#market-dial");
-    el.innerHTML = dial(m.score, m.stance, `시장 판독 ${m.score > 0 ? "+" : ""}${m.score}점`);
-    settleNeedles(el);
-    $("#signals").innerHTML = m.signals.map((s) => `
+        ${
+          v.watch.length
+            ? `<div class="watch">켜지면 비중을 늘릴 신호 ${v.watch.map((w) => `<span>${esc(w)}</span>`).join("")}</div>`
+            : ""
+        }`;
+          }
+          const el = $("#market-dial");
+          el.innerHTML = dial(m.score, m.stance, `시장 판독 ${m.score > 0 ? "+" : ""}${m.score}점`);
+          settleNeedles(el);
+          $("#signals").innerHTML = m.signals
+            .map(
+              (s) => `
       <li><details>
-        <summary><span class="dot ${s.status}" aria-hidden="true"></span><span class="sig-title">${esc(s.title)}</span><span class="sig-value">${esc(s.value)}</span></summary>
+        <summary><span class="dot ${s.status}" aria-hidden="true"></span><span class="sig-title">${esc(
+                s.title
+              )}</span><span class="sig-value">${esc(s.value)}</span></summary>
         <p>${esc(s.detail)}</p>
-      </details></li>`).join("");
-    if (m.commodities && m.commodities.length) {
-      const pct = (v) => (v === null || v === undefined ? "–" : `${v >= 0 ? "+" : ""}${v.toFixed(0)}%`);
-      const tone = (v) => (v === null || v === undefined ? "" : v >= 0 ? "up" : "down");
-      const line = (vals) => { const mn = Math.min(...vals), mx = Math.max(...vals); return vals.map((v, i) => `${i ? "L" : "M"}${((i / (vals.length - 1)) * 200).toFixed(1)} ${(32 - ((v - mn) / (mx - mn || 1)) * 30).toFixed(1)}`).join(""); };
-      const price = (c) => (c.price >= 100 ? Math.round(c.price).toLocaleString("en-US") : c.price.toFixed(2));
-      const cm = $("#commodities");
-      cm.hidden = false;
-      cm.innerHTML = `<h2 id="cmd-title">원자재가 말하는 실물 경기</h2><p class="sub">출처 ${esc(m.commodities[0].source)}, 기준일 ${esc(m.commodities[0].date)}</p>
-        <div class="cmd-row">${m.commodities.map((c) => `<div class="cmd">
+      </details></li>`
+            )
+            .join("");
+          if (m.commodities && m.commodities.length) {
+            const pct = (v) => (v === null || v === undefined ? "–" : `${v >= 0 ? "+" : ""}${v.toFixed(0)}%`);
+            const tone = (v) => (v === null || v === undefined ? "" : v >= 0 ? "up" : "down");
+            const line = (vals) => {
+              const mn = Math.min(...vals),
+                mx = Math.max(...vals);
+              return vals
+                .map(
+                  (v, i) =>
+                    `${i ? "L" : "M"}${((i / (vals.length - 1)) * 200).toFixed(1)} ${(
+                      32 -
+                      ((v - mn) / (mx - mn || 1)) * 30
+                    ).toFixed(1)}`
+                )
+                .join("");
+            };
+            const price = (c) => (c.price >= 100 ? Math.round(c.price).toLocaleString("en-US") : c.price.toFixed(2));
+            const cm = $("#commodities");
+            cm.hidden = false;
+            cm.innerHTML = `<h2 id="cmd-title">원자재가 말하는 실물 경기</h2><p class="sub">출처 ${esc(
+              m.commodities[0].source
+            )}, 기준일 ${esc(m.commodities[0].date)}</p>
+        <div class="cmd-row">${m.commodities
+          .map(
+            (c) => `<div class="cmd">
           <div class="cmd-top"><b>${esc(c.name)}</b><small>${esc(c.unit)}</small></div>
           <div class="cmd-price">${price(c)}</div>
-          <svg viewBox="0 0 200 34" preserveAspectRatio="none" aria-hidden="true"><path d="${line(c.spark)}" vector-effect="non-scaling-stroke"/></svg>
-          <div class="pills"><span class="${tone(c.m1)}">1개월 ${pct(c.m1)}</span><span class="${tone(c.m3)}">3개월 ${pct(c.m3)}</span><span class="${tone(c.y1)}">1년 ${pct(c.y1)}</span></div>
-          <p>${esc(c.meaning)}</p></div>`).join("")}</div>`;
-    }
-    const hv = m.houseViews;
-    if (hv) {
-      const cls = (st) => (/강세/.test(st) && !/신중/.test(st) ? "bull" : /신중한/.test(st) ? "mid" : /신중|약세/.test(st) ? "bear" : "mid");
-      const sp = $("#street-panel");
-      sp.hidden = false;
-      sp.innerHTML = `<h2 id="street-title">월가는 어떻게 보나</h2>
-        <p class="sub">${esc(hv.index.name)} ${hv.index.level.toLocaleString("en-US")} (${esc(hv.index.date)}) 기준, 전망 갱신일 ${esc(hv.asOf)}</p>
-        <p class="headline" style="font-family:var(--serif);font-size:16px;line-height:1.7;margin:10px 0 6px">${esc(hv.summary)}</p>
+          <svg viewBox="0 0 200 34" preserveAspectRatio="none" aria-hidden="true"><path d="${line(
+            c.spark
+          )}" vector-effect="non-scaling-stroke"/></svg>
+          <div class="pills"><span class="${tone(c.m1)}">1개월 ${pct(c.m1)}</span><span class="${tone(c.m3)}">3개월 ${pct(
+              c.m3
+            )}</span><span class="${tone(c.y1)}">1년 ${pct(c.y1)}</span></div>
+          <p>${esc(c.meaning)}</p></div>`
+          )
+          .join("")}</div>`;
+          }
+          const hv = m.houseViews;
+          if (hv) {
+            const cls = (st) =>
+              /강세/.test(st) && !/신중/.test(st) ? "bull" : /신중한/.test(st) ? "mid" : /신중|약세/.test(st) ? "bear" : "mid";
+            const sp = $("#street-panel");
+            sp.hidden = false;
+            sp.innerHTML = `<h2 id="street-title">월가는 어떻게 보나</h2>
+        <p class="sub">${esc(hv.index.name)} ${hv.index.level.toLocaleString("en-US")} (${esc(
+              hv.index.date
+            )}) 기준, 전망 갱신일 ${esc(hv.asOf)}</p>
+        <p class="headline" style="font-family:var(--serif);font-size:16px;line-height:1.7;margin:10px 0 6px">${esc(
+          hv.summary
+        )}</p>
         <p class="action" style="margin-top:8px">${esc(hv.compare)}</p>
         <table class="firms"><thead><tr><th>기관</th><th class="num">목표치</th><th class="num">여력</th></tr></thead><tbody>
-        ${hv.firms.map((f) => `<tr class="firm-top"><td>${esc(f.name)}<span class="stance ${cls(f.stance)}">${esc(f.stance)}</span><br><small style="color:var(--ink-3)">${esc(f.horizon)}</small></td>
-          <td class="num">${f.target ? f.target.toLocaleString("en-US") + (f.target2 ? ` / ${f.target2.toLocaleString("en-US")}` : "") : "–"}</td>
+        ${hv.firms
+          .map(
+            (f) => `<tr class="firm-top"><td>${esc(f.name)}<span class="stance ${cls(f.stance)}">${esc(
+              f.stance
+            )}</span><br><small style="color:var(--ink-3)">${esc(f.horizon)}</small></td>
+          <td class="num">${
+            f.target ? f.target.toLocaleString("en-US") + (f.target2 ? ` / ${f.target2.toLocaleString("en-US")}` : "") : "–"
+          }</td>
           <td class="num">${f.upside === null ? "–" : (f.upside >= 0 ? "+" : "") + f.upside.toFixed(1) + "%"}</td></tr>
-          <tr><td colspan="3" class="thesis-row"><span class="thesis">${esc(f.thesis)}</span><a href="${esc(f.source)}" target="_blank" rel="noopener">출처 ${esc(f.date)}</a></td></tr>`).join("")}
+          <tr><td colspan="3" class="thesis-row"><span class="thesis">${esc(f.thesis)}</span><a href="${esc(
+              f.source
+            )}" target="_blank" rel="noopener">출처 ${esc(f.date)}</a></td></tr>`
+          )
+          .join("")}
         </tbody></table>
         <p class="foot">${esc(hv.caution)}</p>`;
-    }
-  } catch (e) {
-    $("#market-dial").innerHTML = `<p class="error">${esc(e.message)}</p>`;
-  }
-}
+          }
+        } catch (e) {
+          $("#market-dial").innerHTML = `<p class="error">${esc(e.message)}</p>`;
+        }
+      }
 
-function spark(history, high, currency) {
-  const money = (v) => (currency === "KRW" ? Math.round(v).toLocaleString("ko-KR") + "원" : "$" + fmt(v, 2));
-  const closes = history.map((p) => p[1]);
-  const min = Math.min(...closes), max = Math.max(...closes);
-  const W = 320, H = 84, pad = 4;
-  const x = (i) => (i / (closes.length - 1)) * W;
-  const y = (v) => pad + (1 - (v - min) / (max - min || 1)) * (H - pad * 2);
-  const d = closes.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join("");
-  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="최근 1년 주가">
+      function spark(history, high, currency) {
+        const money = (v) => (currency === "KRW" ? Math.round(v).toLocaleString("ko-KR") + "원" : "$" + fmt(v, 2));
+        const closes = history.map((p) => p[1]);
+        const min = Math.min(...closes),
+          max = Math.max(...closes);
+        const W = 320,
+          H = 84,
+          pad = 4;
+        const x = (i) => (i / (closes.length - 1)) * W;
+        const y = (v) => pad + (1 - (v - min) / (max - min || 1)) * (H - pad * 2);
+        const d = closes.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join("");
+        return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="최근 1년 주가">
     <line class="hi" x1="0" x2="${W}" y1="${y(high)}" y2="${y(high)}"/>
     <path class="line" d="${d}" vector-effect="non-scaling-stroke"/>
   </svg>
   <div class="spark-labels"><span>${esc(history[0][0])}</span><span>점선: 1년 고점 ${money(high)}</span></div>`;
-}
+      }
 
-function techBlock(items) {
-  if (!items || !items.length) return "";
-  return `<div class="tech"><h3>기술적 신호</h3><p class="sub">초록 구간은 과매도, 빨강 구간은 과매수입니다</p>
-    ${items.map((t) => `<div class="tech-row">
+      function techBlock(items) {
+        if (!items || !items.length) return "";
+        return `<div class="tech"><h3>기술적 신호</h3><p class="sub">초록 구간은 과매도, 빨강 구간은 과매수입니다</p>
+    ${items
+      .map(
+        (t) => `<div class="tech-row">
       <div class="tech-top"><b>${esc(t.label)}</b><span class="${t.status}">${esc(t.display)}</span></div>
-      ${t.value !== undefined ? `<div class="meter" role="img" aria-label="${esc(t.label)} ${esc(t.display)}">
+      ${
+        t.value !== undefined
+          ? `<div class="meter" role="img" aria-label="${esc(t.label)} ${esc(t.display)}">
         <i class="zl" style="width:${t.low}%"></i><i class="zh" style="width:${100 - t.high}%"></i>
         ${t.value2 !== undefined ? `<i class="pin d" style="left:${Math.max(1, Math.min(99, t.value2))}%"></i>` : ""}
-        <i class="pin" style="left:${Math.max(1, Math.min(99, t.value))}%"></i></div>` : ""}
-      <p class="tech-note">${esc(t.note)}</p></div>`).join("")}
+        <i class="pin" style="left:${Math.max(1, Math.min(99, t.value))}%"></i></div>`
+          : ""
+      }
+      <p class="tech-note">${esc(t.note)}</p></div>`
+      )
+      .join("")}
   </div>`;
-}
+      }
 
-function judgeBlock(j) {
-  const score = j.score ?? 0;
-  const color = score >= 65 ? "var(--on)" : score >= 45 ? "var(--neutral)" : "var(--off)";
-  return `<div class="judge" id="j-${esc(j.key)}">
-    <div class="judge-head"><div><h3>${esc(j.name)}</h3><div class="idea">${esc(j.idea)}</div></div><div class="score">${j.score ?? "–"}</div></div>
+      function judgeBlock(j) {
+        const score = j.score ?? 0;
+        const color = score >= 65 ? "var(--on)" : score >= 45 ? "var(--neutral)" : "var(--off)";
+        return `<div class="judge" id="j-${esc(j.key)}">
+    <div class="judge-head"><div><h3>${esc(j.name)}</h3><div class="idea">${esc(j.idea)}</div></div><div class="score">${
+          j.score ?? "–"
+        }</div></div>
     <div class="bar"><i style="width:${score}%;background:${color}"></i></div>
-    ${j.profile ? `<details class="profile"><summary><span class="sub">어떤 투자자인가: ${esc(j.profile.type)}</span><span class="sub">보기</span></summary>
-      <div class="chipset"><span>보유 ${esc(j.profile.horizon)}</span><span>위험 ${esc(j.profile.risk)}</span><span>${esc(j.profile.focus)}</span></div>
-      <p>늘 던지는 질문: ${esc(j.profile.question)}</p><p>맹점: ${esc(j.profile.blindSpot)}</p></details>` : ""}
+    ${
+      j.profile
+        ? `<details class="profile"><summary><span class="sub">어떤 투자자인가: ${esc(
+            j.profile.type
+          )}</span><span class="sub">보기</span></summary>
+      <div class="chipset"><span>보유 ${esc(j.profile.horizon)}</span><span>위험 ${esc(j.profile.risk)}</span><span>${esc(
+            j.profile.focus
+          )}</span></div>
+      <p>늘 던지는 질문: ${esc(j.profile.question)}</p><p>맹점: ${esc(j.profile.blindSpot)}</p></details>`
+        : ""
+    }
     <p class="verdict">${esc(j.verdict)}</p>
-    <details><summary style="grid-template-columns:1fr auto;padding:4px 0"><span class="sub">판단 근거 ${j.checks.length}가지</span><span class="sub">근거 보기</span></summary>
-      <table class="checks"><tbody>${j.checks.map((c) => `
+    <details><summary style="grid-template-columns:1fr auto;padding:4px 0"><span class="sub">판단 근거 ${
+      j.checks.length
+    }가지</span><span class="sub">근거 보기</span></summary>
+      <table class="checks"><tbody>${j.checks
+        .map(
+          (c) => `
         <tr><td>${esc(c.label)}<span class="note">${esc(c.note)}</span></td><td>${esc(c.value)}</td>
-        <td><span class="mark" style="background:${statusColor(c.grade)}" aria-label="${c.grade === null ? "제외" : c.grade >= 1 ? "충족" : c.grade > 0 ? "보통" : "미달"}"></span></td></tr>`).join("")}
+        <td><span class="mark" style="background:${statusColor(c.grade)}" aria-label="${
+            c.grade === null ? "제외" : c.grade >= 1 ? "충족" : c.grade > 0 ? "보통" : "미달"
+          }"></span></td></tr>`
+        )
+        .join("")}
       </tbody></table>
     </details>
   </div>`;
-}
+      }
 
-async function loadStock(symbol) {
-  symbol = symbol.trim();
-  if (/^[a-z.\-]+$/i.test(symbol)) symbol = symbol.toUpperCase();
-  if (!symbol) return;
-  const box = $("#stock");
-  box.innerHTML = `<p class="empty">${esc(symbol)} 데이터를 불러오는 중</p>`;
-  location.hash = encodeURIComponent(symbol);
-  remember(symbol);
-  try {
-    const s = await api(`/api/stock/${encodeURIComponent(symbol)}`);
-    const st = s.stats;
-    box.innerHTML = `
+      async function loadStock(symbol) {
+        symbol = symbol.trim();
+        if (/^[a-z.\-]+$/i.test(symbol)) symbol = symbol.toUpperCase();
+        if (!symbol) return;
+        const box = $("#stock");
+        box.innerHTML = `<p class="empty">${esc(symbol)} 데이터를 불러오는 중</p>`;
+        location.hash = encodeURIComponent(symbol);
+        remember(symbol);
+        try {
+          const s = await api(`/api/stock/${encodeURIComponent(symbol)}`);
+          const st = s.stats;
+          box.innerHTML = `
       <div class="stock-head">
-        <div><h2><span class="badge ${esc(s.market)}">${s.market === "KR" ? "한국" : "미국"}${s.marketName && s.marketName !== "한국" && s.marketName !== "미국" ? " " + esc(s.marketName) : ""}</span>${esc(s.symbol.replace(/\.(KS|KQ)$/, ""))}</h2><p class="sub">${esc(s.name)}${s.sector ? ", " + esc(s.sector) : ""}</p></div>
-        <div class="price"><strong>${s.currency === "KRW" ? Math.round(s.price).toLocaleString("ko-KR") + "원" : "$" + fmt(s.price, 2)}</strong><span class="${s.changePct >= 0 ? "up" : "down"}">${s.changePct >= 0 ? "+" : ""}${fmt(s.changePct, 2)}%</span></div>
+        <div><h2><span class="badge ${esc(s.market)}">${s.market === "KR" ? "한국" : "미국"}${
+            s.marketName && s.marketName !== "한국" && s.marketName !== "미국" ? " " + esc(s.marketName) : ""
+          }</span>${s.market === "KR" ? esc(s.name) : esc(s.symbol)}</h2><p class="sub">${
+            s.market === "KR"
+              ? esc(s.symbol.replace(/\.(KS|KQ)$/, "")) + (s.source ? " · " + esc(s.source) : "")
+              : esc(s.name) + (s.sector ? ", " + esc(s.sector) : "")
+          }</p></div>
+        <div class="price"><strong>${
+          s.currency === "KRW" ? Math.round(s.price).toLocaleString("ko-KR") + "원" : "$" + fmt(s.price, 2)
+        }</strong><span class="${s.changePct >= 0 ? "up" : "down"}">${s.changePct >= 0 ? "+" : ""}${fmt(
+            s.changePct,
+            2
+          )}%</span></div>
       </div>
-      ${s.market === "KR" ? `<p class="note-kr">한국 종목입니다. 위의 시장 판독과 버핏의 국채 비교는 지금 미국 지표 기준이라, 한국 시장(기준금리, 국고채, 신용융자 잔고) 신호와는 다를 수 있습니다.</p>` : ""}
-      <div id="stock-dial">${dial(s.needle, s.position.label, `가격 위치·시장·원칙 종합 ${s.needle > 0 ? "+" : ""}${s.needle}점`)}</div>
+      ${
+        s.market === "KR"
+          ? `<p class="note-kr">한국 종목입니다. 위의 시장 판독과 버핏의 국채 비교는 지금 미국 지표 기준이라, 한국 시장(기준금리, 국고채, 신용융자 잔고) 신호와는 다를 수 있습니다.</p>`
+          : ""
+      }
+      <div id="stock-dial">${dial(
+        s.needle,
+        s.position.label,
+        `가격 위치·시장·원칙 종합 ${s.needle > 0 ? "+" : ""}${s.needle}점`
+      )}</div>
       ${spark(s.history, st.high52, s.currency)}
       <dl class="stats">
         <div><dt>1년 고점 대비</dt><dd class="${st.fromHigh < 0 ? "down" : ""}">${fmt(st.fromHigh)}%</dd></div>
@@ -392,70 +1340,306 @@ async function loadStock(symbol) {
         <div><dt>200일선 대비</dt><dd>${fmt(st.vsMa200)}%</dd></div>
       </dl>
       ${techBlock(s.position.items)}
-      ${s.street ? (() => { const t = s.street; const money = (v) => (s.currency === "KRW" ? Math.round(v).toLocaleString("ko-KR") + "원" : "$" + fmt(v, 2));
-        return `<div class="street-stock"><h3>월가 애널리스트 의견</h3>
+      ${
+        s.street
+          ? (() => {
+              const t = s.street;
+              const money = (v) => (s.currency === "KRW" ? Math.round(v).toLocaleString("ko-KR") + "원" : "$" + fmt(v, 2));
+              return `<div class="street-stock"><h3>월가 애널리스트 의견</h3>
         <dl class="street-nums"><div><dt>컨센서스</dt><dd>${esc(t.consensus || "–")}</dd></div>
           <div><dt>평균 목표가</dt><dd>${t.target ? money(t.target) : "–"}</dd></div>
-          <div><dt>목표가까지</dt><dd class="${t.upside >= 0 ? "up" : "down"}">${t.upside === null ? "–" : (t.upside >= 0 ? "+" : "") + fmt(t.upside) + "%"}</dd></div></dl>
+          <div><dt>목표가까지</dt><dd class="${t.upside >= 0 ? "up" : "down"}">${
+                t.upside === null ? "–" : (t.upside >= 0 ? "+" : "") + fmt(t.upside) + "%"
+              }</dd></div></dl>
         ${t.analysts ? `<p class="sub" style="margin-top:6px">애널리스트 ${t.analysts}명 기준</p>` : ""}
-        ${t.actions && t.actions.length ? `<ul class="actions-list">${t.actions.map((a) => `<li><span>${esc(a.firm)} <small style="color:var(--ink-3)">${esc(a.date)}</small></span><span>${esc([a.from && a.to ? a.from + " → " + a.to : a.action, a.target ? "목표 " + money(a.target) : ""].filter(Boolean).join(", "))}</span></li>`).join("")}</ul>` : ""}
-        <p class="action">${esc(t.reading)}</p></div>`; })() : ""}
+        ${
+          t.actions && t.actions.length
+            ? `<ul class="actions-list">${t.actions
+                .map(
+                  (a) =>
+                    `<li><span>${esc(a.firm)} <small style="color:var(--ink-3)">${esc(a.date)}</small></span><span>${esc(
+                      [a.from && a.to ? a.from + " → " + a.to : a.action, a.target ? "목표 " + money(a.target) : ""]
+                        .filter(Boolean)
+                        .join(", ")
+                    )}</span></li>`
+                )
+                .join("")}</ul>`
+            : ""
+        }
+        <p class="action">${esc(t.reading)}</p></div>`;
+            })()
+          : ""
+      }
       <div class="consensus">
-        <p><b>일곱 명 중 ${s.consensus.favorable}명</b>이 우호적으로 판독했습니다${s.consensus.names.length ? ` (${esc(s.consensus.names.join(", "))})` : ""}. 의견이 갈리는 지점이 이 종목의 핵심 쟁점입니다.</p>
-        <div class="tiles">${s.judges.map((j) => { const sc = j.score ?? 0; const c = sc >= 65 ? "var(--on)" : sc >= 45 ? "var(--neutral)" : "var(--off)"; return `<a href="#j-${esc(j.key)}" style="border-top-color:${c}" onclick="event.preventDefault();document.getElementById('j-${esc(j.key)}').scrollIntoView({behavior:'smooth'})"><small>${esc(j.name.split(" ").pop())}</small><strong>${j.score ?? "–"}</strong></a>`; }).join("")}</div>
+        <p><b>일곱 명 중 ${s.consensus.favorable}명</b>이 우호적으로 판독했습니다${
+            s.consensus.names.length ? ` (${esc(s.consensus.names.join(", "))})` : ""
+          }. 의견이 갈리는 지점이 이 종목의 핵심 쟁점입니다.</p>
+        <div class="tiles">${s.judges
+          .map((j) => {
+            const sc = j.score ?? 0;
+            const c = sc >= 65 ? "var(--on)" : sc >= 45 ? "var(--neutral)" : "var(--off)";
+            return `<a href="#j-${esc(
+              j.key
+            )}" style="border-top-color:${c}" onclick="event.preventDefault();document.getElementById('j-${esc(
+              j.key
+            )}').scrollIntoView({behavior:'smooth'})"><small>${esc(j.name.split(" ").pop())}</small><strong>${
+              j.score ?? "–"
+            }</strong></a>`;
+          })
+          .join("")}</div>
       </div>
       ${s.judges.map(judgeBlock).join("")}
       ${config.ai ? `<div class="ai"><button type="button" id="ai-btn">AI 해설 받기</button><p id="ai-text"></p></div>` : ""}
-      <p class="foot">일곱 사람의 공개된 투자 원칙을 수치 규칙으로 옮긴 결과이며, 실제 인물의 의견이나 투자 권유가 아닙니다. 데이터 시각 ${esc(new Date(s.fetchedAt).toLocaleString("ko-KR"))}</p>`;
-    settleNeedles($("#stock-dial"));
-    const btn = $("#ai-btn");
-    if (btn) btn.addEventListener("click", async () => {
-      btn.disabled = true; btn.textContent = "해설을 쓰는 중";
-      try { $("#ai-text").textContent = (await api(`/api/stock/${encodeURIComponent(s.symbol)}/commentary`)).text; btn.remove(); }
-      catch (e) { $("#ai-text").textContent = e.message; btn.disabled = false; btn.textContent = "다시 시도"; }
-    });
-  } catch (e) {
-    box.innerHTML = `<p class="empty error">${esc(e.message)}</p>`;
-  }
-}
+      <p class="foot">일곱 사람의 공개된 투자 원칙을 수치 규칙으로 옮긴 결과이며, 실제 인물의 의견이나 투자 권유가 아닙니다. 데이터 시각 ${esc(
+        new Date(s.fetchedAt).toLocaleString("ko-KR")
+      )}</p>`;
+          settleNeedles($("#stock-dial"));
+          const btn = $("#ai-btn");
+          if (btn)
+            btn.addEventListener("click", async () => {
+              btn.disabled = true;
+              btn.textContent = "해설을 쓰는 중";
+              try {
+                $("#ai-text").textContent = (await api(`/api/stock/${encodeURIComponent(s.symbol)}/commentary`)).text;
+                btn.remove();
+              } catch (e) {
+                $("#ai-text").textContent = e.message;
+                btn.disabled = false;
+                btn.textContent = "다시 시도";
+              }
+            });
+        } catch (e) {
+          box.innerHTML = `<p class="empty error">${esc(e.message)}</p>`;
+        }
+      }
 
-// 최근 검색은 이 기기에만 저장
-const DEFAULTS = ["VZ", "CMCSA", "EOG", "JPM", "GOOGL"];
-function recent() { try { return JSON.parse(localStorage.getItem("recent") || "[]"); } catch { return []; } }
-function remember(sym) {
-  const list = [sym, ...recent().filter((x) => x !== sym)].slice(0, 8);
-  try { localStorage.setItem("recent", JSON.stringify(list)); } catch {}
-  renderChips();
-}
-function renderChips() {
-  const list = config.demo ? config.demoSymbols : [...new Set([...recent(), ...DEFAULTS])].slice(0, 10);
-  $("#chips").innerHTML = list.map((s) => `<button type="button" data-s="${esc(s)}">${esc(s)}</button>`).join("");
-}
-$("#chips").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { $("#q").value = b.dataset.s; loadStock(b.dataset.s); } });
-$("#search").addEventListener("submit", (e) => { e.preventDefault(); loadStock($("#q").value); $("#q").blur(); });
+      // ---------- 자동완성 ----------
+      let STOCKS = [];
+      fetch("/stocks.json")
+        .then((r) => r.json())
+        .then((d) => {
+          STOCKS = d;
+          renderChips();
+        })
+        .catch(() => {});
+      const CHO = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ";
+      const cho = (str) =>
+        [...str]
+          .map((ch) => {
+            const c = ch.charCodeAt(0) - 0xac00;
+            return c >= 0 && c < 11172 ? CHO[Math.floor(c / 588)] : ch;
+          })
+          .join("");
+      const isCho = (q) => /^[ㄱ-ㅎ]+$/.test(q);
+      const isKR = (x) => x.m !== "US";
+      const marketText = (m) =>
+        m === "US" ? "미국" : /KOSDAQ|코스닥/i.test(m) ? "코스닥" : /KOSPI|코스피/i.test(m) ? "코스피" : "국내";
+      let acFilter = "all",
+        acItems = [],
+        acIndex = -1,
+        acTimer = null,
+        remoteTimer = null;
 
-function showGate() {
-  if ($("#gate")) return;
-  document.querySelector("main").innerHTML = `<section class="panel gate" id="gate"><h2>접근 코드를 입력하세요</h2>
+      function scoreOf(x, q) {
+        const Q = q.toUpperCase(),
+          name = x.n.toUpperCase(),
+          alt = (x.k || "").toUpperCase(),
+          sym = x.s.toUpperCase();
+        if (sym === Q) return 100;
+        if (sym.startsWith(Q)) return 85;
+        if (name.startsWith(Q)) return 75;
+        if (alt.split(/\s+/).some((w) => w.startsWith(Q))) return 65;
+        if (name.includes(Q)) return 55;
+        if (alt.includes(Q)) return 45;
+        if (isCho(q) && (cho(x.n).includes(q) || cho(x.k || "").includes(q))) return 40;
+        return 0;
+      }
+      function mark(text, q) {
+        const i = text.toUpperCase().indexOf(q.toUpperCase());
+        return i < 0 || isCho(q)
+          ? esc(text)
+          : esc(text.slice(0, i)) + "<mark>" + esc(text.slice(i, i + q.length)) + "</mark>" + esc(text.slice(i + q.length));
+      }
+      function localMatches(q) {
+        return STOCKS.map((x) => ({ x, sc: scoreOf(x, q) }))
+          .filter((r) => r.sc > 0)
+          .filter((r) => acFilter === "all" || (acFilter === "KR" ? isKR(r.x) : !isKR(r.x)))
+          .sort((a, b) => b.sc - a.sc)
+          .slice(0, 8)
+          .map((r) => r.x);
+      }
+      function renderAc(q, items, loading) {
+        acItems = items;
+        acIndex = items.length ? 0 : -1;
+        const list = $("#ac-list");
+        list.innerHTML = items.length
+          ? items
+              .map(
+                (x, i) => `<li role="option" id="ac-${i}" aria-selected="${i === 0}" data-i="${i}">
+        <span class="mk ${isKR(x) ? "KR" : "US"}">${marketText(x.m)}</span>
+        <span class="nm">${mark(x.n, q)}</span>
+        <span class="sb">${esc(x.s)}${x.k ? " · " + mark(x.k, q) : ""}</span></li>`
+              )
+              .join("")
+          : `<li class="empty-row">${
+              loading ? "더 찾는 중…" : `'${esc(q)}'와 맞는 종목이 없습니다. Enter로 그대로 검색할 수 있어요.`
+            }</li>`;
+        $("#ac-panel").hidden = false;
+        $("#q").setAttribute("aria-expanded", "true");
+      }
+      function closeAc() {
+        $("#ac-panel").hidden = true;
+        $("#q").setAttribute("aria-expanded", "false");
+        acIndex = -1;
+      }
+      function moveAc(d) {
+        if (!acItems.length) return;
+        acIndex = (acIndex + d + acItems.length) % acItems.length;
+        [...$("#ac-list").children].forEach((li, i) => li.setAttribute("aria-selected", String(i === acIndex)));
+        $("#q").setAttribute("aria-activedescendant", `ac-${acIndex}`);
+        $(`#ac-${acIndex}`)?.scrollIntoView({ block: "nearest" });
+      }
+      function pick(x) {
+        $("#q").value = x.n;
+        closeAc();
+        loadStock(x.s);
+        $("#q").blur();
+      }
+
+      function runAc() {
+        const q = $("#q").value.trim();
+        if (!q) return closeAc();
+        const local = localMatches(q);
+        renderAc(q, local, false);
+        clearTimeout(remoteTimer);
+        // 목록에 적을 때만 서버 검색 (미국은 FMP 호출 한도를 쓰므로 아끼기)
+        if (local.length >= 3 || config.demo || q.length < 2 || isCho(q)) return;
+        remoteTimer = setTimeout(async () => {
+          try {
+            const r = await api(`/api/search/${encodeURIComponent(q)}`);
+            if ($("#q").value.trim() !== q) return;
+            const extra = (r.results || [])
+              .map((x) => ({ s: x.s, n: x.n, k: "", m: x.kr ? x.m || "KR" : "US" }))
+              .filter((x) => acFilter === "all" || (acFilter === "KR" ? isKR(x) : !isKR(x)))
+              .filter((x) => !local.some((l) => l.s === x.s));
+            renderAc(q, [...local, ...extra].slice(0, 10), false);
+          } catch {}
+        }, 450);
+      }
+      $("#q").addEventListener("input", () => {
+        clearTimeout(acTimer);
+        acTimer = setTimeout(runAc, 80);
+      });
+      $("#q").addEventListener("focus", () => {
+        if ($("#q").value.trim()) runAc();
+      });
+      $("#q").addEventListener("keydown", (e) => {
+        if ($("#ac-panel").hidden) return;
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          moveAc(1);
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          moveAc(-1);
+        } else if (e.key === "Escape") closeAc();
+        else if (e.key === "Enter" && acIndex >= 0 && acItems[acIndex]) {
+          e.preventDefault();
+          pick(acItems[acIndex]);
+        }
+      });
+      $("#ac-list").addEventListener("mousedown", (e) => e.preventDefault());
+      $("#ac-list").addEventListener("click", (e) => {
+        const li = e.target.closest("li[data-i]");
+        if (li) pick(acItems[Number(li.dataset.i)]);
+      });
+      document.querySelector(".ac-tabs").addEventListener("mousedown", (e) => e.preventDefault());
+      document.querySelector(".ac-tabs").addEventListener("click", (e) => {
+        const b = e.target.closest("button[data-f]");
+        if (!b) return;
+        acFilter = b.dataset.f;
+        document.querySelectorAll(".ac-tabs button").forEach((x) => x.setAttribute("aria-selected", String(x === b)));
+        runAc();
+      });
+      $("#q").addEventListener("blur", () => setTimeout(closeAc, 120));
+
+      // 최근 검색은 이 기기에만 저장
+      const DEFAULTS = ["VZ", "GOOGL", "JPM", "005930", "000660", "105560"];
+      function recent() {
+        try {
+          return JSON.parse(localStorage.getItem("recent") || "[]");
+        } catch {
+          return [];
+        }
+      }
+      function remember(sym) {
+        const list = [sym, ...recent().filter((x) => x !== sym)].slice(0, 8);
+        try {
+          localStorage.setItem("recent", JSON.stringify(list));
+        } catch {}
+        renderChips();
+      }
+      function renderChips() {
+        const list = config.demo ? config.demoSymbols : [...new Set([...recent(), ...DEFAULTS])].slice(0, 10);
+        const label = (sym) =>
+          STOCKS.find((x) => x.s === sym)?.m !== "US" && STOCKS.find((x) => x.s === sym)
+            ? STOCKS.find((x) => x.s === sym).n
+            : sym;
+        $("#chips").innerHTML = list.map((s) => `<button type="button" data-s="${esc(s)}">${esc(label(s))}</button>`).join("");
+      }
+      $("#chips").addEventListener("click", (e) => {
+        const b = e.target.closest("button");
+        if (b) {
+          $("#q").value = b.textContent;
+          loadStock(b.dataset.s);
+        }
+      });
+      $("#search").addEventListener("submit", (e) => {
+        e.preventDefault();
+        closeAc();
+        loadStock($("#q").value);
+        $("#q").blur();
+      });
+
+      function showGate() {
+        if ($("#gate")) return;
+        document.querySelector("main").innerHTML = `<section class="panel gate" id="gate"><h2>접근 코드를 입력하세요</h2>
     <p class="sub">이 판독기는 코드가 있는 사람만 쓸 수 있습니다.</p>
     <form id="gate-form"><input id="code" type="password" style="text-transform:none" aria-label="접근 코드"><button type="submit">확인</button></form></section>`;
-  $("#gate-form").addEventListener("submit", (e) => { e.preventDefault(); try { localStorage.setItem("accessCode", $("#code").value); } catch {} location.reload(); });
-}
+        $("#gate-form").addEventListener("submit", (e) => {
+          e.preventDefault();
+          try {
+            localStorage.setItem("accessCode", $("#code").value);
+          } catch {}
+          location.reload();
+        });
+      }
 
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
+      if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
 
-(async () => {
-  try { config = await api("/api/config"); } catch {}
-  if (config.needsCode) { let c = ""; try { c = localStorage.getItem("accessCode") || ""; } catch {} if (!c) return showGate(); }
-  if (config.demo) {
-    $("#demo").hidden = false;
-    $("#demo").textContent = "데모 모드입니다. 재무 지표는 2026년 10월 말 공개값, 주가·금리 곡선은 그에 맞춘 가상 경로입니다. .env에 API 키를 넣으면 실시간 데이터로 바뀝니다.";
-  }
-  renderChips();
-  loadMarket();
-  const start = decodeURIComponent(location.hash.slice(1));
-  if (start) { $("#q").value = start; loadStock(start); }
-})();
-</script>
-</body>
+      (async () => {
+        try {
+          config = await api("/api/config");
+        } catch {}
+        if (config.needsCode) {
+          let c = "";
+          try {
+            c = localStorage.getItem("accessCode") || "";
+          } catch {}
+          if (!c) return showGate();
+        }
+        if (config.demo) {
+          $("#demo").hidden = false;
+          $("#demo").textContent =
+            "데모 모드입니다. 재무 지표는 2026년 10월 말 공개값, 주가·금리 곡선은 그에 맞춘 가상 경로입니다. .env에 API 키를 넣으면 실시간 데이터로 바뀝니다.";
+        }
+        renderChips();
+        loadMarket();
+        const start = decodeURIComponent(location.hash.slice(1));
+        if (start) {
+          $("#q").value = start;
+          loadStock(start);
+        }
+      })();
+    </script>
+  </body>
 </html>
