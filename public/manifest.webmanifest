@@ -1,18 +1,31 @@
 {
-  "name": "저점 판독기",
-  "short_name": "판독기",
-  "description": "윌리엄스·버핏·멍거·린치·드러켄밀러·애크먼·버리의 원칙으로 지금 가격을 판독합니다",
+  "name": "배당셰프 판독기",
+  "short_name": "배당셰프",
+  "description": "윌리엄스·버핏·멍거·린치·드러켄밀러·애크먼·버리의 원칙으로 지금 가격을 판독해요",
   "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "lang": "ko",
-  "background_color": "#EEF0EB",
-  "theme_color": "#16202A",
+  "background_color": "#F2F4F6",
+  "theme_color": "#F2F4F6",
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }

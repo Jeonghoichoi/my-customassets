@@ -4,7 +4,7 @@ const { stock: fmpStock, probe, search: fmpSearch, streetData } = require("./sou
 const naver = require("./sources/naver");
 const { demoMacro, demoStock, demoSymbols, demoCommodities } = require("./sources/demo");
 const { fetchCommodities } = require("./sources/commodities");
-const { evaluateMacro } = require("./engine/macro");
+const { evaluateMacro, fxSummary } = require("./engine/macro");
 const { priceStats } = require("./engine/indicators");
 const { judgeStock, streetReading } = require("./engine/judges");
 const { resolve, marketLabel } = require("./sources/symbols");
@@ -16,7 +16,7 @@ const env = () => ({
 });
 
 // 캐시 시간: FMP 무료 한도(하루 약 250번)를 아끼려고 길게 잡아요
-const TTL = { macro: 6 * 3600, stock: 4 * 3600, street: 12 * 3600, search: 24 * 3600 };
+const TTL = { macro: 3600, stock: 4 * 3600, street: 12 * 3600, search: 24 * 3600 };
 
 // 무료 API 한도를 아끼는 메모리 캐시 (서버리스에서는 인스턴스가 살아 있는 동안만 유지)
 const cache = new Map();
@@ -31,13 +31,40 @@ async function cached(key, ttlMs, fn) {
 async function getMacro() {
   const { demo } = env();
   return cached("macro", TTL.macro * 1e3, async () => {
-    const [data, commodities] = demo
-      ? [demoMacro(), demoCommodities()]
+    // VIX·환율은 네이버가 FRED보다 1~2일 빨라요. 네이버가 안 되면 FRED 값을 그대로 써요
+    const fxP = naver.marketIndexSeries("exchange/FX_USDKRW").catch(() => null);
+    const [data, commodities, vixNv, fxSeries] = demo
+      ? [demoMacro(), demoCommodities(), null, await fxP]
       : await Promise.all([
           macroSeries(process.env.FRED_API_KEY),
           fetchCommodities(process.env.FMP_API_KEY, process.env.FRED_API_KEY),
+          naver.indexSeries(".VIX").catch(() => null),
+          fxP,
         ]);
+    const src = { bond: "FRED", fed: "FRED", credit: "FRED", sentiment: "FRED", oil: "FRED" };
+    if (vixNv && vixNv.length >= 60) {
+      data.vix = vixNv;
+      src.sentiment = "네이버";
+    }
+    if (/네이버/.test(commodities.wti?.source || "")) {
+      data.oil = commodities.wti.series;
+      src.oil = "네이버";
+    }
     const m = evaluateMacro(data, commodities);
+    m.fx = fxSummary(fxSeries);
+    m.updatedAt = new Date().toISOString();
+    // 신호마다 데이터 날짜·출처를 붙여요 (FRED는 1~2일 늦게 발표돼요)
+    const lastDate = (sr) => (sr && sr.length ? sr[sr.length - 1].date : null);
+    const dates = {
+      bond: lastDate(data.tenYear), fed: lastDate(data.fedFunds), credit: lastDate(data.creditSpread),
+      sentiment: lastDate(data.vix), oil: lastDate(data.oil),
+      copper: lastDate(commodities.copper?.series), cuau: lastDate(commodities.copper?.series),
+    };
+    for (const sg of m.signals) {
+      if (dates[sg.key]) sg.date = dates[sg.key];
+      if (src[sg.key]) sg.source = demo ? "데모" : src[sg.key];
+      else if (sg.key === "copper" || sg.key === "cuau") sg.source = demo ? "데모" : commodities.copper?.source || null;
+    }
     m.houseViews = houseViews(m);
     return m;
   });

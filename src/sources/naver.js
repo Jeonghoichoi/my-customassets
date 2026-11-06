@@ -352,4 +352,35 @@ async function worldSearch(q) {
     .map((x) => ({ s: x.code, n: x.name, m: x.typeName || x.typeCode || "미국" }));
 }
 
-module.exports = { stock, search, probe, worldStock, worldStreet, worldSearch };
+// ---------- 시장 지표: VIX·환율·원자재 (거의 실시간, FRED보다 1~2일 빨라요) ----------
+// 해외 지수 일봉 (예: .VIX)
+async function indexSeries(code, days = 420) {
+  const from = new Date(Date.now() - days * 864e5);
+  const rows = await getJson(`${W}/chart/foreign/index/${code}/day?startDateTime=${ymd(from)}0000&endDateTime=${ymd(new Date())}2359`);
+  return (Array.isArray(rows) ? rows : [])
+    .map((p) => ({ date: `${p.localDate.slice(0, 4)}-${p.localDate.slice(4, 6)}-${p.localDate.slice(6, 8)}`, value: n(p.closePrice) }))
+    .filter((p) => p.value > 0)
+    .sort((a, b) => (a.date < b.date ? -1 : 1));
+}
+
+// 환율·원자재 일별 종가 (한 번에 60일까지라 나눠 받아요). path 예: "exchange/FX_USDKRW", "metals/GCcv1"
+async function marketIndexSeries(path, pages = 5) {
+  const all = await Promise.all(
+    Array.from({ length: pages }, (_, i) => getJson(`${W}/marketindex/${path}/prices?page=${i + 1}&pageSize=60`).catch(() => []))
+  );
+  const byDate = new Map();
+  for (const p of all.flat()) {
+    const date = String(p.localTradedAt || "").slice(0, 10);
+    const value = n(p.closePrice);
+    if (date && value > 0) byDate.set(date, { date, value });
+  }
+  const list = [...byDate.values()].sort((a, b) => (a.date < b.date ? -1 : 1));
+  if (list.length < 60) {
+    const e = new Error(`네이버 ${path} 자료 부족`);
+    e.status = 502;
+    throw e;
+  }
+  return list;
+}
+
+module.exports = { stock, search, probe, worldStock, worldStreet, worldSearch, indexSeries, marketIndexSeries };

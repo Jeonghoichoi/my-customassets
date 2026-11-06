@@ -2,7 +2,7 @@
   "name": "bottom-reader",
   "version": "0.1.0",
   "private": true,
-  "description": "윌리엄스·버핏·멍거 원칙 기반 저점 판독기",
+  "description": "윌리엄스·버핏·멍거 원칙 기반 배당셰프 판독기",
   "scripts": {
     "start": "node src/server.js",
     "demo": "DEMO=1 node src/server.js"

@@ -34,6 +34,6 @@ http.createServer(async (req, res) => {
   res.end(fs.readFileSync(file));
 }).listen(Number(process.env.PORT || 3000), "0.0.0.0", () => {
   const demo = process.env.DEMO === "1" || !process.env.FRED_API_KEY || !process.env.FMP_API_KEY;
-  console.log(`저점 판독기: http://localhost:${process.env.PORT || 3000}`);
+  console.log(`배당셰프 판독기: http://localhost:${process.env.PORT || 3000}`);
   console.log(demo ? "데모 모드 (.env에 FRED_API_KEY, FMP_API_KEY를 넣으면 실제 데이터)" : "실제 데이터 모드");
 });

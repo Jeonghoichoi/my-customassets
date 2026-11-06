@@ -9,8 +9,8 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="판독기" />
-    <title>저점 판독기</title>
+    <meta name="apple-mobile-web-app-title" content="배당셰프" />
+    <title>배당셰프 판독기</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -302,7 +302,7 @@
       }
       @media (min-width: 900px) {
         main {
-          grid-template-columns: 420px 1fr;
+          grid-template-columns: minmax(0, 1fr) 400px;
           align-items: start;
           gap: 16px;
         }
@@ -1020,6 +1020,53 @@
         font-size: 15px;
         line-height: 1.7;
       }
+      /* 한두 줄 요약 + 더보기 */
+      .clamp {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .more-btn {
+        min-height: 0;
+        padding: 6px 0 0;
+        background: none;
+        color: var(--primary);
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .more-area {
+        margin-top: 12px;
+        padding-top: 4px;
+      }
+      .pts {
+        min-width: 34px;
+        text-align: right;
+        font-weight: 700;
+        font-size: 13px;
+        color: var(--mid);
+        font-variant-numeric: tabular-nums;
+      }
+      .pts.on {
+        color: var(--good);
+      }
+      .pts.off {
+        color: var(--warn);
+      }
+      .divider {
+        height: 1px;
+        background: var(--line);
+        margin: 20px 0;
+      }
+      .krw {
+        display: block;
+        font-size: 13px;
+        color: var(--ink-3);
+        margin-top: 2px;
+      }
+      .cmd.fx {
+        grid-column: 1 / -1;
+      }
       .gate form {
         margin-top: 16px;
       }
@@ -1031,7 +1078,7 @@
   <body>
     <header class="top">
       <div class="brand">
-        <h1>저점 판독기</h1>
+        <h1>배당셰프 판독기</h1>
         <span id="asof"></span>
       </div>
       <form id="search" autocomplete="off">
@@ -1065,6 +1112,11 @@
     <div id="demo" class="demo" hidden></div>
 
     <main>
+      <div class="col" id="col-stock">
+        <section class="card" id="stock" aria-live="polite">
+          <p class="empty">종목을 검색하면<br />일곱 투자자의 원칙으로 판독해 드려요</p>
+        </section>
+      </div>
       <div class="col" id="col-market">
         <section class="card" id="market" aria-labelledby="market-title">
           <p class="eyebrow" id="market-title">지금 시장은</p>
@@ -1073,11 +1125,6 @@
         <section class="card" id="signals-card" aria-labelledby="signals-title" hidden></section>
         <section class="card" id="commodities" aria-labelledby="cmd-title" hidden></section>
         <section class="card" id="street-panel" aria-labelledby="street-title" hidden></section>
-      </div>
-      <div class="col" id="col-stock">
-        <section class="card" id="stock" aria-live="polite">
-          <p class="empty">종목을 검색하면<br />일곱 투자자의 원칙으로 판독해 드려요</p>
-        </section>
       </div>
     </main>
 
@@ -1160,6 +1207,7 @@
         브렌트: ["브렌트유", "유럽·중동 원유의 기준 가격이에요. WTI와 차이가 벌어지면 중동·유럽 공급 불안을 반영해요."],
         천연가스: ["천연가스", "난방과 발전에 쓰이는 연료예요. 겨울에 급등하면 유럽·아시아 물가를 끌어올려요."],
         금: ["금", "대표적인 안전자산이에요. 불안할 때나 달러 가치가 떨어질 때 올라요."],
+        환율: ["원·달러 환율", "1달러를 사는 데 드는 원화예요. 오르면 원화로 미국 주식을 살 때 비싸지고, 나중에 환율이 내리면 원화 기준 수익이 줄어요(환차손)."],
         컨센서스: ["컨센서스", "이 종목을 분석하는 증권사 애널리스트들의 평균 의견이에요."],
         목표가: ["평균 목표가", "애널리스트들이 제시한 1년 뒤 예상 주가의 평균이에요. 자주 틀리고 주가를 뒤따라 바뀌어요."],
       };
@@ -1218,38 +1266,38 @@
         if (e.key === "Escape" && document.body.classList.contains("sheet-open")) closeSheet();
       });
 
-      // 반원 다이얼: 왼쪽 과열, 오른쪽 저점. value는 -100(과열) ~ +100(저점)
-      function dial(value, label) {
-        const angle = Math.max(-90, Math.min(90, (value / 100) * 90));
-        const arc = (a0, a1) => {
-          const p = (a) => [160 + 120 * Math.cos(Math.PI - a), 150 - 120 * Math.sin(Math.PI - a)];
-          const [x0, y0] = p(a0),
-            [x1, y1] = p(a1);
-          return `M${x0.toFixed(1)} ${y0.toFixed(1)} A120 120 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`;
-        };
-        const r = (deg) => (deg * Math.PI) / 180;
-        return `
-    <svg class="dial" viewBox="0 0 320 175" role="img" aria-label="판독 ${esc(label)}, ${value}점">
-      <path d="${arc(r(2), r(58))}" class="arc-off" stroke-width="12" fill="none" stroke-linecap="round"/>
-      <path d="${arc(r(62), r(118))}" class="arc-neutral" stroke-width="12" fill="none"/>
-      <path d="${arc(r(122), r(178))}" class="arc-on" stroke-width="12" fill="none" stroke-linecap="round"/>
-      <text class="tick" x="26" y="172">과열</text>
-      <text class="tick" x="160" y="14" text-anchor="middle">중립</text>
-      <text class="tick" x="294" y="172" text-anchor="end">저점</text>
-      <line class="needle" x1="160" y1="150" x2="160" y2="50" style="transform: rotate(-90deg)" data-angle="${angle}"/>
-      <circle class="hub" cx="160" cy="150" r="7"/>
-    </svg>`;
-      }
-      function settleNeedles(root) {
-        requestAnimationFrame(() =>
-          requestAnimationFrame(() => {
-            root.querySelectorAll(".needle").forEach((n) => {
-              n.style.transform = `rotate(${n.dataset.angle}deg)`;
-            });
-          })
-        );
-      }
       const pointTone = (v) => (v >= 15 ? "on" : v > -15 ? "mid" : "off");
+      const dayText = (d) => {
+        if (!d) return "";
+        const [, mo, da] = String(d).slice(0, 10).split("-");
+        return `${Number(mo)}월 ${Number(da)}일`;
+      };
+      const timeText = (iso) => {
+        const d = new Date(iso);
+        return Number.isNaN(d.getTime())
+          ? ""
+          : `${d.getMonth() + 1}월 ${d.getDate()}일 ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+      };
+      // '더보기' 버튼: 같은 카드 안의 접힌 영역을 펼치고 접어요
+      document.addEventListener("click", (e) => {
+        const b = e.target.closest(".more-btn");
+        if (!b) return;
+        const area = document.getElementById(b.dataset.target);
+        if (!area) return;
+        const open = area.hidden;
+        area.hidden = !open;
+        b.setAttribute("aria-expanded", String(open));
+        b.textContent = open ? "접기" : "더보기";
+        const lead = b.previousElementSibling;
+        if (lead && lead.classList.contains("lead")) lead.classList.toggle("clamp", !open);
+      });
+      // 미국 종목 가격 옆 원화 환산 (시장 데이터의 환율이 오면 채워요)
+      let FX = null;
+      function fillKrw() {
+        const el = document.getElementById("krw-eq");
+        if (!el || !FX) return;
+        el.textContent = `≈ ${Math.round(Number(el.dataset.usd) * FX.price).toLocaleString("ko-KR")}원 (환율 ${FX.price.toLocaleString("ko-KR")}원)`;
+      }
 
       async function api(path) {
         let code = "";
@@ -1277,30 +1325,39 @@
       async function loadMarket() {
         try {
           const m = await api("/api/macro");
-          $("#asof").textContent = `${m.asOf} 기준`;
+          $("#asof").textContent = m.updatedAt ? `업데이트 ${timeText(m.updatedAt)}` : `${m.asOf} 기준`;
+          FX = m.fx || null;
+          fillKrw();
           const v = m.view || {};
           const tone = pointTone(m.score);
           const body = $("#market-body");
+          const hasMore = v.action || (v.lenses && v.lenses.length) || (v.watch && v.watch.length);
           body.innerHTML = `
         <div class="hero"><strong class="big">${esc(m.stance)}</strong><span class="score tone-${tone}">${signed(m.score, 0, "점")}</span></div>
-        ${dial(m.score, m.stance)}
-        ${v.headline ? `<p class="lead">${esc(v.headline)}</p>` : ""}
-        ${v.action ? `<div class="callout"><b>원칙대로라면</b>${esc(v.action)}</div>` : ""}
+        <p class="sub">신호 ${m.signals.length}개의 점수를 합쳐 −100(과열)~+100(저점)으로 환산했어요</p>
+        ${v.headline ? `<p class="lead clamp">${esc(v.headline)}</p>` : ""}
         ${
-          v.watch && v.watch.length
-            ? `<p class="sub" style="margin-top:14px">켜지면 비중을 늘릴 신호</p><div class="tally">${v.watch
-                .map((w) => `<span class="chip blue">${esc(w)}</span>`)
-                .join("")}</div>`
-            : ""
-        }
-        ${
-          v.lenses && v.lenses.length
-            ? `<details class="more"><summary>투자자별 시각 ${v.lenses.length}가지</summary><div class="body"><dl class="defs">${v.lenses
-                .map((l) => `<div><dt>${esc(l.who)}</dt><dd>${esc(l.text)}</dd></div>`)
-                .join("")}</dl></div></details>`
+          hasMore
+            ? `<button type="button" class="more-btn" data-target="mk-more" aria-expanded="false">더보기</button>
+        <div class="more-area" id="mk-more" hidden>
+          ${v.action ? `<div class="callout"><b>원칙대로라면</b>${esc(v.action)}</div>` : ""}
+          ${
+            v.watch && v.watch.length
+              ? `<p class="sub" style="margin-top:14px">켜지면 비중을 늘릴 신호</p><div class="tally">${v.watch
+                  .map((w) => `<span class="chip blue">${esc(w)}</span>`)
+                  .join("")}</div>`
+              : ""
+          }
+          ${
+            v.lenses && v.lenses.length
+              ? `<dl class="defs" style="margin-top:16px">${v.lenses
+                  .map((l) => `<div><dt>${esc(l.who)}</dt><dd>${esc(l.text)}</dd></div>`)
+                  .join("")}</dl>`
+              : ""
+          }
+        </div>`
             : ""
         }`;
-          settleNeedles(body);
 
           const cnt = (st) => m.signals.filter((s) => s.status === st).length;
           const sc = $("#signals-card");
@@ -1314,10 +1371,20 @@
             (s) => `<li><details class="row">
           <summary><span class="dot ${esc(s.status)}" aria-hidden="true"></span><span class="name">${esc(s.title)}${tip(
               s.title
-            )}</span><span class="val">${esc(String(s.value).split(" (")[0])}</span></summary>
+            )}</span><span class="val">${esc(String(s.value).split(" (")[0])}<span class="pts ${esc(s.status)}">${signed(
+              s.points,
+              0,
+              ""
+            )}</span></span></summary>
           <p class="detail"><span class="chip ${esc(s.status)}" style="margin-right:6px">${STATUS_TEXT[s.status] || ""}</span>${esc(
               s.detail
-            )}</p></details></li>`
+            )}${
+              s.date
+                ? `<span style="display:block;margin-top:8px;font-size:12px;color:var(--ink-3)">${esc(String(s.value))} · ${dayText(
+                    s.date
+                  )} 기준${s.source ? " · " + esc(s.source) : ""}${s.source === "FRED" ? " (1~2일 늦게 발표돼요)" : ""}</span>`
+                : ""
+            }</p></details></li>`
           )
           .join("")}</ul>`;
 
@@ -1325,9 +1392,26 @@
             const price = (c) => (c.price >= 100 ? Math.round(c.price).toLocaleString("en-US") : c.price.toFixed(2));
             const cm = $("#commodities");
             cm.hidden = false;
-            cm.innerHTML = `<h2 id="cmd-title">원자재로 보는 실물 경기</h2>
-        <p class="sub">${esc(m.commodities[0].date)} 기준 · 1년 등락</p>
-        <div class="cmd-grid">${m.commodities
+            const fx = m.fx;
+            cm.innerHTML = `<h2 id="cmd-title">환율·원자재</h2>
+        <p class="sub">${dayText(m.commodities[0].date)} 기준 · 1년 등락</p>
+        <div class="cmd-grid">${
+          fx
+            ? `<div class="cmd fx">
+          <b>${esc(fx.name)}${tip("환율")}</b><small>${dayText(fx.date)} · 1년 ${Math.round(fx.low).toLocaleString("ko-KR")}~${Math.round(
+                fx.high
+              ).toLocaleString("ko-KR")}원</small>
+          <strong>${fx.price.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}원</strong><span class="chg ${updown(
+                fx.y1,
+                0
+              )}">${signed(fx.y1, 0)}</span> <span class="chip" style="margin-left:6px">${esc(fx.zone)}</span>
+          <svg viewBox="0 0 200 28" preserveAspectRatio="none" class="${updown(fx.y1, 0) || "down"}" aria-hidden="true"><path d="${sparkPath(
+                fx.spark,
+                200,
+                28
+              )}" vector-effect="non-scaling-stroke"/></svg></div>`
+            : ""
+        }${m.commodities
           .map(
             (c) => `<div class="cmd">
           <b>${esc(c.name)}${tip(c.name)}</b><small>${esc(c.unit)}</small>
@@ -1339,7 +1423,13 @@
             )}" vector-effect="non-scaling-stroke"/></svg></div>`
           )
           .join("")}</div>
-        <details class="more"><summary>원자재가 말해주는 것</summary><div class="body"><dl class="defs">${m.commodities
+        <details class="more"><summary>환율·원자재가 말해주는 것</summary><div class="body"><dl class="defs">${
+          fx
+            ? `<div><dt>${esc(fx.name)} <span class="sub" style="font-weight:400">1개월 ${signed(fx.m1, 1)}</span></dt><dd>${esc(
+                fx.note
+              )}</dd></div>`
+            : ""
+        }${m.commodities
           .map(
             (c) =>
               `<div><dt>${esc(c.name)} <span class="sub" style="font-weight:400">1개월 ${signed(c.m1, 0)} · 3개월 ${signed(
@@ -1495,6 +1585,7 @@
           const money = (v) => (s.currency === "KRW" ? Math.round(v).toLocaleString("ko-KR") + "원" : "$" + fmt(v, 2));
           const tone = pointTone(s.needle);
           const t = s.street;
+          const m0 = s.metrics || {};
           col.innerHTML = `
       <section class="card" id="stock" aria-live="polite">
         <div class="stock-head"><div style="min-width:0">
@@ -1509,9 +1600,24 @@
         <div class="price"><strong>${money(s.price)}</strong><span class="${updown(s.changePct)}">${signed(
             s.changePct,
             2
-          )}</span> <span class="sub" style="font-weight:400">오늘</span></div>
+          )}</span> <span class="sub" style="font-weight:400">오늘</span>${
+            s.currency === "USD" ? `<span class="krw" id="krw-eq" data-usd="${Number(s.price)}"></span>` : ""
+          }</div>
         ${spark(s.history, st.high52, s.currency)}
+        <div class="divider"></div>
+        <p class="eyebrow">가격 위치 종합</p>
+        <div class="hero"><strong class="big">${esc(s.position.label)}</strong><span class="score tone-${tone}">${signed(
+            s.needle,
+            0,
+            "점"
+          )}</span></div>
+        <p class="sub">가격 위치 50% + 시장 신호 30% + 투자자 7명 평균 20%를 합친 점수예요 (−100 과열 ~ +100 저점)</p>
         <div class="tiles3">
+          <div class="tile"><small>배당수익률${tip("배당수익률")}</small><strong>${
+            m0.divYield === null || m0.divYield === undefined ? "–" : m0.divYield > 0 ? fmt(m0.divYield, 2) + "%" : "배당 없음"
+          }</strong></div>
+          <div class="tile"><small>PER${tip("PER")}</small><strong>${m0.pe > 0 ? fmt(m0.pe, 1) + "배" : "–"}</strong></div>
+          <div class="tile"><small>PBR${tip("PBR")}</small><strong>${m0.pb > 0 ? fmt(m0.pb, 2) + "배" : "–"}</strong></div>
           <div class="tile"><small>1년 고점 대비${tip("1년 고점")}</small><strong class="${updown(st.fromHigh, 1)}">${signed(
             st.fromHigh,
             1
@@ -1525,19 +1631,6 @@
             : ""
         }
       </section>
-
-      <section class="card">
-        <p class="eyebrow">가격 위치 종합</p>
-        <div class="hero"><strong class="big">${esc(s.position.label)}</strong><span class="score tone-${tone}">${signed(
-            s.needle,
-            0,
-            "점"
-          )}</span></div>
-        <div id="stock-dial">${dial(s.needle, s.position.label)}</div>
-        <p class="sub" style="text-align:center;margin-top:8px">가격 위치·시장 신호·투자 원칙을 합친 점수예요</p>
-      </section>
-
-      ${techBlock(s.position.items)}
 
       <section class="card">
         <p class="eyebrow">일곱 투자자의 판독</p>
@@ -1555,6 +1648,8 @@
         ${config.ai ? `<div class="ai"><button type="button" id="ai-btn">AI 해설 받기</button><p id="ai-text"></p></div>` : ""}
       </section>
 
+      ${techBlock(s.position.items)}
+
       ${
         t
           ? `<section class="card" id="street-card"><h2>월가 애널리스트 의견</h2>${streetBody(t, money)}</section>`
@@ -1567,7 +1662,7 @@
       <p class="foot">공개된 투자 원칙을 수치 규칙으로 옮긴 결과예요. 실제 인물의 의견이나 투자 권유가 아니에요. 데이터 ${esc(
         new Date(s.fetchedAt).toLocaleString("ko-KR")
       )}</p>`;
-          settleNeedles($("#stock-dial"));
+          fillKrw();
           col.querySelectorAll(".judges-sum a").forEach((a) =>
             a.addEventListener("click", (e) => {
               e.preventDefault();

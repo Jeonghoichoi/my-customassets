@@ -255,4 +255,24 @@ function interpret(m) {
   return { headline, lenses, action, watch };
 }
 
-module.exports = { evaluateMacro };
+// 원·달러 환율 요약: 저점 판단과 직접 관계가 약해 점수에는 넣지 않는 참고 정보예요
+function fxSummary(series) {
+  if (!series || series.length < 60) return null;
+  const now = last(series);
+  const year = series.slice(-252).map((p) => p.value);
+  const high = Math.max(...year), low = Math.min(...year);
+  const pos = high > low ? ((now.value - low) / (high - low)) * 100 : 50;
+  const zone = pos >= 80 ? "1년 범위 상단" : pos <= 20 ? "1년 범위 하단" : "1년 범위 중간";
+  const note =
+    pos >= 80 ? "달러가 1년 중 비싼 편이에요. 원화로 미국 주식을 사면 환율 부담이 크고, 이후 환율이 내리면 환차손이 날 수 있어요." :
+    pos <= 20 ? "달러가 1년 중 싼 편이에요. 원화로 미국 주식을 사기에 환율 부담이 작은 구간이에요." :
+    "달러가 1년 범위 중간쯤이에요. 원화로 미국 주식을 살 때 환율 부담은 보통 수준이에요.";
+  const step = Math.max(1, Math.floor(series.length / 60));
+  return {
+    name: "원·달러 환율", unit: "원", price: now.value, date: now.date,
+    m1: change(series, 30), y1: change(series, 365), high, low, pos, zone, note,
+    spark: series.filter((_, i) => i % step === 0 || i === series.length - 1).map((p) => p.value),
+  };
+}
+
+module.exports = { evaluateMacro, fxSummary };
