@@ -16,7 +16,7 @@ const env = () => ({
 });
 
 // 캐시 시간: FMP 무료 한도(하루 약 250번)를 아끼려고 길게 잡아요
-const TTL = { macro: 3600, stock: 4 * 3600, street: 12 * 3600, search: 24 * 3600 };
+const TTL = { indices: 300, macro: 3600, stock: 4 * 3600, street: 12 * 3600, search: 24 * 3600 };
 
 // 무료 API 한도를 아끼는 메모리 캐시 (서버리스에서는 인스턴스가 살아 있는 동안만 유지)
 const cache = new Map();
@@ -267,6 +267,11 @@ async function handle(path, headers = {}) {
     if (code && headers["x-access-code"] !== code)
       return { status: 401, body: { error: "접근 코드가 맞지 않아요." }, maxAge: 0 };
     if (path === "macro") return { status: 200, body: await getMacro(), maxAge: TTL.macro };
+    // 화면 맨 위 롤링 지수 (네이버, 5분 캐시)
+    if (path === "indices") {
+      const items = await cached("indices", TTL.indices * 1e3, () => naver.indices());
+      return { status: 200, body: { items }, maxAge: items.length ? TTL.indices : 0 };
+    }
     // 자동완성: /api/search/검색어 (국내는 네이버, 미국은 FMP)
     const sm = path.match(/^search\/(.{1,40})$/);
     if (sm) {

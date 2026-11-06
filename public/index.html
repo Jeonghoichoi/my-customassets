@@ -132,7 +132,9 @@
         clip: rect(0 0 0 0);
         white-space: nowrap;
       }
-      .brand span {
+      .brand > #asof {
+        flex: none;
+        white-space: nowrap;
         font-size: 12px;
         color: var(--ink-3);
       }
@@ -1040,6 +1042,60 @@
         font-size: 15px;
         line-height: 1.7;
       }
+      /* 맨 위 롤링 지수: 하나씩 위로 올라오며 바뀌어요 */
+      .brand {
+        align-items: center;
+        gap: 12px;
+      }
+      .ticker {
+        min-height: 0;
+        padding: 0;
+        background: none;
+        color: var(--ink);
+        font: 600 14px var(--sans);
+        height: 22px;
+        overflow: hidden;
+        text-align: left;
+        flex: 1;
+        min-width: 0;
+      }
+      .ticker:active {
+        transform: none;
+      }
+      .ticker .t-item {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+        white-space: nowrap;
+        line-height: 22px;
+        animation: tick-in 0.35s ease-out;
+      }
+      .ticker .t-name {
+        color: var(--ink-2);
+        font-weight: 500;
+      }
+      .ticker .t-val {
+        font-variant-numeric: tabular-nums;
+      }
+      .ticker .t-chg {
+        font-size: 13px;
+        font-variant-numeric: tabular-nums;
+      }
+      @keyframes tick-in {
+        from {
+          transform: translateY(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .ticker .t-item {
+          animation: none;
+        }
+      }
       /* 상단 로딩바: 서버 조회 중일 때만 보여요 */
       .progress {
         position: fixed;
@@ -1226,8 +1282,10 @@
     <header class="top">
       <div class="brand">
         <h1 class="sr-only">배당셰프 판독기</h1>
+        <button type="button" class="ticker" id="ticker" aria-label="주요 지수, 누르면 다음 지수" hidden></button>
         <span id="asof"></span>
       </div>
+      <ul class="sr-only" id="ticker-all" aria-label="주요 지수"></ul>
       <form id="search" autocomplete="off">
         <div class="ac">
           <input
@@ -1775,6 +1833,55 @@
         );
       }
 
+      // ---------- 맨 위 롤링 지수 ----------
+      let TICKS = [],
+        tickIdx = 0,
+        tickTimer = null;
+      const tickHtml = (x) => {
+        const v = x.unit === "원" ? x.value.toLocaleString("ko-KR", { maximumFractionDigits: 1 }) + "원" : x.value.toLocaleString("en-US", { maximumFractionDigits: 2 });
+        return `<span class="t-item"><span class="t-name">${esc(x.name)}</span><span class="t-val">${v}</span><span class="t-chg ${updown(
+          x.changePct
+        )}">${signed(x.changePct, 2)}</span></span>`;
+      };
+      function showTick() {
+        const el = $("#ticker");
+        if (!TICKS.length) return;
+        tickIdx %= TICKS.length;
+        el.innerHTML = tickHtml(TICKS[tickIdx]);
+      }
+      function startTicker() {
+        clearInterval(tickTimer);
+        tickTimer = setInterval(() => {
+          if (document.hidden) return;
+          tickIdx++;
+          showTick();
+        }, 3500);
+      }
+      async function loadTicker(quiet = false) {
+        try {
+          const r = await (quiet ? apiRaw : api)("/api/indices");
+          if (!(r.items || []).length) return;
+          const first = !TICKS.length;
+          TICKS = r.items;
+          $("#ticker").hidden = false;
+          $("#ticker-all").innerHTML = TICKS.map((x) => `<li>${esc(x.name)} ${x.value} (${signed(x.changePct, 2)})</li>`).join("");
+          if (first) {
+            showTick();
+            startTicker();
+          }
+        } catch {}
+      }
+      // 누르면 바로 다음 지수로
+      $("#ticker").addEventListener("click", () => {
+        tickIdx++;
+        showTick();
+        startTicker();
+      });
+      // 5분마다 새 값으로
+      setInterval(() => {
+        if (!document.hidden) loadTicker(true); // 자동 갱신은 로딩바 없이
+      }, 5 * 60e3);
+
       function streetBody(t, money) {
         return `        ${t.analysts ? `<p class="sub">애널리스트 ${t.analysts}명 기준</p>` : ""}
         <div class="tiles3">
@@ -2201,6 +2308,7 @@
         }
         renderChips();
         loadMarket();
+        loadTicker();
         const start = decodeURIComponent(location.hash.slice(1));
         if (start) {
           $("#q").value = start;

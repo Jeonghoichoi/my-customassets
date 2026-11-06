@@ -402,4 +402,35 @@ async function marketIndexSeries(path, pages = 5) {
   return list;
 }
 
-module.exports = { stock, search, probe, worldStock, worldStreet, worldSearch, indexSeries, marketIndexSeries };
+// ---------- 화면 맨 위 롤링용 주요 지수 (현재 값 + 등락률) ----------
+const INDEX_LIST = [
+  { key: "spx", name: "S&P 500", url: `${W}/index/.INX/basic` },
+  { key: "ndx", name: "나스닥", url: `${W}/index/.IXIC/basic` },
+  { key: "dji", name: "다우", url: `${W}/index/.DJI/basic` },
+  { key: "kospi", name: "코스피", url: "https://m.stock.naver.com/api/index/KOSPI/basic" },
+  { key: "kosdaq", name: "코스닥", url: "https://m.stock.naver.com/api/index/KOSDAQ/basic" },
+  { key: "vix", name: "VIX", url: `${W}/index/.VIX/basic` },
+];
+async function indices() {
+  const list = await Promise.all(
+    INDEX_LIST.map(async (it) => {
+      try {
+        const j = await getJson(it.url);
+        const value = n(j.closePrice);
+        return value === null ? null : { key: it.key, name: it.name, value, changePct: n(j.fluctuationsRatio), at: j.localTradedAt || null };
+      } catch {
+        return null;
+      }
+    })
+  );
+  // 원·달러 환율
+  try {
+    const fx = await getJson(`${W}/marketindex/exchange/FX_USDKRW`);
+    const e = fx.exchangeInfo || fx;
+    const value = n(e.closePrice);
+    if (value !== null) list.push({ key: "usdkrw", name: "원·달러", value, changePct: n(e.fluctuationsRatio), at: e.localTradedAt || null, unit: "원" });
+  } catch {}
+  return list.filter(Boolean);
+}
+
+module.exports = { stock, search, probe, worldStock, worldStreet, worldSearch, indexSeries, marketIndexSeries, indices };
