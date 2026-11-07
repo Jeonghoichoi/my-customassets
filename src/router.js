@@ -176,6 +176,41 @@ async function fetchStock(target, demo) {
   throw lastErr;
 }
 
+async function getChart(input, tf, years, demo) {
+  const target = resolve(input);
+  const sym = target.market === "KR" ? target.candidates[0].slice(0, 6) : target.candidates[0];
+  return cached(`chart:${sym}:${tf}:${years}`, (tf === "day" ? 1 : 6) * 3600e3, async () => {
+    const bars = demo ? demoBars(sym, tf, years) : await naver.bars(target.market, sym, tf, years);
+    if (!bars.length) {
+      const err = new Error("차트 데이터를 불러오지 못했어요.");
+      err.status = 404;
+      throw err;
+    }
+    // 상장한 지 얼마 안 됐으면 요청한 기간보다 짧아요. 화면에서 안내해요
+    const first = new Date(bars[0][0]);
+    const coveredYears = (Date.now() - first) / (365.25 * 864e5);
+    return { symbol: sym, tf, years, bars, short: coveredYears < years * 0.9, from: bars[0][0], to: bars[bars.length - 1][0] };
+  });
+}
+
+// 데모 모드: 가상 경로로 기간별 봉을 만들어요 (화면 확인용)
+function demoBars(sym, tf, years) {
+  let seed = [...sym].reduce((a, c) => a + c.charCodeAt(0), 0);
+  const rnd = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
+  const days = Math.round(years * 365.25);
+  const start = Date.now() - days * 864e5;
+  const out = [];
+  let c = 20 + rnd() * 30;
+  for (let i = 0; i <= days; i++) {
+    const t = new Date(start + i * 864e5);
+    if (t.getUTCDay() % 6 === 0) continue;
+    const o = c;
+    c = Math.max(1, c * (1 + (rnd() - 0.485) * 0.03));
+    out.push([t.toISOString().slice(0, 10), o, Math.max(o, c) * (1 + rnd() * 0.01), Math.min(o, c) * (1 - rnd() * 0.01), c].map((v, k) => (k ? +v.toFixed(2) : v)));
+  }
+  return naver.aggregate(out, tf);
+}
+
 // 네이버 결과(주가 이력 있음)를 기본으로, 비어 있는 재무 지표만 FMP 값으로 채워요
 function fillFrom(base, extra) {
   const merge = (a = {}, b = {}) => {
@@ -399,6 +434,12 @@ async function handle(path, headers = {}) {
         body: { mode: "live", fred: { status: fredRes.status }, fmp: await probe(chk[1].toUpperCase(), process.env.FMP_API_KEY) },
         maxAge: 0,
       };
+    }
+    // 기간별 차트: /api/chart/종목/봉/기간(년)  예) chart/VZ/month/10
+    const cm = path.match(/^chart\/([^/]{1,40})\/(day|week|month|year)\/(\d{1,2})$/);
+    if (cm) {
+      const years = Math.min(30, Math.max(1, Number(cm[3])));
+      return { status: 200, body: await getChart(cm[1], cm[2], years, demo), maxAge: cm[2] === "day" ? 3600 : 6 * 3600 };
     }
     const m = path.match(/^stock\/([^/]{1,120})(\/commentary)?$/);
     if (m) {

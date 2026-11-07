@@ -1484,6 +1484,128 @@
         font-size: 15px;
         font-weight: 600;
       }
+      .pchart {
+        margin-top: 12px;
+      }
+      .pc-tabs {
+        display: flex;
+        gap: 4px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        margin: 0 -4px 10px;
+        padding: 0 4px;
+      }
+      .pc-tabs::-webkit-scrollbar {
+        display: none;
+      }
+      .pc-tabs button {
+        flex: none;
+        min-height: 32px;
+        padding: 0 11px;
+        border-radius: 9px;
+        background: none;
+        color: var(--ink-3);
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .pc-tabs button[aria-selected="true"] {
+        background: var(--fill);
+        color: var(--ink);
+      }
+      .pc-info {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 4px 8px;
+        min-height: 44px;
+        font-size: 15px;
+        font-variant-numeric: tabular-nums;
+      }
+      .pc-info .pc-date {
+        color: var(--ink-3);
+        font-size: 13px;
+      }
+      .pc-info .sub {
+        flex-basis: 100%;
+        font-size: 12px;
+        margin: 0;
+      }
+      .pc-plot {
+        position: relative;
+        touch-action: pan-y;
+        user-select: none;
+        -webkit-user-select: none;
+        min-height: 96px;
+      }
+      .pchart.loading .pc-plot {
+        opacity: 0.45;
+        transition: opacity 0.15s;
+      }
+      .pc-svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        overflow: visible;
+      }
+      .pc-svg .grid {
+        stroke: var(--line);
+        stroke-width: 1;
+      }
+      .pc-svg .ytick {
+        fill: var(--ink-3);
+        font-size: 10px;
+      }
+      .pc-svg .cu line,
+      .pc-svg .cu rect {
+        stroke: var(--up);
+        fill: var(--up);
+      }
+      .pc-svg .cd line,
+      .pc-svg .cd rect {
+        stroke: var(--down);
+        fill: var(--down);
+      }
+      .pc-svg .ln {
+        fill: none;
+        stroke-width: 2;
+        stroke-linejoin: round;
+      }
+      .pc-svg .ln.up {
+        stroke: var(--up);
+      }
+      .pc-svg .ln.down {
+        stroke: var(--down);
+      }
+      .pc-svg .area {
+        opacity: 0.08;
+      }
+      .pc-svg .area.up {
+        fill: var(--up);
+      }
+      .pc-svg .area.down {
+        fill: var(--down);
+      }
+      .pc-svg .cross {
+        stroke: var(--ink-3);
+        stroke-dasharray: 3 3;
+      }
+      .pc-svg .dot {
+        fill: var(--card);
+        stroke: var(--ink);
+        stroke-width: 2;
+      }
+      .pc-foot {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 6px;
+        padding-right: 52px;
+        color: var(--ink-3);
+        font-size: 12px;
+      }
+      .pc-short {
+        color: var(--mid);
+      }
       .spark {
         width: 100%;
         height: 96px;
@@ -2112,9 +2234,11 @@
     <main>
       <div class="col" id="col-stock">
         <section class="card brief-card" id="brief-card" aria-labelledby="brief-title" hidden></section>
-        <section class="card" id="stock" aria-live="polite">
-          <p class="empty">종목을 검색하면<br />일곱 투자자의 원칙으로 판독해 드려요</p>
-        </section>
+        <div class="col stock-area" id="stock-area">
+          <section class="card" id="stock" aria-live="polite">
+            <p class="empty">종목을 검색하면<br />일곱 투자자의 원칙으로 판독해 드려요</p>
+          </section>
+        </div>
       </div>
       <div class="col" id="col-market">
         <section class="card" id="market" aria-labelledby="market-title">
@@ -2554,6 +2678,156 @@
   <div class="spark-labels"><span>1년 전</span><span>점선은 1년 고점 ${money(high)}</span></div>`;
       }
 
+      // ---------- 기간별 차트 ----------
+      // 봉 단위(tf)와 기간(years). 봉이 많으면 선 차트로 그려요
+      const CHART_TABS = [
+        { id: "d", label: "일봉", tf: "day", years: 1, show: 120 },
+        { id: "w", label: "주봉", tf: "week", years: 3, show: 110 },
+        { id: "m", label: "월봉", tf: "month", years: 10, show: 120 },
+        { id: "y", label: "연봉", tf: "year", years: 30 },
+        { id: "5y", label: "5년", tf: "week", years: 5 },
+        { id: "10y", label: "10년", tf: "month", years: 10, line: true },
+        { id: "20y", label: "20년", tf: "month", years: 20 },
+        { id: "30y", label: "30년", tf: "month", years: 30 },
+      ];
+      let chartTab = (() => {
+        try {
+          const v = localStorage.getItem("chartTab");
+          return CHART_TABS.some((t) => t.id === v) ? v : "d";
+        } catch {
+          return "d";
+        }
+      })();
+      let chartReq = 0,
+        chartData = null;
+      const chartMoney = (v, cur) =>
+        cur === "KRW" ? Math.round(v).toLocaleString("ko-KR") + "원" : "$" + (v >= 1000 ? Math.round(v).toLocaleString("en-US") : fmt(v, 2));
+      function barDate(d, tf) {
+        const [y, m, dd] = d.split("-");
+        if (tf === "year") return `${y}년`;
+        if (tf === "month") return `${y}.${m}`;
+        return `${y.slice(2)}.${m}.${dd}`;
+      }
+      async function loadChart() {
+        const box = $("#pchart");
+        if (!box) return;
+        const tab = CHART_TABS.find((t) => t.id === chartTab);
+        const req = ++chartReq;
+        box.querySelectorAll("[data-tab]").forEach((b) => b.setAttribute("aria-selected", b.dataset.tab === chartTab));
+        box.classList.add("loading");
+        try {
+          const d = await api(`/api/chart/${encodeURIComponent(box.dataset.sym)}/${tab.tf}/${tab.years}`);
+          if (req !== chartReq || !$("#pchart")) return;
+          chartData = { ...d, tab, cur: box.dataset.cur, bars: tab.show ? d.bars.slice(-tab.show) : d.bars };
+          drawChart();
+        } catch (e) {
+          if (req !== chartReq) return;
+          $("#pc-info").innerHTML = `<span class="sub">${esc(e.message || "차트를 불러오지 못했어요.")}</span>`;
+        } finally {
+          if (req === chartReq) box.classList.remove("loading");
+        }
+      }
+      function drawChart(hover = null) {
+        const c = chartData;
+        const plot = $("#pc-plot");
+        if (!c || !plot) return;
+        const bars = c.bars;
+        const candle = !c.tab.line && bars.length <= 130;
+        const W = Math.max(280, Math.round(plot.clientWidth || 320)),
+          H = 190,
+          R = 52, // 오른쪽 가격 눈금 자리
+          T = 8,
+          B = 8;
+        const lo = Math.min(...bars.map((b) => (candle ? b[3] : b[4]))),
+          hi = Math.max(...bars.map((b) => (candle ? b[2] : b[4])));
+        const span = hi - lo || hi || 1;
+        const y = (v) => T + (1 - (v - lo) / span) * (H - T - B);
+        const step = (W - R) / bars.length;
+        const x = (i) => step * (i + 0.5);
+        let g = "";
+        // 가로 눈금 3줄
+        for (const f of [0, 0.5, 1]) {
+          const v = lo + span * f;
+          g += `<line class="grid" x1="0" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}"/>
+            <text class="ytick" x="${W - R + 6}" y="${(y(v) + 4).toFixed(1)}">${esc(chartMoney(v, c.cur))}</text>`;
+        }
+        if (candle) {
+          const bw = Math.max(1, Math.min(14, step * 0.66));
+          bars.forEach((b, i) => {
+            const up = b[4] >= b[1];
+            const cx = x(i).toFixed(1);
+            const top = y(Math.max(b[1], b[4])),
+              bot = y(Math.min(b[1], b[4]));
+            g += `<g class="${up ? "cu" : "cd"}"><line x1="${cx}" x2="${cx}" y1="${y(b[2]).toFixed(1)}" y2="${y(b[3]).toFixed(1)}"/><rect x="${(
+              x(i) -
+              bw / 2
+            ).toFixed(1)}" y="${top.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(1, bot - top).toFixed(1)}"/></g>`;
+          });
+        } else {
+          const pts = bars.map((b, i) => `${x(i).toFixed(1)} ${y(b[4]).toFixed(1)}`);
+          const dir = bars[bars.length - 1][4] >= bars[0][4] ? "up" : "down";
+          g += `<path class="area ${dir}" d="M${pts[0].split(" ")[0]} ${H - B}L${pts.join("L")}L${x(bars.length - 1).toFixed(1)} ${H - B}Z"/>
+            <path class="ln ${dir}" d="M${pts.join("L")}"/>`;
+        }
+        if (hover !== null) {
+          const b = bars[hover];
+          g += `<line class="cross" x1="${x(hover).toFixed(1)}" x2="${x(hover).toFixed(1)}" y1="${T}" y2="${H - B}"/>
+            <circle class="dot" cx="${x(hover).toFixed(1)}" cy="${y(b[4]).toFixed(1)}" r="3.5"/>`;
+        }
+        plot.innerHTML = `<svg class="pc-svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(
+          c.tab.label
+        )} 차트">${g}</svg>`;
+        // 위 정보줄: 평소엔 기간 수익률·고저, 손가락을 대면 그 봉의 시세
+        const first = bars[0],
+          last = bars[bars.length - 1];
+        if (hover !== null) {
+          const b = bars[hover],
+            prev = bars[hover - 1];
+          const ch = prev ? ((b[4] - prev[4]) / prev[4]) * 100 : null;
+          $("#pc-info").innerHTML = `<span class="pc-date">${esc(barDate(b[0], c.tf))}</span><strong>${esc(chartMoney(b[4], c.cur))}</strong>${
+            ch !== null ? `<span class="${updown(ch)}">${signed(ch, 2)}</span>` : ""
+          }${candle ? `<span class="sub">시 ${esc(chartMoney(b[1], c.cur))} · 고 ${esc(chartMoney(b[2], c.cur))} · 저 ${esc(chartMoney(b[3], c.cur))}</span>` : ""}`;
+        } else {
+          const ret = ((last[4] - first[1]) / first[1]) * 100;
+          const yrs = (new Date(last[0]) - new Date(first[0])) / (365.25 * 864e5);
+          const cagr = yrs >= 2 && first[1] > 0 ? (Math.pow(last[4] / first[1], 1 / yrs) - 1) * 100 : null;
+          const hiB = Math.max(...bars.map((b) => b[2])),
+            loB = Math.min(...bars.map((b) => b[3]));
+          $("#pc-info").innerHTML = `<span class="pc-date">기간 수익률</span><strong class="${updown(ret)}">${signed(ret, 1)}</strong>${
+            cagr !== null ? `<span class="sub">연평균 ${signed(cagr, 1)}</span>` : ""
+          }<span class="sub">최고 ${esc(chartMoney(hiB, c.cur))} · 최저 ${esc(chartMoney(loB, c.cur))}</span>`;
+        }
+        $("#pc-foot").innerHTML = `<span>${esc(barDate(first[0], c.tf))}</span>${
+          c.short && !c.tab.show ? `<span class="pc-short">상장 이후 자료만 있어요</span>` : ""
+        }<span>${esc(barDate(last[0], c.tf))}</span>`;
+      }
+      // 손가락·마우스로 봉 짚기
+      function chartPoint(e) {
+        const plot = $("#pc-plot");
+        if (!chartData || !plot) return;
+        const r = plot.getBoundingClientRect();
+        const W = Math.max(280, Math.round(plot.clientWidth || 320)) - 52;
+        const i = Math.floor(((e.clientX - r.left) / W) * chartData.bars.length);
+        drawChart(Math.max(0, Math.min(chartData.bars.length - 1, i)));
+      }
+      document.addEventListener("click", (e) => {
+        const t = e.target.closest("#pchart [data-tab]");
+        if (!t) return;
+        chartTab = t.dataset.tab;
+        try {
+          localStorage.setItem("chartTab", chartTab);
+        } catch {}
+        loadChart();
+      });
+      document.addEventListener("pointermove", (e) => e.target.closest?.("#pc-plot") && chartPoint(e));
+      document.addEventListener("pointerdown", (e) => e.target.closest?.("#pc-plot") && chartPoint(e));
+      document.addEventListener("pointerleave", (e) => e.target.closest?.("#pc-plot") && drawChart(), true);
+      let chartResize;
+      window.addEventListener("resize", () => {
+        clearTimeout(chartResize);
+        chartResize = setTimeout(() => drawChart(), 150);
+      });
+
       function techBlock(items) {
         if (!items || !items.length) return "";
         return `<section class="card"><h2>기술적 신호</h2><p class="sub">초록 구간은 과매도, 주황 구간은 과매수예요</p>
@@ -2850,7 +3124,7 @@
         if (/^[a-z.\-]+$/i.test(symbol)) symbol = symbol.toUpperCase();
         if (!symbol) return;
         showView("stock");
-        const col = $("#col-stock");
+        const col = $("#stock-area"); // 브리핑 카드는 남겨 두고 판독 영역만 바꿔요
         col.innerHTML = `<section class="card" aria-busy="true">
           <div class="sk" style="height:18px;width:44px"></div>
           <div class="sk" style="height:26px;width:40%;margin-top:10px"></div>
@@ -2905,7 +3179,14 @@
           )}</span> <span class="sub" style="font-weight:400">오늘</span>${
             s.currency === "USD" ? `<span class="krw" id="krw-eq" data-usd="${Number(s.price)}"></span>` : ""
           }</div>
-        ${spark(s.history, st.high52, s.currency)}
+        <div class="pchart" id="pchart" data-sym="${esc(key)}" data-cur="${esc(s.currency)}">
+          <div class="pc-tabs" role="tablist" aria-label="차트 기간">${CHART_TABS.map(
+            (t) => `<button type="button" role="tab" data-tab="${t.id}" aria-selected="${t.id === chartTab}">${t.label}</button>`
+          ).join("")}</div>
+          <div class="pc-info" id="pc-info"></div>
+          <div class="pc-plot" id="pc-plot">${spark(s.history, st.high52, s.currency)}</div>
+          <div class="pc-foot" id="pc-foot"></div>
+        </div>
         <div class="divider"></div>
         <p class="eyebrow">가격 위치 종합</p>
         ${scoreHead(s.position.label, s.needle)}
@@ -2970,6 +3251,7 @@
               document.getElementById("j-" + a.dataset.j)?.scrollIntoView({ behavior: "smooth", block: "start" });
             })
           );
+          loadChart();
           const sb = $("#street-btn");
           if (sb)
             sb.addEventListener("click", async () => {

@@ -50,6 +50,99 @@ async function history(code) {
   }));
 }
 
+// ---------- 기간별 차트 (일·주·월·연봉) ----------
+// 봉 하나: [날짜, 시가, 고가, 저가, 종가]
+const pad2 = (v) => String(v).padStart(2, "0");
+// 일봉을 주·월·연 단위로 묶어요
+function aggregate(bars, tf) {
+  if (tf === "day") return bars;
+  const keyOf = (d) => {
+    if (tf === "year") return d.slice(0, 4);
+    if (tf === "month") return d.slice(0, 7);
+    const t = new Date(d + "T00:00:00Z");
+    t.setUTCDate(t.getUTCDate() - ((t.getUTCDay() + 6) % 7)); // 그 주 월요일
+    return t.toISOString().slice(0, 10);
+  };
+  const out = [];
+  let cur = null,
+    key = null;
+  for (const b of bars) {
+    const k = keyOf(b[0]);
+    if (k !== key) {
+      if (cur) out.push(cur);
+      key = k;
+      cur = [b[0], b[1], b[2], b[3], b[4]];
+    } else {
+      cur[2] = Math.max(cur[2], b[2]);
+      cur[3] = Math.min(cur[3], b[3]);
+      cur[4] = b[4];
+    }
+  }
+  if (cur) out.push(cur);
+  return out;
+}
+const cleanBars = (bars) =>
+  bars
+    .filter((b) => b[4] > 0)
+    .map((b) => {
+      const o = b[1] > 0 ? b[1] : b[4];
+      const h = Math.max(b[2] > 0 ? b[2] : b[4], o, b[4]);
+      const l = Math.min(b[3] > 0 ? b[3] : b[4], o, b[4]);
+      return [b[0], o, h, l, b[4]];
+    })
+    .sort((a, b) => (a[0] < b[0] ? -1 : 1));
+
+// 국내: fchart (timeframe=day/week/month, 최근 count개)
+async function krBars(code, tf, count) {
+  const frame = tf === "year" ? "month" : tf;
+  const res = await fetch(`https://fchart.stock.naver.com/sise.nhn?symbol=${code}&timeframe=${frame}&count=${count}&requestType=0`, { headers: UA });
+  if (!res.ok) throw new Error(`네이버 차트 ${res.status}`);
+  const xml = await res.text();
+  const bars = [...xml.matchAll(/data="(\d{8})\|([\d.]+)\|([\d.]+)\|([\d.]+)\|([\d.]+)\|(\d+)"/g)].map((m) => [
+    `${m[1].slice(0, 4)}-${m[1].slice(4, 6)}-${m[1].slice(6, 8)}`,
+    Number(m[2]),
+    Number(m[3]),
+    Number(m[4]),
+    Number(m[5]),
+  ]);
+  return aggregate(cleanBars(bars), tf);
+}
+
+// 해외: api.stock.naver.com 차트. 주·월 주소가 막히면 일봉을 받아서 묶어요
+async function usBars(ticker, tf, from) {
+  const code = await worldCode(ticker);
+  const now = new Date();
+  const range = `startDateTime=${ymd(from)}0000&endDateTime=${ymd(now)}2359`;
+  const parse = (rows) =>
+    cleanBars(
+      (Array.isArray(rows) ? rows : []).map((p) => [
+        `${p.localDate.slice(0, 4)}-${p.localDate.slice(4, 6)}-${p.localDate.slice(6, 8)}`,
+        n(p.openPrice) ?? 0,
+        n(p.highPrice) ?? 0,
+        n(p.lowPrice) ?? 0,
+        n(p.closePrice) ?? 0,
+      ])
+    );
+  const frame = tf === "year" ? "month" : tf;
+  if (frame !== "day") {
+    try {
+      const bars = parse(await getJson(`${W}/chart/foreign/item/${code}/${frame}?${range}`));
+      if (bars.length >= 2) return tf === "year" ? aggregate(bars, "year") : bars;
+    } catch {}
+  }
+  return aggregate(parse(await getJson(`${W}/chart/foreign/item/${code}/day?${range}`)), tf);
+}
+
+async function bars(market, symbol, tf, years) {
+  const from = new Date(Date.now() - years * 365.25 * 864e5);
+  if (market === "KR") {
+    const perYear = { day: 250, week: 53, month: 12, year: 12 }[tf];
+    return (await krBars(symbol.slice(0, 6), tf, Math.ceil(years * perYear) + 5)).filter((b) => b[0] >= ymdDash(from));
+  }
+  return (await usBars(symbol, tf, from)).filter((b) => b[0] >= ymdDash(from));
+}
+const ymdDash = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+
 // 응답 어딘가에 있는 { rowList: [...] } 를 찾는다 (재무제표 표)
 function findRows(obj, depth = 0) {
   if (!obj || typeof obj !== "object" || depth > 5) return null;
@@ -437,4 +530,4 @@ async function indices() {
   return list.filter(Boolean);
 }
 
-module.exports = { stock, search, probe, worldStock, worldStreet, worldSearch, indexSeries, marketIndexSeries, indices };
+module.exports = { stock, search, probe, worldStock, worldStreet, worldSearch, indexSeries, marketIndexSeries, indices, bars, aggregate };
