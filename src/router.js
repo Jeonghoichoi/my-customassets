@@ -1,6 +1,6 @@
 // API 처리: 로컬 서버(src/server.js)와 Vercel 함수(api/router.js)가 함께 씁니다
 const { macroSeries } = require("./sources/fred");
-const { stock: fmpStock, probe, search: fmpSearch, streetData } = require("./sources/fmp");
+const { stock: fmpStock, probe, search: fmpSearch, streetData, longHistory: fmpLongHistory } = require("./sources/fmp");
 const naver = require("./sources/naver");
 const { demoMacro, demoStock, demoSymbols, demoCommodities } = require("./sources/demo");
 const { fetchCommodities } = require("./sources/commodities");
@@ -180,7 +180,24 @@ async function getChart(input, tf, years, demo) {
   const target = resolve(input);
   const sym = target.market === "KR" ? target.candidates[0].slice(0, 6) : target.candidates[0];
   return cached(`chart:${sym}:${tf}:${years}`, (tf === "day" ? 1 : 6) * 3600e3, async () => {
-    const bars = demo ? demoBars(sym, tf, years) : await naver.bars(target.market, sym, tf, years);
+    let bars = demo ? demoBars(sym, tf, years) : await naver.bars(target.market, sym, tf, years);
+    // 미국 장기(10년 넘게): 네이버 자료가 모자라면 FMP 일별 종가로 앞부분을 채워요
+    if (!demo && target.market !== "KR" && years > 10 && fmpOk() && (tf === "month" || tf === "year")) {
+      const want = new Date(Date.now() - years * 365.25 * 864e5).toISOString().slice(0, 10);
+      if (!bars.length || bars[0][0].slice(0, 7) > want.slice(0, 7)) {
+        try {
+          const daily = await fmpLongHistory(sym, process.env.FMP_API_KEY, want);
+          const older = naver.aggregate(daily.filter((b) => !bars.length || b[0] < bars[0][0]), tf);
+          // 같은 달·해가 겹치면 네이버 쪽을 써요
+          const key = (d) => (tf === "year" ? d.slice(0, 4) : d.slice(0, 7));
+          const firstKey = bars.length ? key(bars[0][0]) : "9999";
+          const add = older.filter((b) => key(b[0]) < firstKey);
+          if (add.length) bars = [...add, ...bars];
+        } catch (e) {
+          noteFmpError(e);
+        }
+      }
+    }
     if (!bars.length) {
       const err = new Error("차트 데이터를 불러오지 못했어요.");
       err.status = 404;

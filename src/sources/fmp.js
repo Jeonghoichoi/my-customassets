@@ -185,7 +185,20 @@ async function search(q, key) {
     .map((x) => ({ s: x.symbol, n: x.name, m: x.exchange || x.exchangeShortName || "US" }));
 }
 
-module.exports = { stock, search, streetData };
+// 장기 차트 보충용 일별 종가 (네이버 해외주식은 2010년부터라서요). 봉: [날짜, 시, 고, 저, 종]
+async function longHistory(symbol, key, from) {
+  const rows = await get("historical-price-eod/light", { symbol, from }, key);
+  const list = Array.isArray(rows) ? rows : rows?.historical || [];
+  return list
+    .map((p) => {
+      const c = num(p.close ?? p.price);
+      return c ? [p.date, c, c, c, c] : null;
+    })
+    .filter(Boolean)
+    .sort((a, b) => (a[0] < b[0] ? -1 : 1));
+}
+
+module.exports = { longHistory, stock, search, streetData };
 
 // 첫 연동 점검용: 각 엔드포인트가 응답하는지, 어떤 필드명이 오는지 확인
 async function probe(symbol, key) {
