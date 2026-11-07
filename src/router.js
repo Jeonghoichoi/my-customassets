@@ -144,28 +144,53 @@ async function fetchStock(target, demo) {
     }
   }
   let lastErr;
+  // FMP 무료 요금제는 일부 종목(예: SCHD, MRSH, WTW)에서 기업 정보만 주고 주가 이력은 비워서 줘요.
+  // 예전에는 그 결과를 그대로 써서 "주가 이력이 충분하지 않아요"로 끝났어요. 이력이 짧으면 네이버로 넘어가요.
+  let fmpPartial = null;
   for (const sym of fmpOk() ? target.candidates : []) {
     try {
-      return await fmpStock(sym, process.env.FMP_API_KEY);
+      const r = await fmpStock(sym, process.env.FMP_API_KEY);
+      if ((r.history || []).length >= 60) return r;
+      fmpPartial = r;
+      break;
     } catch (e) {
       lastErr = e;
       noteFmpError(e);
       if (e.status !== 404) break;
     }
   }
-  // 미국 종목: FMP가 막히거나 실패하면 네이버 증권 해외주식으로
+  // 미국 종목: FMP가 막히거나 실패하거나 주가 이력이 없으면 네이버 증권 해외주식으로
   if (target.market !== "KR") {
     try {
-      return await naver.worldStock(target.candidates[0]);
+      const nv = await naver.worldStock(target.candidates[0]);
+      return fmpPartial ? fillFrom(nv, fmpPartial) : nv;
     } catch (e) {
       console.error("네이버 해외주식 조회 실패:", e.message);
       if (!lastErr || lastErr.status === 429) lastErr = e;
     }
   }
+  if (fmpPartial) return fmpPartial; // 이력이 짧아도 있는 만큼 돌려주면 위에서 안내해요
   if (target.market === "KR" && lastErr?.status === 404) {
     lastErr.message = `${target.query} 종목을 찾지 못했어요. 코드가 맞는지 확인하세요. 사용 중인 FMP 요금제가 한국 거래소를 지원하지 않을 수도 있어요.`;
   }
   throw lastErr;
+}
+
+// 네이버 결과(주가 이력 있음)를 기본으로, 비어 있는 재무 지표만 FMP 값으로 채워요
+function fillFrom(base, extra) {
+  const merge = (a = {}, b = {}) => {
+    const out = { ...a };
+    for (const [k, v] of Object.entries(b)) if ((out[k] === null || out[k] === undefined) && v !== null && v !== undefined) out[k] = v;
+    return out;
+  };
+  return {
+    ...base,
+    sector: base.sector || extra.sector || null,
+    industry: base.industry || extra.industry || null,
+    marketCap: base.marketCap ?? extra.marketCap ?? null,
+    metrics: merge(base.metrics, extra.metrics),
+    growth: merge(base.growth, extra.growth),
+  };
 }
 
 // Vercel에서는 서버가 자주 새로 떠서 메모리 캐시가 비어 있어요.

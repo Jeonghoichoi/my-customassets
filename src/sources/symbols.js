@@ -64,9 +64,13 @@ function looksLikeKrEtf(q) {
   return m[2].trim().length > 0 ? /^\s/.test(m[2]) || /^[\d가-힣]/.test(m[2]) : m[1].length >= 5;
 }
 
+const TICKER_RENAMED = { MMC: "MRSH" }; // Marsh & McLennan, 2026년 티커 변경
+
 function resolve(input) {
   const q = normalizeQuery(decodeURIComponent(String(input || "")));
-  const upper = q.toUpperCase().replace(/\s+/g, "");
+  let upper = q.toUpperCase().replace(/\s+/g, "");
+  // 티커가 바뀐 종목: 예전 티커로 쳐도 새 티커로 찾아요
+  if (TICKER_RENAMED[upper]) upper = TICKER_RENAMED[upper];
   if (/^\d{6}\.(KS|KQ)$/.test(upper)) return { market: "KR", candidates: [upper], query: q };
   if (/^\d{6}$/.test(upper)) return { market: "KR", candidates: [`${upper}.KS`, `${upper}.KQ`], query: q };
   const named = KR_NAMES[q] || KR_NAMES[upper] || Object.entries(KR_NAMES).find(([k]) => k.toUpperCase() === upper)?.[1];

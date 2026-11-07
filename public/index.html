@@ -3053,6 +3053,9 @@
         if (alt.split(/\s+/).some((w) => w.startsWith(Q))) return 65;
         if (name.includes(Q)) return 55;
         if (alt.includes(Q)) return 45;
+        // 띄어쓰기 없이 쳐도 찾아요 (예: 마쉬앤맥레넌, 윌리스타워스왓슨)
+        const nsp = (v) => v.replace(/[\s&.,]/g, "");
+        if (nsp(Q).length >= 2 && (nsp(name).includes(nsp(Q)) || nsp(alt).includes(nsp(Q)))) return 42;
         if (isCho(q) && (cho(x.n).includes(q) || cho(x.k || "").includes(q))) return 40;
         return 0;
       }

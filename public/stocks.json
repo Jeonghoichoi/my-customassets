@@ -199,5 +199,13 @@
   { "s": "441640", "n": "KODEX 미국배당커버드콜액티브", "k": "코덱스 미국배당 커버드콜 ETF", "m": "KOSPI", "t": "ETF" },
   { "s": "161510", "n": "PLUS 고배당주", "k": "플러스 고배당주 ETF", "m": "KOSPI", "t": "ETF" },
   { "s": "475720", "n": "RISE 200위클리커버드콜", "k": "라이즈 200 위클리 커버드콜 ETF", "m": "KOSPI", "t": "ETF" },
-  { "s": "480020", "n": "ACE 미국빅테크7+데일리타겟커버드콜(합성)", "k": "에이스 미국 빅테크7 커버드콜 ETF", "m": "KOSPI", "t": "ETF" }
+  { "s": "480020", "n": "ACE 미국빅테크7+데일리타겟커버드콜(합성)", "k": "에이스 미국 빅테크7 커버드콜 ETF", "m": "KOSPI", "t": "ETF" },
+  { "s": "MRSH", "n": "Marsh & McLennan Companies", "k": "마쉬앤맥레넌 마시앤맥레넌 MMC 보험중개", "m": "US" },
+  { "s": "WTW", "n": "Willis Towers Watson", "k": "윌리스타워스왓슨 보험중개", "m": "US" },
+  { "s": "AON", "n": "Aon plc", "k": "에이온 보험중개", "m": "US" },
+  { "s": "AJG", "n": "Arthur J. Gallagher & Co.", "k": "아서제이갤러거 갤러거 보험중개", "m": "US" },
+  { "s": "BRO", "n": "Brown & Brown", "k": "브라운앤브라운 보험중개", "m": "US" },
+  { "s": "CB", "n": "Chubb Limited", "k": "처브 보험", "m": "US" },
+  { "s": "PGR", "n": "Progressive", "k": "프로그레시브 자동차보험", "m": "US" },
+  { "s": "TRV", "n": "Travelers Companies", "k": "트래블러스 보험", "m": "US" }
 ]
