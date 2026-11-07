@@ -133,11 +133,35 @@ async function usBars(ticker, tf, from) {
   return aggregate(parse(await getJson(`${W}/chart/foreign/item/${code}/day?${range}`)), tf);
 }
 
+// 국내 장기 자료: api.stock.naver.com 국내 차트 (fchart 월봉은 최근 10년까지만 와요)
+async function krBarsLong(code, tf, from) {
+  const frame = tf === "year" ? "month" : tf;
+  const rows = await getJson(`${W}/chart/domestic/item/${code}/${frame}?startDateTime=${ymd(from)}0000&endDateTime=${ymd(new Date())}2359`);
+  const bars = cleanBars(
+    (Array.isArray(rows) ? rows : []).map((p) => [
+      `${String(p.localDate).slice(0, 4)}-${String(p.localDate).slice(4, 6)}-${String(p.localDate).slice(6, 8)}`,
+      n(p.openPrice) ?? 0,
+      n(p.highPrice) ?? 0,
+      n(p.lowPrice) ?? 0,
+      n(p.closePrice) ?? 0,
+    ])
+  );
+  return tf === "year" ? aggregate(bars, "year") : bars;
+}
+
 async function bars(market, symbol, tf, years) {
   const from = new Date(Date.now() - years * 365.25 * 864e5);
   if (market === "KR") {
+    const code = symbol.slice(0, 6);
     const perYear = { day: 250, week: 53, month: 12, year: 12 }[tf];
-    return (await krBars(symbol.slice(0, 6), tf, Math.ceil(years * perYear) + 5)).filter((b) => b[0] >= ymdDash(from));
+    const a = await krBars(code, tf, Math.ceil(years * perYear) + 5).catch(() => []);
+    // 5년 넘는 월·연봉은 더 긴 자료를 따로 받아서, 더 많이 온 쪽을 써요
+    if (years > 5 && (tf === "month" || tf === "year")) {
+      const b = await krBarsLong(code, tf, from).catch(() => []);
+      if (b.length > a.length) return b.filter((x) => x[0] >= ymdDash(from));
+    }
+    if (!a.length) throw new Error("네이버 차트 자료가 없어요");
+    return a.filter((b) => b[0] >= ymdDash(from));
   }
   return (await usBars(symbol, tf, from)).filter((b) => b[0] >= ymdDash(from));
 }

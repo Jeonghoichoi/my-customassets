@@ -2798,7 +2798,7 @@
           }<span class="sub">최고 ${esc(chartMoney(hiB, c.cur))} · 최저 ${esc(chartMoney(loB, c.cur))}</span>`;
         }
         $("#pc-foot").innerHTML = `<span>${esc(barDate(first[0], c.tf))}</span>${
-          c.short && !c.tab.show ? `<span class="pc-short">상장 이후 자료만 있어요</span>` : ""
+          c.short && !c.tab.show ? `<span class="pc-short">${esc(first[0].slice(0, 4))}년부터 자료가 있어요</span>` : ""
         }<span>${esc(barDate(last[0], c.tf))}</span>`;
       }
       // 손가락·마우스로 봉 짚기
