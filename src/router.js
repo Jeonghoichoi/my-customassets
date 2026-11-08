@@ -7,7 +7,7 @@ const { fetchCommodities } = require("./sources/commodities");
 const { evaluateMacro, fxSummary, kostolany } = require("./engine/macro");
 const { priceStats } = require("./engine/indicators");
 const { judgeStock, streetReading } = require("./engine/judges");
-const { kimMarket, kimLens } = require("./engine/kim");
+const { kimMarket, kimLens, kimUsLens } = require("./engine/kim");
 const { resolve, marketLabel, normalizeQuery, looksLikeKrEtf } = require("./sources/symbols");
 
 const env = () => ({
@@ -35,7 +35,7 @@ async function getMacro() {
     // VIX·환율은 네이버가 FRED보다 1~2일 빨라요. 네이버가 안 되면 FRED 값을 그대로 써요
     const fxP = naver.marketIndexSeries("exchange/FX_USDKRW").catch(() => null);
     const spxP = naver.indexSeries(".INX", 200).catch(() => null); // 코스톨라니 달걀의 거래량 축
-    // 김영익 판독의 '수출 기준 적정 코스피'와 비교할 지금 코스피 (롤링 지수와 캐시를 같이 써요)
+    // 김영익 판독에서 비교할 지금 코스피·S&P 500 (롤링 지수와 캐시를 같이 써요)
     const kospiP = cached("indices", TTL.indices * 1e3, () => naver.indices()).catch(() => []);
     const [data, commodities, vixNv, fxSeries] = demo
       ? [demoMacro(), demoCommodities(), null, await fxP]
@@ -57,10 +57,10 @@ async function getMacro() {
     const m = evaluateMacro(data, commodities);
     m.fx = fxSummary(fxSeries);
     m.egg = kostolany(data, await spxP);
-    const kospiNow = ((await kospiP) || []).find((x) => x.key === "kospi")?.value ?? null;
-    m.kim = kimMarket(kospiNow);
-    const lens = kimLens(m.kim);
-    if (lens && m.view?.lenses) m.view.lenses.push(lens);
+    const ix = (await kospiP) || [];
+    const ixVal = (k) => ix.find((x) => x.key === k)?.value ?? null;
+    m.kim = kimMarket(ixVal("kospi"), ixVal("spx"));
+    for (const lens of [kimLens(m.kim), kimUsLens(m.kim)]) if (lens && m.view?.lenses) m.view.lenses.push(lens);
     m.updatedAt = new Date().toISOString();
     // 신호마다 데이터 날짜·출처를 붙여요 (FRED는 1~2일 늦게 발표돼요)
     const lastDate = (sr) => (sr && sr.length ? sr[sr.length - 1].date : null);

@@ -5,12 +5,63 @@
     "title": "\"코스피 단기 반등했지만 바닥 아니다\"…김영익 교수의 경고 (파이낸셜뉴스, 2026-10-22)",
     "url": "https://www.fnnews.com/news/202610220001200551"
   },
-  "gdpRatio": { "value": 146, "avg": 70, "note": "코스피 시가총액 ÷ 명목 GDP (%), 평균은 2000년 이후" },
-  "m2Ratio": { "value": 96, "avg": 58, "note": "코스피 시가총액 ÷ 광의통화 M2 (%), 평균은 2005년 이후" },
-  "exportFair": { "kospi": 5994, "note": "10월 일평균 수출 53억 3천만 달러를 넣어 구한 적정 코스피" },
+  "gdpRatio": {
+    "value": 146,
+    "avg": 70,
+    "note": "코스피 시가총액 ÷ 명목 GDP (%), 평균은 2000년 이후"
+  },
+  "m2Ratio": {
+    "value": 96,
+    "avg": 58,
+    "note": "코스피 시가총액 ÷ 광의통화 M2 (%), 평균은 2005년 이후"
+  },
+  "exportFair": {
+    "kospi": 5994,
+    "note": "10월 일평균 수출 53억 3천만 달러를 넣어 구한 적정 코스피"
+  },
   "leading": "down",
   "leadingNote": "경기선행지수 순환변동치가 7월 정점 뒤 하락 국면이에요",
   "trendGap": -22,
   "equityWeight": "20% 안팎",
-  "quote": "코스피가 단기 반등했지만 바닥은 아니에요"
+  "quote": "코스피가 단기 반등했지만 바닥은 아니에요",
+  "kospiView": {
+    "text": "코스피 저점을 4,500~5,000으로 보고, 최소 1년은 박스권 조정이 이어진다고 했어요",
+    "date": "2026-11-02",
+    "url": "https://www.segye.com/newsView/20261101508279"
+  },
+  "us": {
+    "_설명": "김영익 교수의 미국 시장 판단이에요. 수치가 없는 판단은 status로 적어요 (good / neutral / bad). 새 영상·기사가 나오면 함께 고치세요.",
+    "asOf": "2026-11-02",
+    "valuation": {
+      "status": "bad",
+      "text": "S&P 500이 과거 평균에 비해 크게 과대평가(약 150%)됐다고 진단했어요",
+      "date": "2026-08-14",
+      "url": "https://www.newsis.com/view/NISX20260817_0003751277"
+    },
+    "margin": {
+      "status": "bad",
+      "text": "미국 신용융자 잔고가 6월에 사상 최고였어요. 과거엔 정점 2~5개월 뒤 S&P 500이 급락했어요",
+      "date": "2026-11-02",
+      "url": "https://www.segye.com/newsView/20261101508279"
+    },
+    "economy": {
+      "status": "bad",
+      "text": "GDP의 69%인 가계소비가 장기 추세 아래로 내려가고, 내년 성장률은 1.4% 안팎으로 낮아진다고 봤어요",
+      "date": "2026-11-02",
+      "url": "https://www.segye.com/newsView/20261101508279"
+    },
+    "sp500Floor": {
+      "value": 5500,
+      "text": "S&P 500이 5,500까지 떨어질 수 있다고 봤어요",
+      "date": "2026-11-02",
+      "url": "https://www.segye.com/newsView/20261101508279"
+    },
+    "aiBubble": {
+      "status": "bad",
+      "text": "AI 거품이 이미 생겼고, 반도체는 경쟁이 늘어 마진이 줄어든다고 봤어요",
+      "date": "2026-11-02",
+      "url": "https://www.segye.com/newsView/20261101508279"
+    },
+    "advice": "주식 20% 안팎, 나머지는 만기가 짧은 채권 같은 현금성 자산"
+  }
 }

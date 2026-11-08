@@ -183,7 +183,8 @@ function burry(stock, stats, macro) {
 function kim(stock, stats, macro) {
   const km = macro.kim;
   const kr = stock.market === "KR";
-  const marketChecks = km?.checks || [];
+  // 한국 종목은 한국 시장 지표(명목 GDP·M2·수출·선행지수), 미국 종목은 교수의 미국 시장 판단을 써요
+  const marketChecks = (kr ? km?.checks : km?.us?.checks) || [];
   const r12 = stats.return12m, rev = stock.growth?.revenueYoY ?? null;
   const ahead = r12 === null || r12 === undefined || rev === null ? null : r12 - rev;
   const checks = [
@@ -191,28 +192,28 @@ function kim(stock, stats, macro) {
     { label: "장기 추세 대비 주가 (200일선)", value: f(stats.vsMa200, 1, "%"), grade: stats.vsMa200 === null ? null : stats.vsMa200 <= -10 ? 1 : stats.vsMa200 <= 10 ? 0.5 : 0, note: "장기 추세보다 크게 아래면 단기 반등 여지가 있다고 봐요. 교수는 지수에 HP 필터 추세를 써요" },
     { label: "실적보다 앞선 주가", value: ahead === null ? "자료 없음" : `주가 ${f(r12, 1, "%")} vs 매출 ${f(rev, 1, "%")}`, grade: ahead === null ? null : ahead <= 10 ? 1 : ahead <= 30 ? 0.5 : 0, note: "주가는 결국 펀더멘털을 따라가요. 1년 주가 상승이 매출 성장보다 30%p 넘게 앞서면 과열" },
   ];
-  // 교수의 지표는 한국 시장 기준이라, 미국 종목은 점수를 매기지 않고 참고로만 보여줘요
-  if (!kr) {
-    return {
-      key: "kim", name: "김영익", idea: "주가는 결국 경제를 따라간다", score: null,
-      verdict: "김영익 교수의 지표(명목 GDP·M2·수출·선행지수)는 한국 시장 기준이라, 미국 종목은 점수를 매기지 않아요. 아래 두 종목 지표는 참고로만 봐 주세요.",
-      checks: checks.map((c) => ({ ...c, grade: null })),
-    };
+  // 미국 종목: 교수가 AI 거품을 경고하고 있어서 AI·반도체·빅테크 업종은 따로 감점해요
+  const ai = km?.us?.view?.aiBubble;
+  if (!kr && ai?.status) {
+    const exposed = /technology/i.test(stock.sector || "") || /semiconductor|software|internet|interactive media/i.test(stock.industry || "");
+    checks.push({ label: "AI 거품 노출", value: exposed ? "AI·반도체·빅테크 업종" : "AI와 거리가 있어요", grade: exposed ? statusGradeOf(ai) : 1, note: `${ai.text} (${ai.date || "날짜 없음"})` });
   }
   const score = scoreOf(checks);
   const mk = marketChecks.filter((c) => c.grade !== null);
   const mAvg = mk.length ? mk.reduce((s, c) => s + c.grade, 0) / mk.length : null;
-  const weight = km?.view?.equityWeight;
+  const weight = kr ? km?.view?.equityWeight : km?.us?.view?.advice;
+  const mkt = kr ? "한국 시장" : "미국 시장";
   const marketText =
-    mAvg === null ? "시장 지표 자료가 없어 종목 지표로만 봤어요." :
-    mAvg >= 0.65 ? "시장이 경제 규모에 비해 싸고 방향도 좋아요. 주식 비중을 늘릴 수 있는 시기예요." :
-    mAvg >= 0.4 ? "시장 지표가 엇갈려요. 단기 반등 여지와 고평가 부담이 함께 있어요." :
-    `시장이 경제 규모와 돈의 양보다 앞서 있어요.${weight ? ` 교수는 주식 비중 ${require("./kim").eul(weight)} 권했어요.` : ""}`;
+    mAvg === null ? `${mkt} 지표 자료가 없어 종목 지표로만 봤어요.` :
+    mAvg >= 0.65 ? `${mkt}이 경제 규모에 비해 싸고 방향도 좋아요. 주식 비중을 늘릴 수 있는 시기예요.` :
+    mAvg >= 0.4 ? `${mkt} 지표가 엇갈려요. 반등 여지와 고평가 부담이 함께 있어요.` :
+    `${mkt}이 경제와 돈의 흐름보다 앞서 있다고 봐요.${weight ? kr ? ` 교수는 주식 비중 ${require("./kim").eul(weight)} 권했어요.` : ` 교수는 ${require("./kim").eul(weight)} 권했어요.` : ""}`;
   const stockText =
     ahead !== null && ahead > 30 ? " 이 종목도 실적보다 주가가 먼저 달렸어요." :
     stats.vsMa200 !== null && stats.vsMa200 <= -10 ? " 이 종목은 장기 추세보다 많이 내려와 있어요." : "";
   return { key: "kim", name: "김영익", idea: "주가는 결국 경제를 따라간다", score, verdict: (marketText + stockText).trim(), checks };
 }
+const statusGradeOf = (x) => (x.status === "good" ? 1 : x.status === "neutral" ? 0.5 : 0);
 
 
 // 투자자별 성향: 판독 결과를 읽을 때 "누구의 눈으로 본 것인지" 알려준다
@@ -223,7 +224,7 @@ const PROFILES = {
   lynch: { type: "성장주 사냥꾼 (GARP)", horizon: "3~5년", risk: "중립, 폭넓게 분산", focus: "성장 대비 가격, 생활 속 발굴", question: "이 회사가 왜 좋은지 2분 안에 설명할 수 있나?", blindSpot: "경기순환주의 낮은 PER을 저평가로 오인할 수 있어요." },
   druckenmiller: { type: "거시 유동성 트레이더", horizon: "12~24개월 앞을 보고 빠르게 수정", risk: "공격적, 확신 시 크게 집중", focus: "연준 유동성과 가격 추세", question: "1~2년 뒤 돈은 어디로 흘러가 있을까?", blindSpot: "거시 판단이 틀리면 변동이 커요. 대신 틀리면 빠르게 인정해요." },
   ackman: { type: "행동주의 집중 투자자", horizon: "수년, 경영 개입", risk: "공격적, 10개 안팎 집중", focus: "단순·예측 가능한 현금 기계", question: "이 회사는 단순하고 예측 가능하게 현금을 버는가?", blindSpot: "집중 투자라 한 종목의 실패가 크게 남아요." },
-  kim: { type: "거시 지표 이코노미스트", horizon: "6개월~수년, 지표로 비중 조절", risk: "보수적, 주식 비중 20~60%를 오가요", focus: "명목 GDP·M2·일평균 수출·경기선행지수", question: "주가가 경제의 크기와 돈의 양보다 앞서 있지 않은가?", blindSpot: "시장 전체를 보는 기준이라 종목별 실적 차이는 덜 반영해요. 공개 수치가 갱신돼야 판단도 바뀌어요." },
+  kim: { type: "거시 지표 이코노미스트", horizon: "6개월~수년, 지표로 비중 조절", risk: "보수적, 주식 비중 20~60%를 오가요", focus: "명목 GDP·M2·일평균 수출·경기선행지수", question: "주가가 경제의 크기와 돈의 양보다 앞서 있지 않은가?", blindSpot: "시장 전체를 보는 기준이라 종목별 실적 차이는 덜 반영해요. 비관 전망이 크게 빗나간 적도 있어요(2025년 말 '2026년 코스피 3,500' 전망)." },
   burry: { type: "딥밸류 역발상가", horizon: "수개월~수년, 비대칭 베팅", risk: "역발상, 헤지 병행", focus: "숫자로 싼 외면받은 종목, 거품 경계", question: "남들이 버린 것 중 숫자로 확실히 싼 것은?", blindSpot: "너무 일찍 맞는 경우가 많아, 맞기 전까지 오래 버텨야 해요." },
 };
 // 한마디: 점수 구간별로 그 투자자의 말투로 짧게 (좋음 65 이상 / 보통 45 이상 / 아쉬움)
@@ -240,7 +241,6 @@ const ONE_LINERS = {
 function oneLiner(j) {
   const lines = ONE_LINERS[j.key];
   if (!lines) return null;
-  if (j.key === "kim" && j.score === null) return "한국 시장 기준이라 미국 종목은 판단을 미뤄요";
   if (j.score === null || j.score === undefined) return "자료가 부족해 판단을 미뤄요";
   return lines[j.score >= 65 ? 0 : j.score >= 45 ? 1 : 2];
 }

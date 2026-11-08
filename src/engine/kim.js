@@ -16,7 +16,7 @@ const eul = (w) => {
 const fmt = (v) => Math.round(v).toLocaleString("ko-KR");
 
 // 한국 시장 전체에 대한 네 가지 판단 (종목과 상관없이 같아요)
-function kimMarket(kospiNow) {
+function kimMarket(kospiNow, spxNow = null) {
   const v = loadView();
   if (!v) return null;
   const ratio = (r) => (r && r.value && r.avg ? r.value / r.avg : null);
@@ -50,7 +50,28 @@ function kimMarket(kospiNow) {
       note: "선행지수가 꺾인 국면에서는 코스피가 추세적으로 오르기 어렵다고 봐요",
     },
   ];
-  return { view: v, checks, exportGap, kospiNow: kospiNow ?? null };
+  return { view: v, checks, exportGap, kospiNow: kospiNow ?? null, us: usMarket(v.us, spxNow) };
+}
+
+// 미국 시장: 교수가 영상·인터뷰에서 밝힌 판단(status)과 S&P 500 하단 전망을 지금 지수와 비교해요
+const statusGrade = (x) => (!x || !x.status ? null : x.status === "good" ? 1 : x.status === "neutral" ? 0.5 : x.status === "bad" ? 0 : null);
+const statusText = (x) => (!x || !x.status ? "자료 없음" : { good: "우호", neutral: "중립", bad: "경고" }[x.status] || "자료 없음");
+function usMarket(u, spxNow) {
+  if (!u) return null;
+  const floor = u.sp500Floor?.value ?? null;
+  const floorGap = floor && spxNow ? ((floor - spxNow) / spxNow) * 100 : null;
+  const checks = [
+    { label: "S&P 500 밸류에이션", value: statusText(u.valuation), grade: statusGrade(u.valuation), note: `${u.valuation?.text || ""} (${u.valuation?.date || "날짜 없음"})` },
+    { label: "미국 신용융자 (빚투)", value: statusText(u.margin), grade: statusGrade(u.margin), note: `${u.margin?.text || ""} (${u.margin?.date || "날짜 없음"})` },
+    { label: "미국 실물 경기 (소비·성장)", value: statusText(u.economy), grade: statusGrade(u.economy), note: `${u.economy?.text || ""} (${u.economy?.date || "날짜 없음"})` },
+    {
+      label: "교수의 S&P 500 하단 전망",
+      value: floorGap === null ? (floor ? `${fmt(floor)} (지금 지수 자료 없음)` : "자료 없음") : `${fmt(floor)} vs 지금 ${fmt(spxNow)}`,
+      grade: floorGap === null ? null : floorGap >= -5 ? 1 : floorGap >= -15 ? 0.5 : 0,
+      note: `${u.sp500Floor?.text || ""} 지금 지수가 하단 전망보다 15% 넘게 높으면 아직 내려갈 여지가 크다고 봐요`,
+    },
+  ];
+  return { view: u, checks, floorGap, spxNow: spxNow ?? null };
 }
 
 // 시장 화면의 '김영익의 한마디'
@@ -67,8 +88,23 @@ function kimLens(km) {
   if (km.exportGap !== null)
     text += `수출 기준 적정 코스피는 ${fmt(v.exportFair.kospi)}로 지금보다 ${km.exportGap >= 0 ? `${km.exportGap.toFixed(0)}% 높아 단기 반등 여지는 있어요` : `${Math.abs(km.exportGap).toFixed(0)}% 낮아 수출보다 주가가 앞서 있어요`}. `;
   if (v.equityWeight) text += `주식 비중은 ${eul(v.equityWeight)} 권했어요. `;
-  text += `(${v.asOf} 기준)`;
+  if (v.kospiView?.text) text += `${v.kospiView.text}. `;
+  text += `(${v.asOf} 지표 기준)`;
   return { who: "김영익의 한마디", text: text.trim(), source: v.source || null };
 }
 
-module.exports = { kimMarket, kimLens, eul };
+// 시장 화면의 '김영익의 미국 한마디'
+function kimUsLens(km) {
+  const u = km?.us?.view;
+  if (!u) return null;
+  const parts = [u.valuation?.text, u.margin?.text, u.aiBubble?.text, u.sp500Floor?.text].filter(Boolean);
+  if (!parts.length) return null;
+  let text = parts.join(". ") + ".";
+  if (km.us.floorGap !== null) text += ` 지금 S&P 500은 그 전망보다 ${Math.abs(km.us.floorGap).toFixed(0)}% ${km.us.floorGap < 0 ? "높아요" : "낮아요"}.`;
+  if (u.advice) text += ` 교수는 ${eul(u.advice)} 권했어요.`;
+  text += ` (${u.asOf} 기준)`;
+  const src = [u.sp500Floor, u.valuation].find((x) => x && x.url);
+  return { who: "김영익의 미국 한마디", text, source: src ? { title: "김영익 교수 인터뷰", url: src.url } : null };
+}
+
+module.exports = { kimMarket, kimLens, kimUsLens, eul };
