@@ -1,0 +1,66 @@
+{
+  "country": "일본",
+  "flag": "🇯🇵",
+  "asOf": "2026-11-08",
+  "_설명": "블로그·후기·기사에서 확인한 품목만 넣어요. jp는 엔화, kr은 그 자료에 적힌 한국 가격(원)이에요. 가격은 자료 시점 기준이라 지금과 다를 수 있어요. gain: 'price'(한국보다 싸다는 가격 비교가 있음) / 'only'(한국에서 구하기 어려움) / 'popular'(여러 후기에서 반복 추천, 가격 비교는 없음)",
+  "categories": [
+    { "key": "kitchen", "name": "주방·식재료" },
+    { "key": "snack", "name": "간식·술·커피" },
+    { "key": "drug", "name": "드럭스토어·생활" }
+  ],
+  "items": [
+    { "cat": "snack", "name": "조니워커 블루라벨", "gain": "price", "jp": 18000, "kr": 300000, "krText": "30만 원대", "where": "시내 주류점·면세점", "why": "한국은 주세·교육세·부가세가 붙어 위스키가 특히 비싸요. 후기 기준 일본 18만 원대, 한국 30만 원대예요.", "src": "s4" },
+    { "cat": "snack", "name": "야마자키 12년", "gain": "price", "jp": 20000, "kr": 400000, "krText": "40만 원대", "where": "시내 주류점·면세점", "why": "일본 위스키 대표 제품이에요. 한국 가격과 차이가 가장 큰 편이에요.", "src": "s4" },
+    { "cat": "snack", "name": "더 글렌리벳 18년", "gain": "price", "jp": 11000, "kr": 200000, "krText": "20만 원대", "where": "시내 주류점·면세점", "why": "18년 숙성 싱글몰트가 일본에선 1만 엔대예요.", "src": "s4" },
+    { "cat": "snack", "name": "글렌파클라스 105 (1L)", "gain": "price", "jp": 8000, "kr": 160000, "krText": "16만 원대", "where": "시내 주류점", "why": "60도 캐스크 스트렝스 1L예요. 1L라서 2L 면세 한도 안에 두 병까지 들어가요.", "src": "s4" },
+    { "cat": "snack", "name": "히비키 블렌더스 초이스", "gain": "only", "jp": 15000, "where": "일본 현지 매장", "why": "후기에선 일본 현지에서만 살 수 있다고 해요.", "src": "s4" },
+    { "cat": "snack", "name": "요이치 그란데 (닛카)", "gain": "only", "jp": 14520, "where": "공항 면세점", "why": "면세점에서만 파는 한정 제품이에요.", "src": "s4" },
+    { "cat": "snack", "name": "하쿠슈 18년", "gain": "only", "jp": 50000, "where": "공항 면세점 (주 1회 추첨)", "why": "면세점 한정에 추첨으로만 팔아요. 미리 추첨 일정을 확인해요.", "src": "s4" },
+    { "cat": "snack", "name": "자판기 캔커피", "gain": "price", "jp": 130, "kr": 1800, "krText": "1,800원", "where": "자판기·편의점", "why": "여행 중 매일 마시면 차이가 쌓여요.", "src": "s7" },
+    { "cat": "snack", "name": "일본 한정 킷캣·포키 지역 한정 맛", "gain": "only", "jp": null, "where": "돈키호테·기념품점", "why": "말차·지역 한정 맛은 한국에서 보기 어려워요. 여러 쇼핑 리스트에서 반복 추천돼요.", "src": "d,m1" },
+    { "cat": "snack", "name": "부르봉 알포트", "gain": "popular", "jp": 180, "where": "돈키호테·슈퍼", "why": "통밀 비스킷 초콜릿이에요. 여러 리스트에서 반복 추천돼요.", "src": "d,m1" },
+    { "cat": "snack", "name": "UHA 코로로 젤리", "gain": "popular", "jp": 128, "where": "편의점·슈퍼", "why": "과즙이 터지는 식감으로 반복 추천돼요.", "src": "d,m1" },
+
+    { "cat": "kitchen", "name": "야와타야 이소고로 시치미", "gain": "popular", "jp": null, "where": "슈퍼·백화점 식품관", "why": "1736년 창업한 나가노 노포의 일곱 가지 향신료예요. 우동·전골·구이에 뿌려요.", "src": "g,b" },
+    { "cat": "kitchen", "name": "카메야 생 와사비 튜브", "gain": "popular", "jp": null, "where": "슈퍼", "why": "시즈오카산 본와사비 비율이 높은 튜브형이에요. 회·스테이크용으로 좋아요.", "src": "g,b" },
+    { "cat": "kitchen", "name": "에바라 푸칫토 나베", "gain": "popular", "jp": null, "where": "슈퍼", "why": "캡슐 하나가 1인분 전골 육수예요. 상온 보관이라 가져오기 쉬워요.", "src": "g" },
+    { "cat": "kitchen", "name": "히가시마루 우동 스프", "gain": "popular", "jp": null, "where": "슈퍼", "why": "가쓰오부시·다시마 분말 국물이에요. 물에 풀면 우동 국물이 돼요.", "src": "g" },
+    { "cat": "kitchen", "name": "유즈코쇼·폰즈", "gain": "popular", "jp": null, "where": "슈퍼", "why": "유자 고추 페이스트와 감귤 간장이에요. 구이·샤부샤부에 잘 맞아요.", "src": "b" },
+    { "cat": "kitchen", "name": "노리타마 후리카케", "gain": "popular", "jp": null, "where": "슈퍼·편의점", "why": "밥에 뿌리는 김·달걀 시즈닝이에요. 여러 리스트에서 반복 추천돼요.", "src": "g,d" },
+    { "cat": "kitchen", "name": "일본 주방칼 (규토·산토쿠)", "gain": "popular", "jp": null, "where": "칼 전문점·백화점", "why": "토지로·글로벌·슌 같은 브랜드가 집밥용으로 추천돼요. 한국 가격 비교 자료는 못 찾았으니 현지에서 꼭 비교해요. 칼은 기내 반입이 안 돼서 위탁수하물로 보내요.", "src": "s8" },
+    { "cat": "kitchen", "name": "무인양품 스테인리스 채썰기 필러·내열 유리 용기", "gain": "popular", "jp": null, "where": "무인양품", "why": "2026년 무인양품 추천 상품에 오른 주방 도구예요.", "src": "m2" },
+
+    { "cat": "drug", "name": "휴족시간 (18매)", "gain": "price", "jp": 698, "kr": 10000, "krText": "1만 원", "where": "드럭스토어·돈키호테", "why": "다리 피로 쿨링 시트예요. 여러 장 사 두면 차이가 커요.", "src": "s7" },
+    { "cat": "drug", "name": "퍼펙트휩 클렌징 폼", "gain": "price", "jp": 450, "kr": 8000, "krText": "8,000원", "where": "드럭스토어", "why": "한국 가격의 절반 수준이에요.", "src": "s7" },
+    { "cat": "drug", "name": "무인양품 아로마 디퓨저", "gain": "price", "jp": 4990, "kr": 59900, "krText": "59,900원", "where": "무인양품", "why": "같은 제품이 한국보다 1만 원 넘게 싸요.", "src": "s7" },
+    { "cat": "drug", "name": "카베진", "gain": "popular", "jp": null, "where": "드럭스토어", "why": "위 점막 보호·속쓰림용 위장약이에요. 여러 리스트에서 반복 추천돼요.", "src": "s,d" },
+    { "cat": "drug", "name": "오타이산", "gain": "popular", "jp": null, "where": "드럭스토어", "why": "체기·소화불량용 분말 위장약이에요. 반복 추천돼요.", "src": "s,d" },
+    { "cat": "drug", "name": "EVE 진통제", "gain": "popular", "jp": 753, "where": "드럭스토어", "why": "두통·치통용으로 반복 추천돼요.", "src": "m1,d" },
+    { "cat": "drug", "name": "로토 리세 안약", "gain": "popular", "jp": 698, "where": "드럭스토어", "why": "건조한 눈용 안약이에요. 세 곳 넘는 리스트에서 추천돼요.", "src": "m1,d,s" },
+    { "cat": "drug", "name": "모공나데시코 쌀 마스크팩", "gain": "popular", "jp": 650, "where": "돈키호테·드럭스토어", "why": "일본산 쌀 추출물 시트 마스크예요. 반복 추천돼요.", "src": "m1,d" },
+    { "cat": "drug", "name": "메구리즘 핫 아이마스크", "gain": "popular", "jp": null, "where": "드럭스토어", "why": "데워지는 증기 안대예요. 비행기에서 쓰기 좋아요.", "src": "s" }
+  ],
+  "tips": [
+    { "title": "2026년 11월 1일부터 면세가 '출국할 때 환급'으로 바뀌었어요", "body": "매장에서는 소비세까지 내고 사요. 출국할 때 공항 면세 단말기에 여권을 찍어 확인받으면 환급돼요. 한 매장에서 하루 세전 5,000엔 이상 사야 대상이에요.", "src": "s9,s10" },
+    { "title": "위탁수하물 맡기기 전에 환급 확인부터 해요", "body": "한 번 맡긴 짐은 다시 꺼낼 수 없어요. 칼처럼 위탁으로 보내야 하는 물건도 먼저 단말기 확인을 받고 맡겨요. 영수증 한 장의 물건 중 하나라도 확인이 안 되면 그 영수증 전체가 환급되지 않아요.", "src": "s9,s11" },
+    { "title": "환급은 구매 다음 날부터 90일 안에 출국할 때만 돼요", "body": "환급 방법(카드·송금·현금)은 매장마다 달라요. 산 물건은 출국 전에 뜯거나 쓰면 안 돼요.", "src": "s9,s11" },
+    { "title": "한국 들어올 때 면세 한도를 따져요", "body": "기본 면세 한도는 1인 800달러이고, 술·담배·향수는 따로 계산해요. 술은 병 수와 상관없이 합계 2L·400달러 이하면 면세예요.", "src": "s9,s1" },
+    { "title": "환급 내역을 꼭 챙겨요", "body": "환급받은 세금을 뺀 금액을 과세 기준으로 볼 수 있다는 관세청 안내가 있어요. 환급 확인이 안 되면 소비세가 포함된 영수증 가격으로 계산돼 800달러를 넘을 수 있어요.", "src": "s9" },
+    { "title": "의약품은 개인이 쓸 만큼만 사요", "body": "판매 시간과 약사 상주 여부가 매장마다 달라요. 반입 수량은 관세청·식약처 기준을 확인해요.", "src": "d" }
+  ],
+  "sources": {
+    "s1": { "title": "시사저널 — 일본서 위스키 사오면 완전 이득 (2025-04-25)", "url": "https://www.sisajournal.com/news/articleView.html?idxno=331360" },
+    "s4": { "title": "임볼든 — 일본 여행에서 꼭 사야 할 위스키 11 (2025-09-03 수정)", "url": "https://kr.imboldn.com/digest/%EC%9D%BC%EB%B3%B8-%EC%97%AC%ED%96%89%EC%97%90%EC%84%9C-%EA%BC%AD-%EC%82%AC%EC%95%BC-%ED%95%A0-%EC%9C%84%EC%8A%A4%ED%82%A4-%EC%B6%94%EC%B2%9C-11/" },
+    "s7": { "title": "아소벤처 — 엔화 약세 2026, 일본 여행 가면 얼마나 이득일까", "url": "https://japan.asoventure.jp/kr/article/jpy-weakness-2026-korean-travel-benefits-guide" },
+    "s8": { "title": "디스커버리 재팬 — 2026 가정 요리사를 위한 일본 주방 칼 (2026-05-12)", "url": "https://www.discovery-japan-partner.com/ko/best-japanese-kitchen-knives-for-home-cooks-2026/" },
+    "s9": { "title": "세계일보 — 일본 쇼핑, 11월부턴 출국 때 돌려받는다 (2026-10-28)", "url": "https://www.segye.com/newsView/20261028516445" },
+    "s10": { "title": "한국일보 — 日 관광객 면세, 오늘부터 바뀐다 (2026-11-01)", "url": "https://www.hankookilbo.com/news/article/amp/A2026110110450002216" },
+    "s11": { "title": "MATCHA — 일본 새 면세 제도 '리펀드 방식' 정리", "url": "https://matcha-jp.com/ko/27460" },
+    "d": { "title": "그레이 — 2026 일본 돈키호테 쇼핑리스트 BEST 48 (2026-03-09)", "url": "https://v.daum.net/v/HOG7MIFYsY" },
+    "m1": { "title": "MATCHA — 2026 돈키호테 필수 구매 리스트", "url": "https://matcha-jp.com/ko/24885" },
+    "m2": { "title": "MATCHA — 2026 무인양품 추천 상품 49선", "url": "https://matcha-jp.com/ko/27790" },
+    "s": { "title": "스카이스캐너 — 일본 드럭스토어 필수템 10 (2026-07-13)", "url": "https://www.skyscanner.co.kr/destinations/advice/best-things-to-buy-in-drugstore-japan" },
+    "g": { "title": "데이트곰 — 일본 마트 필수템 10 (2026-08-03)", "url": "https://dategom.com/%EC%9D%BC%EB%B3%B8-%EB%A7%88%ED%8A%B8-%EA%BC%AD-%EC%82%AC%EC%95%BC-%ED%95%A0-%ED%95%84%EC%88%98%ED%85%9C-%EC%A0%9C%ED%92%88-%EC%B6%94%EC%B2%9C/" },
+    "b": { "title": "byFood — 일본 조미료와 향신료 12가지", "url": "https://www.byfood.com/blog/culture/japanese-spices-and-condiments" }
+  }
+}

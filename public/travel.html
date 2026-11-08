@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#F2F4F6" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#17171C" media="(prefers-color-scheme: dark)" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <title>여행 쇼핑</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f2f4f6;
+        --card: #ffffff;
+        --fill: #f2f4f6;
+        --ink: #191f28;
+        --ink-2: #4e5968;
+        --ink-3: #8b95a1;
+        --line: #eef0f2;
+        --primary: #3182f6;
+        --primary-soft: #e8f3ff;
+        --up: #f04452;
+        --good: #12a66d;
+        --good-soft: #e3f6ee;
+        --warn: #f2711c;
+        --warn-soft: #fff1e6;
+        --sans: "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          color-scheme: dark;
+          --bg: #17171c;
+          --card: #202027;
+          --fill: #2c2c35;
+          --ink: #ececef;
+          --ink-2: #b0b8c1;
+          --ink-3: #7e8590;
+          --line: #2c2c35;
+          --primary: #4593fc;
+          --primary-soft: #1b2a40;
+          --up: #f45a69;
+          --good: #2fc28a;
+          --good-soft: #15302a;
+          --warn: #ff8a3d;
+          --warn-soft: #3a2615;
+        }
+      }
+      * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+      html, body { margin: 0; }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font: 15px/1.6 var(--sans);
+        word-break: keep-all;
+        overflow-wrap: anywhere;
+        padding: 0 16px calc(32px + env(safe-area-inset-bottom));
+      }
+      .wrap { max-width: 640px; margin: 0 auto; }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: calc(14px + env(safe-area-inset-top)) 0 10px;
+      }
+      header a { color: var(--ink-3); text-decoration: none; font-size: 26px; line-height: 1; padding: 4px 6px 4px 0; }
+      header h1 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+      .card { background: var(--card); border-radius: 22px; padding: 22px 20px; margin-top: 12px; }
+      .eyebrow { margin: 0; font-size: 13px; color: var(--ink-3); font-weight: 600; }
+      .big { display: block; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.35; margin-top: 4px; }
+      .sub { margin: 6px 0 0; font-size: 13px; color: var(--ink-3); }
+      .rate { display: flex; align-items: center; gap: 8px; margin-top: 16px; background: var(--fill); border-radius: 14px; padding: 12px 14px; }
+      .rate label { font-size: 14px; color: var(--ink-2); flex: 1; }
+      .rate input { width: 84px; border: 0; background: var(--card); color: var(--ink); border-radius: 10px; padding: 8px 10px; font: 700 16px var(--sans); text-align: right; }
+      .tabs { display: flex; gap: 8px; overflow-x: auto; margin-top: 16px; padding-bottom: 2px; scrollbar-width: none; }
+      .tabs::-webkit-scrollbar { display: none; }
+      .tabs button {
+        flex: none; border: 0; border-radius: 999px; padding: 9px 14px; font: 600 14px var(--sans);
+        background: var(--fill); color: var(--ink-2); cursor: pointer;
+      }
+      .tabs button[aria-pressed="true"] { background: var(--ink); color: var(--card); }
+      .toggle { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 14px; color: var(--ink-2); }
+      .toggle input { width: 18px; height: 18px; accent-color: var(--primary); }
+      ul.items { list-style: none; margin: 8px 0 0; padding: 0; }
+      .item { padding: 18px 0; border-top: 1px solid var(--line); }
+      .item:first-child { border-top: 0; }
+      .row { display: flex; align-items: flex-start; gap: 12px; }
+      .row .main { flex: 1; min-width: 0; }
+      .name { font-size: 16px; font-weight: 700; margin: 0; }
+      .item.done .name { color: var(--ink-3); text-decoration: line-through; }
+      .badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+      .badge { font-size: 12px; font-weight: 700; border-radius: 6px; padding: 2px 8px; }
+      .b-price { background: var(--good-soft); color: var(--good); }
+      .b-only { background: var(--primary-soft); color: var(--primary); }
+      .b-popular { background: var(--fill); color: var(--ink-2); }
+      .where { font-size: 12px; color: var(--ink-3); }
+      .why { margin: 8px 0 0; font-size: 14px; color: var(--ink-2); }
+      .price { margin-top: 10px; background: var(--fill); border-radius: 12px; padding: 10px 12px; font-size: 13px; color: var(--ink-2); }
+      .price strong { font-size: 16px; color: var(--ink); white-space: nowrap; }
+      .price .save { color: var(--good); font-weight: 700; }
+      .check {
+        flex: none; width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--line);
+        background: var(--card); cursor: pointer; display: grid; place-items: center; color: transparent; font-weight: 800;
+      }
+      .item.done .check { background: var(--primary); border-color: var(--primary); color: #fff; }
+      .srcs { font-size: 12px; color: var(--ink-3); margin-top: 6px; }
+      .srcs a { color: var(--ink-3); }
+      .tip { padding: 14px 0; border-top: 1px solid var(--line); }
+      .tip:first-of-type { border-top: 0; }
+      .tip h3 { margin: 0; font-size: 15px; font-weight: 700; }
+      .tip p { margin: 4px 0 0; font-size: 14px; color: var(--ink-2); }
+      h2 { margin: 0; font-size: 18px; font-weight: 800; }
+      ol.sources { margin: 10px 0 0; padding-left: 18px; font-size: 13px; color: var(--ink-3); }
+      ol.sources a { color: var(--ink-2); }
+      .summary { display: flex; gap: 8px; margin-top: 14px; }
+      .summary div { flex: 1; background: var(--fill); border-radius: 14px; padding: 10px 12px; min-width: 0; }
+      .summary small { display: block; font-size: 12px; color: var(--ink-3); }
+      .summary b { font-size: 17px; }
+      .empty { color: var(--ink-3); text-align: center; padding: 24px 0; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <a href="/" aria-label="홈으로 가기">‹</a>
+        <h1>여행 쇼핑</h1>
+      </header>
+
+      <section class="card" aria-labelledby="hero-title">
+        <p class="eyebrow" id="hero-country">🇯🇵 일본</p>
+        <strong class="big" id="hero-title">가서 사면 실제로 이득인 것부터 모았어요</strong>
+        <p class="sub">요리·간식·술·드럭스토어 취향에 맞춰 골랐어요. 한국보다 싸다는 가격 비교가 있는 품목이 맨 위예요.</p>
+        <div class="rate">
+          <label for="rate">100엔당 원화 (환율)</label>
+          <input id="rate" type="number" inputmode="decimal" min="1" step="1" />
+          <span>원</span>
+        </div>
+        <p class="sub" id="rate-note">처음 값 900원은 예시예요. 떠나기 전 실제 환율로 고쳐 주세요. 이 기기에 저장돼요.</p>
+        <div class="summary" id="summary"></div>
+      </section>
+
+      <section class="card" aria-label="쇼핑 리스트">
+        <div class="tabs" id="tabs" role="group" aria-label="분야"></div>
+        <label class="toggle"><input type="checkbox" id="only-price" /> 한국보다 싸다는 비교가 있는 것만</label>
+        <ul class="items" id="items"></ul>
+      </section>
+
+      <section class="card" aria-labelledby="tips-title">
+        <h2 id="tips-title">이득을 지키는 방법</h2>
+        <div id="tips"></div>
+      </section>
+
+      <section class="card" aria-labelledby="src-title">
+        <h2 id="src-title">출처</h2>
+        <p class="sub">가격은 각 자료가 쓰인 시점 기준이에요. 현지에서 한 번 더 비교해 주세요. 다른 나라는 이어서 추가할게요.</p>
+        <ol class="sources" id="sources"></ol>
+      </section>
+    </div>
+
+    <script>
+      const $ = (s) => document.querySelector(s);
+      const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+      const store = {
+        get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+        set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+      };
+      const GAIN = {
+        price: ["b-price", "한국보다 쌈"],
+        only: ["b-only", "한국에서 구하기 어려움"],
+        popular: ["b-popular", "여러 후기 추천"],
+      };
+      let data = null;
+      let cat = "all";
+      let rate = Number(store.get("travel.rate.jp", 900)) || 900;
+      let done = store.get("travel.done.jp", {});
+
+      const won = (yen) => Math.round((yen * rate) / 100);
+      const fmtWon = (v) => (v >= 10000 ? `${(v / 10000).toFixed(v >= 100000 ? 0 : 1)}만 원` : `${v.toLocaleString("ko-KR")}원`);
+      const srcLinks = (keys) =>
+        String(keys || "")
+          .split(",")
+          .filter((k) => data.sources[k])
+          .map((k) => `<a href="${esc(data.sources[k].url)}" target="_blank" rel="noopener">${esc(data.sources[k].title.split(" — ")[0])}</a>`)
+          .join(" · ");
+
+      function priceBox(it) {
+        if (!it.jp) return "";
+        let html = `일본 <strong>¥${it.jp.toLocaleString("ko-KR")}</strong> (약 ${fmtWon(won(it.jp))})`;
+        if (it.kr) {
+          const pct = Math.round((1 - won(it.jp) / it.kr) * 100);
+          html += ` · 한국 ${esc(it.krText || fmtWon(it.kr))}${/대$/.test(it.krText || "") ? "(낮은 쪽 기준)" : ""}`;
+          html += pct > 0 ? `<br><span class="save">입력한 환율이면 약 ${pct}% 아껴요 (${fmtWon(it.kr - won(it.jp))})</span>` : `<br>입력한 환율로는 한국과 비슷하거나 더 비싸요`;
+        }
+        return `<div class="price">${html}</div>`;
+      }
+
+      function render() {
+        const order = { price: 0, only: 1, popular: 2 };
+        const onlyPrice = $("#only-price").checked;
+        const list = data.items
+          .map((it, i) => ({ ...it, id: `${it.cat}:${it.name}`, i }))
+          .filter((it) => (cat === "all" || it.cat === cat) && (!onlyPrice || it.gain === "price"))
+          .sort((a, b) => order[a.gain] - order[b.gain] || a.i - b.i);
+        $("#items").innerHTML = list.length
+          ? list
+              .map((it) => {
+                const [cls, label] = GAIN[it.gain] || GAIN.popular;
+                return `<li class="item${done[it.id] ? " done" : ""}" data-id="${esc(it.id)}"><div class="row"><div class="main">
+          <p class="name">${esc(it.name)}</p>
+          <div class="badges"><span class="badge ${cls}">${label}</span><span class="where">${esc(it.where)}</span></div>
+          <p class="why">${esc(it.why)}</p>${priceBox(it)}
+          <div class="srcs">${srcLinks(it.src)}</div></div>
+          <button type="button" class="check" aria-pressed="${done[it.id] ? "true" : "false"}" aria-label="${esc(it.name)} 샀어요">✓</button></div></li>`;
+              })
+              .join("")
+          : `<li class="empty">이 조건에 맞는 품목이 없어요</li>`;
+
+        // 요약: 가격 비교가 있는 품목을 하나씩 샀을 때 아끼는 금액
+        const priced = data.items.filter((it) => it.gain === "price" && it.jp && it.kr);
+        const saveAll = priced.reduce((s, it) => s + Math.max(0, it.kr - won(it.jp)), 0);
+        const boughtCount = Object.values(done).filter(Boolean).length;
+        $("#summary").innerHTML = `<div><small>가격 비교 품목</small><b>${priced.length}개</b></div><div><small>하나씩 사면 아끼는 돈</small><b>약 ${fmtWon(saveAll)}</b></div><div><small>산 것</small><b>${boughtCount}개</b></div>`;
+      }
+
+      async function init() {
+        try {
+          const res = await fetch("/travel/japan.json");
+          data = await res.json();
+        } catch {
+          $("#items").innerHTML = `<li class="empty">리스트를 불러오지 못했어요. 잠시 후 다시 열어 주세요.</li>`;
+          return;
+        }
+        $("#rate").value = rate;
+        $("#tabs").innerHTML = [{ key: "all", name: "전체" }, ...data.categories]
+          .map((c) => `<button type="button" data-cat="${esc(c.key)}" aria-pressed="${c.key === cat}">${esc(c.name)}</button>`)
+          .join("");
+        $("#tips").innerHTML = data.tips.map((t) => `<div class="tip"><h3>${esc(t.title)}</h3><p>${esc(t.body)}</p><div class="srcs">${srcLinks(t.src)}</div></div>`).join("");
+        $("#sources").innerHTML = Object.values(data.sources).map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a></li>`).join("");
+        render();
+      }
+
+      $("#tabs").addEventListener("click", (e) => {
+        const b = e.target.closest("button");
+        if (!b) return;
+        cat = b.dataset.cat;
+        document.querySelectorAll("#tabs button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+        render();
+      });
+      $("#only-price").addEventListener("change", render);
+      $("#rate").addEventListener("input", (e) => {
+        const v = Number(e.target.value);
+        if (!(v > 0)) return;
+        rate = v;
+        store.set("travel.rate.jp", v);
+        render();
+      });
+      $("#items").addEventListener("click", (e) => {
+        const b = e.target.closest(".check");
+        if (!b) return;
+        const id = b.closest(".item").dataset.id;
+        done[id] = !done[id];
+        if (!done[id]) delete done[id];
+        store.set("travel.done.jp", done);
+        render();
+      });
+      if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
+      init();
+    </script>
+  </body>
+</html>

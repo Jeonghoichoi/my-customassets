@@ -17,11 +17,14 @@
 - `data/margin-debt.json`, `data/house-views.json`은 사용자가 직접 갱신하는 데이터 파일이다. 임의로 수정하지 않는다.
 - `data/briefing.json`은 매일 아침 '아침 시장 브리핑' 예약 작업이 자동으로 올리는 파일이다. 형식은 `data/briefing.sample.json`을 따르고, 올리기 전에 `node scripts/check-briefing.js`로 검사한다. 화면 작업 중에 손으로 고치지 않는다.
 
+## 화면 구성
+- `public/index.html`은 홈(종합앱) 화면이고, 판독기는 `public/reader.html`, 여행 쇼핑은 `public/travel.html`(데이터 `public/travel/<나라>.json`)이다.
+
 ## 화면 디자인
 - 토스 앱 톤을 따른다: 흰 카드, 넓은 여백, 큰 숫자, Noto Sans KR 폰트.
 - 상승은 빨강, 하락은 파랑.
 - 사용자에게 보이는 문구는 전부 해요체("~해요", "~예요")로 쓴다.
-- 어려운 지표에는 i 버튼과 쉬운 설명을 붙인다 (`public/index.html`의 `TERMS`).
+- 어려운 지표에는 i 버튼과 쉬운 설명을 붙인다 (`public/reader.html`의 `TERMS`).
 
 ## 커밋·push 절차
 - 커밋 메시지는 한국어로 짧게 쓴다.
