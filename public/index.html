@@ -1680,7 +1680,7 @@
         background: var(--ink-3);
       }
 
-      /* 일곱 투자자 */
+      /* 여덟 판독자 */
       .judges-sum {
         display: grid;
         grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -1720,6 +1720,13 @@
         justify-content: space-between;
         align-items: center;
         gap: 12px;
+      }
+      .judge-head .one-liner {
+        margin: 6px 0 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--ink-2);
+        line-height: 1.45;
       }
       .judge-head .idea {
         font-size: 13px;
@@ -2236,7 +2243,7 @@
         <section class="card brief-card" id="brief-card" aria-labelledby="brief-title" hidden></section>
         <div class="col stock-area" id="stock-area">
           <section class="card" id="stock" aria-live="polite">
-            <p class="empty">종목을 검색하면<br />일곱 투자자의 원칙으로 판독해 드려요</p>
+            <p class="empty">종목을 검색하면<br />여덟 판독자의 원칙으로 판독해 드려요</p>
           </section>
         </div>
       </div>
@@ -2268,7 +2275,7 @@
       <div class="card">
         <button type="button" class="back" id="board-back">‹ 판독으로 돌아가기</button>
         <h2 id="board-title">판독표</h2>
-        <p class="sub" style="margin-bottom:16px">이 기기에서 조회한 종목을 일곱 투자자 점수로 한눈에 비교해요</p>
+        <p class="sub" style="margin-bottom:16px">이 기기에서 조회한 종목을 여덟 판독자 점수로 한눈에 비교해요</p>
         <div id="board-body"></div>
       </div>
     </section>
@@ -2540,7 +2547,9 @@
           ${
             v.lenses && v.lenses.length
               ? `<dl class="defs" style="margin-top:16px">${v.lenses
-                  .map((l) => `<div><dt>${esc(l.who)}</dt><dd>${esc(l.text)}</dd></div>`)
+                  .map((l) => `<div><dt>${esc(l.who)}</dt><dd>${esc(l.text)}${
+                    l.source && /^https?:\/\//.test(l.source.url || "") ? ` <a href="${esc(l.source.url)}" target="_blank" rel="noopener">출처</a>` : ""
+                  }</dd></div>`)
                   .join("")}</dl>`
               : ""
           }
@@ -2851,9 +2860,9 @@
 
       function judgeBlock(j) {
         const score = j.score ?? 0;
-        const color = toneColor[scoreTone(score)];
+        const color = j.score === null || j.score === undefined ? "var(--ink-3)" : toneColor[scoreTone(score)];
         return `<div class="judge" id="j-${esc(j.key)}">
-    <div class="judge-head"><div><h3>${esc(j.name)}</h3><div class="idea">${esc(j.idea)}</div></div><div class="score" style="color:${color}">${
+    <div class="judge-head"><div><h3>${esc(j.name)}</h3><div class="idea">${esc(j.idea)}</div>${j.oneLiner ? `<p class="one-liner">“${esc(j.oneLiner)}”</p>` : ""}</div><div class="score" style="color:${color}">${
           j.score ?? "–"
         }</div></div>
     <div class="bar"><i style="width:${score}%;background:${color}"></i></div>
@@ -3190,7 +3199,7 @@
         <div class="divider"></div>
         <p class="eyebrow">가격 위치 종합</p>
         ${scoreHead(s.position.label, s.needle)}
-        <p class="sub">가격 위치 50% + 시장 신호 30% + 투자자 7명 평균 20%를 합친 점수예요 (−100 과열 ~ +100 저점)</p>
+        <p class="sub">가격 위치 50% + 시장 신호 30% + 판독자 8명 평균 20%를 합친 점수예요 (−100 과열 ~ +100 저점)</p>
         <div class="tiles3">
           <div class="tile"><small>배당수익률${tip("배당수익률")}</small><strong>${
             m0.divYield === null || m0.divYield === undefined ? "–" : m0.divYield > 0 ? fmt(m0.divYield, 2) + "%" : "배당 없음"
@@ -3214,8 +3223,8 @@
       ${divCard(s, money)}
 
       <section class="card">
-        <p class="eyebrow">일곱 투자자의 판독</p>
-        <strong class="big">7명 중 ${s.consensus.favorable}명이 우호적이에요</strong>
+        <p class="eyebrow">여덟 판독자의 판독</p>
+        <strong class="big">${s.consensus.total}명 중 ${s.consensus.favorable}명이 우호적이에요</strong>
         ${s.consensus.names.length ? `<p class="sub">${esc(s.consensus.names.join(", "))}</p>` : ""}
         <div class="judges-sum">${s.judges
           .map((j) => {
@@ -3543,6 +3552,7 @@
         ["druckenmiller", "드러켄밀러"],
         ["ackman", "애크먼"],
         ["burry", "버리"],
+        ["kim", "김영익"],
       ];
       let shownKey = "";
       let boardSort = { key: "at", dir: -1 },
@@ -3578,6 +3588,7 @@
           label: s.position?.label || null,
           needle: s.needle,
           favorable: s.consensus?.favorable ?? null,
+          total: s.consensus?.total ?? null,
           scores,
           divYield: s.dividend?.yield ?? null,
           pe: s.metrics?.pe ?? null,
@@ -3688,7 +3699,7 @@
                 <small>${esc(r.market === "KR" ? r.s : r.n || "")}</small>
               </button></th>
               <td class="pos">${r.label ? `<span class="pos-tag" style="color:var(${scoreVar(r.needle ?? 0)})">${esc(r.label)}</span>` : "–"}</td>
-              <td class="num">${r.favorable === null || r.favorable === undefined ? "–" : `<strong>${r.favorable}</strong>/7`}</td>
+              <td class="num">${r.favorable === null || r.favorable === undefined ? "–" : `<strong>${r.favorable}</strong>/${r.total || 7}`}</td>
               ${JUDGE_COLS.map(([k]) => scoreCell(r.scores?.[k])).join("")}
               <td class="num">${r.divYield === null || r.divYield === undefined ? "–" : fmt(r.divYield, 2) + "%"}</td>
               <td class="num">${r.pe === null || r.pe === undefined || r.pe <= 0 ? "–" : fmt(r.pe, 1) + "배"}</td>
