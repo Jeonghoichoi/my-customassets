@@ -15,150 +15,86 @@
     <style>
       :root {
         color-scheme: light;
-        --bg: #f2f4f6;
-        --card: #ffffff;
-        --fill: #f2f4f6;
-        --ink: #191f28;
-        --ink-2: #4e5968;
-        --ink-3: #8b95a1;
-        --line: #eef0f2;
-        --primary: #3182f6;
-        --primary-soft: #e8f3ff;
-        --up: #f04452;
-        --good: #12a66d;
-        --good-soft: #e3f6ee;
-        --warn: #f2711c;
-        --warn-soft: #fff1e6;
+        --bg: #f2f4f6; --card: #ffffff; --fill: #f2f4f6; --ink: #191f28; --ink-2: #4e5968; --ink-3: #8b95a1;
+        --line: #eef0f2; --primary: #3182f6; --good: #12a66d; --good-soft: #e3f6ee;
         --sans: "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
       }
       @media (prefers-color-scheme: dark) {
-        :root {
-          color-scheme: dark;
-          --bg: #17171c;
-          --card: #202027;
-          --fill: #2c2c35;
-          --ink: #ececef;
-          --ink-2: #b0b8c1;
-          --ink-3: #7e8590;
-          --line: #2c2c35;
-          --primary: #4593fc;
-          --primary-soft: #1b2a40;
-          --up: #f45a69;
-          --good: #2fc28a;
-          --good-soft: #15302a;
-          --warn: #ff8a3d;
-          --warn-soft: #3a2615;
-        }
+        :root { color-scheme: dark; --bg: #17171c; --card: #202027; --fill: #2c2c35; --ink: #ececef; --ink-2: #b0b8c1; --ink-3: #7e8590; --line: #2c2c35; --primary: #4593fc; --good: #2fc28a; --good-soft: #15302a; }
       }
       * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
       html, body { margin: 0; }
-      body {
-        background: var(--bg);
-        color: var(--ink);
-        font: 15px/1.6 var(--sans);
-        word-break: keep-all;
-        overflow-wrap: anywhere;
-        padding: 0 16px calc(32px + env(safe-area-inset-bottom));
-      }
+      body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--sans); word-break: keep-all; overflow-wrap: anywhere; padding: 0 16px calc(32px + env(safe-area-inset-bottom)); }
       .wrap { max-width: 640px; margin: 0 auto; }
-      header {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        padding: calc(14px + env(safe-area-inset-top)) 0 10px;
-      }
+      header { display: flex; align-items: center; gap: 6px; padding: calc(14px + env(safe-area-inset-top)) 0 6px; }
       header a { color: var(--ink-3); text-decoration: none; font-size: 26px; line-height: 1; padding: 4px 6px 4px 0; }
-      header h1 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
-      .card { background: var(--card); border-radius: 22px; padding: 22px 20px; margin-top: 12px; }
-      .eyebrow { margin: 0; font-size: 13px; color: var(--ink-3); font-weight: 600; }
-      .big { display: block; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.35; margin-top: 4px; }
-      .sub { margin: 6px 0 0; font-size: 13px; color: var(--ink-3); }
-      .rate { display: flex; align-items: center; gap: 8px; margin-top: 16px; background: var(--fill); border-radius: 14px; padding: 12px 14px; }
-      .rate label { font-size: 14px; color: var(--ink-2); flex: 1; }
-      .rate input { width: 84px; border: 0; background: var(--card); color: var(--ink); border-radius: 10px; padding: 8px 10px; font: 700 16px var(--sans); text-align: right; }
-      .tabs { display: flex; gap: 8px; overflow-x: auto; margin-top: 16px; padding-bottom: 2px; scrollbar-width: none; }
-      .tabs::-webkit-scrollbar { display: none; }
-      .tabs button {
-        flex: none; border: 0; border-radius: 999px; padding: 9px 14px; font: 600 14px var(--sans);
-        background: var(--fill); color: var(--ink-2); cursor: pointer;
-      }
-      .tabs button[aria-pressed="true"] { background: var(--ink); color: var(--card); }
-      .toggle { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 14px; color: var(--ink-2); }
-      .toggle input { width: 18px; height: 18px; accent-color: var(--primary); }
-      ul.items { list-style: none; margin: 8px 0 0; padding: 0; }
-      .item { padding: 18px 0; border-top: 1px solid var(--line); }
+      header h1 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.02em; flex: 1; }
+      .card { background: var(--card); border-radius: 22px; padding: 20px; margin-top: 12px; }
+      .hero small { display: block; font-size: 13px; color: var(--ink-3); font-weight: 600; }
+      .hero .big { display: block; font-size: 30px; font-weight: 800; letter-spacing: -0.03em; color: var(--good); line-height: 1.25; margin-top: 2px; }
+      .rate { display: flex; align-items: center; gap: 6px; margin-top: 14px; font-size: 13px; color: var(--ink-3); }
+      .rate input { width: 72px; border: 0; background: var(--fill); color: var(--ink); border-radius: 10px; padding: 6px 8px; font: 700 15px var(--sans); text-align: right; }
+      .chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 14px -20px 0; padding: 0 20px 2px; }
+      .chips::-webkit-scrollbar { display: none; }
+      .chips button { flex: none; border: 0; border-radius: 999px; padding: 8px 13px; font: 600 14px var(--sans); background: var(--fill); color: var(--ink-2); cursor: pointer; }
+      .chips button[aria-pressed="true"] { background: var(--ink); color: var(--card); }
+      .sortbar { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 13px; color: var(--ink-3); }
+      .sortbar button { border: 0; background: none; color: var(--ink-2); font: 600 13px var(--sans); cursor: pointer; padding: 4px 0; }
+      ul.items { list-style: none; margin: 4px 0 0; padding: 0; }
+      .item { border-top: 1px solid var(--line); }
       .item:first-child { border-top: 0; }
-      .row { display: flex; align-items: flex-start; gap: 12px; }
-      .row .main { flex: 1; min-width: 0; }
-      .name { font-size: 16px; font-weight: 700; margin: 0; }
+      .item > button.row { all: unset; display: flex; gap: 12px; align-items: center; width: 100%; padding: 14px 0; cursor: pointer; }
+      .thumb { flex: none; width: 64px; height: 64px; border-radius: 14px; background: #fff; display: grid; place-items: center; overflow: hidden; font-size: 30px; border: 1px solid var(--line); }
+      .thumb img { width: 100%; height: 100%; object-fit: contain; }
+      .info { flex: 1; min-width: 0; }
+      .name { font-size: 15px; font-weight: 700; line-height: 1.35; }
+      .meta { font-size: 13px; color: var(--ink-3); margin-top: 2px; }
+      .meta b { color: var(--ink); font-weight: 700; }
+      .save { flex: none; text-align: right; }
+      .save strong { display: block; font-size: 17px; font-weight: 800; color: var(--good); white-space: nowrap; }
+      .save span { font-size: 12px; color: var(--ink-3); white-space: nowrap; }
+      .save.none span { font-size: 12px; }
       .item.done .name { color: var(--ink-3); text-decoration: line-through; }
-      .badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-      .badge { font-size: 12px; font-weight: 700; border-radius: 6px; padding: 2px 8px; }
-      .b-price { background: var(--good-soft); color: var(--good); }
-      .b-only { background: var(--primary-soft); color: var(--primary); }
-      .b-popular { background: var(--fill); color: var(--ink-2); }
-      .where { font-size: 12px; color: var(--ink-3); }
-      .why { margin: 8px 0 0; font-size: 14px; color: var(--ink-2); }
-      .price { margin-top: 10px; background: var(--fill); border-radius: 12px; padding: 10px 12px; font-size: 13px; color: var(--ink-2); }
-      .price strong { font-size: 16px; color: var(--ink); white-space: nowrap; }
-      .price .save { color: var(--good); font-weight: 700; }
-      .check {
-        flex: none; width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--line);
-        background: var(--card); cursor: pointer; display: grid; place-items: center; color: transparent; font-weight: 800;
-      }
-      .item.done .check { background: var(--primary); border-color: var(--primary); color: #fff; }
-      .srcs { font-size: 12px; color: var(--ink-3); margin-top: 6px; }
-      .srcs a { color: var(--ink-3); }
-      .tip { padding: 14px 0; border-top: 1px solid var(--line); }
-      .tip:first-of-type { border-top: 0; }
-      .tip h3 { margin: 0; font-size: 15px; font-weight: 700; }
-      .tip p { margin: 4px 0 0; font-size: 14px; color: var(--ink-2); }
-      h2 { margin: 0; font-size: 18px; font-weight: 800; }
-      ol.sources { margin: 10px 0 0; padding-left: 18px; font-size: 13px; color: var(--ink-3); }
-      ol.sources a { color: var(--ink-2); }
-      .summary { display: flex; gap: 8px; margin-top: 14px; }
-      .summary div { flex: 1; background: var(--fill); border-radius: 14px; padding: 10px 12px; min-width: 0; }
-      .summary small { display: block; font-size: 12px; color: var(--ink-3); }
-      .summary b { font-size: 17px; }
+      .more { padding: 0 0 14px 76px; font-size: 13px; color: var(--ink-2); }
+      .stores { display: flex; flex-wrap: wrap; gap: 6px; }
+      .stores span { background: var(--fill); border-radius: 6px; padding: 2px 8px; font-size: 12px; font-weight: 600; color: var(--ink-2); }
+      .stores span:first-child { background: var(--good-soft); color: var(--good); }
+      .more p { margin: 8px 0 0; }
+      .more .links { margin-top: 6px; font-size: 12px; color: var(--ink-3); }
+      .more .links a { color: var(--ink-3); }
+      .more .acts { display: flex; gap: 8px; margin-top: 10px; }
+      .more .acts button, .more .acts a { border: 0; border-radius: 10px; padding: 7px 12px; font: 600 13px var(--sans); background: var(--fill); color: var(--ink); text-decoration: none; cursor: pointer; }
+      details.tips summary { font-size: 16px; font-weight: 800; cursor: pointer; list-style: none; display: flex; justify-content: space-between; }
+      details.tips summary::-webkit-details-marker { display: none; }
+      details.tips summary::after { content: "›"; color: var(--ink-3); transform: rotate(90deg); }
+      .tip { padding: 12px 0 0; }
+      .tip b { font-size: 14px; }
+      .tip p { margin: 2px 0 0; font-size: 13px; color: var(--ink-2); }
+      .tip a { font-size: 12px; color: var(--ink-3); }
+      .foot { font-size: 12px; color: var(--ink-3); margin: 14px 4px 0; }
       .empty { color: var(--ink-3); text-align: center; padding: 24px 0; }
     </style>
   </head>
   <body>
     <div class="wrap">
-      <header>
-        <a href="/" aria-label="홈으로 가기">‹</a>
-        <h1>여행 쇼핑</h1>
-      </header>
+      <header><a href="/" aria-label="홈으로 가기">‹</a><h1>여행 쇼핑 🇯🇵</h1></header>
 
-      <section class="card" aria-labelledby="hero-title">
-        <p class="eyebrow" id="hero-country">🇯🇵 일본</p>
-        <strong class="big" id="hero-title">가서 사면 실제로 이득인 것부터 모았어요</strong>
-        <p class="sub">요리·간식·술·드럭스토어 취향에 맞춰 골랐어요. 한국보다 싸다는 가격 비교가 있는 품목이 맨 위예요.</p>
-        <div class="rate">
-          <label for="rate">100엔당 원화 (환율)</label>
-          <input id="rate" type="number" inputmode="decimal" min="1" step="1" />
-          <span>원</span>
-        </div>
-        <p class="sub" id="rate-note">처음 값 900원은 예시예요. 떠나기 전 실제 환율로 고쳐 주세요. 이 기기에 저장돼요.</p>
-        <div class="summary" id="summary"></div>
+      <section class="card hero">
+        <small>일본에서 한 개씩만 사도 아끼는 돈</small>
+        <strong class="big" id="total">–</strong>
+        <div class="rate"><label for="rate">환율 100엔 =</label><input id="rate" type="number" inputmode="decimal" min="1" /><span>원 (직접 고쳐요)</span></div>
       </section>
 
-      <section class="card" aria-label="쇼핑 리스트">
-        <div class="tabs" id="tabs" role="group" aria-label="분야"></div>
-        <label class="toggle"><input type="checkbox" id="only-price" /> 한국보다 싸다는 비교가 있는 것만</label>
+      <section class="card">
+        <div class="chips" id="cats" role="group" aria-label="카테고리"></div>
+        <div class="sortbar"><span id="count"></span><button type="button" id="sort"></button></div>
         <ul class="items" id="items"></ul>
       </section>
 
-      <section class="card" aria-labelledby="tips-title">
-        <h2 id="tips-title">이득을 지키는 방법</h2>
-        <div id="tips"></div>
+      <section class="card">
+        <details class="tips"><summary>이득 지키는 법 4가지</summary><div id="tips"></div></details>
       </section>
-
-      <section class="card" aria-labelledby="src-title">
-        <h2 id="src-title">출처</h2>
-        <p class="sub">가격은 각 자료가 쓰인 시점 기준이에요. 현지에서 한 번 더 비교해 주세요. 다른 나라는 이어서 추가할게요.</p>
-        <ol class="sources" id="sources"></ol>
-      </section>
+      <p class="foot">가격은 2026년 11월 조사 기준이에요. 사진은 위키미디어 공용 또는 판매처 사진이에요. 품목을 누르면 출처가 보여요.</p>
     </div>
 
     <script>
@@ -168,104 +104,72 @@
         get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
         set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
       };
-      const GAIN = {
-        price: ["b-price", "한국보다 쌈"],
-        only: ["b-only", "한국에서 구하기 어려움"],
-        popular: ["b-popular", "여러 후기 추천"],
-      };
-      let data = null;
-      let cat = "all";
+      let data = null, cat = "all", open = null;
+      let sortBySave = store.get("travel.sort.jp", true);
       let rate = Number(store.get("travel.rate.jp", 900)) || 900;
       let done = store.get("travel.done.jp", {});
-
       const won = (yen) => Math.round((yen * rate) / 100);
-      const fmtWon = (v) => (v >= 10000 ? `${(v / 10000).toFixed(v >= 100000 ? 0 : 1)}만 원` : `${v.toLocaleString("ko-KR")}원`);
-      const srcLinks = (keys) =>
-        String(keys || "")
-          .split(",")
-          .filter((k) => data.sources[k])
-          .map((k) => `<a href="${esc(data.sources[k].url)}" target="_blank" rel="noopener">${esc(data.sources[k].title.split(" — ")[0])}</a>`)
-          .join(" · ");
+      const man = (v) => (Math.abs(v) >= 10000 ? `${(v / 10000).toFixed(Math.abs(v) >= 100000 ? 0 : 1).replace(/\.0$/, "")}만 원` : `${v.toLocaleString("ko-KR")}원`);
+      const saving = (it) => (it.jp && it.kr ? it.kr - won(it.jp) : null);
+      const icon = (c) => data.categories.find((x) => x.key === c)?.icon || "🛍️";
+      const host = (u) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return "출처"; } };
 
-      function priceBox(it) {
-        if (!it.jp) return "";
-        let html = `일본 <strong>¥${it.jp.toLocaleString("ko-KR")}</strong> (약 ${fmtWon(won(it.jp))})`;
-        if (it.kr) {
-          const pct = Math.round((1 - won(it.jp) / it.kr) * 100);
-          html += ` · 한국 ${esc(it.krText || fmtWon(it.kr))}${/대$/.test(it.krText || "") ? "(낮은 쪽 기준)" : ""}`;
-          html += pct > 0 ? `<br><span class="save">입력한 환율이면 약 ${pct}% 아껴요 (${fmtWon(it.kr - won(it.jp))})</span>` : `<br>입력한 환율로는 한국과 비슷하거나 더 비싸요`;
-        }
-        return `<div class="price">${html}</div>`;
+      function row(it) {
+        const sv = saving(it);
+        const pct = sv !== null ? Math.round((sv / it.kr) * 100) : null;
+        const id = `${it.cat}:${it.name}`;
+        const thumb = it.img
+          ? `<img src="${esc(it.img)}" alt="${esc(it.name)} 사진" loading="lazy" referrerpolicy="no-referrer" onerror="this.replaceWith(document.createTextNode('${icon(it.cat)}'))">`
+          : icon(it.cat);
+        const price = it.jp ? `<b>¥${it.jp.toLocaleString("ko-KR")}</b> · <span style="white-space:nowrap">약 ${man(won(it.jp))}</span>` : "가격 확인 중";
+        const right =
+          sv === null ? `<div class="save none"><span>한국 비교 없음</span></div>`
+          : sv > 0 ? `<div class="save"><strong>−${man(sv)}</strong><span>${pct}% 절약</span></div>`
+          : `<div class="save none"><span>한국과 비슷해요</span></div>`;
+        const more = open === id ? `<div class="more">
+            <div class="stores">${it.where.map((w) => `<span>${esc(w)}</span>`).join("")}</div>
+            ${it.kr ? `<p>한국 ${esc(it.krText || man(it.kr))}</p>` : ""}${it.note ? `<p>${esc(it.note)}</p>` : ""}
+            <div class="links">${[["일본 가격", it.jpSrc], ["한국 가격", it.krSrc], ["사진", it.imgSrc]].filter(([, u]) => u).map(([t, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${t}: ${esc(host(u))}</a>`).join(" · ")}</div>
+            <div class="acts"><button type="button" data-done="${esc(id)}">${done[id] ? "산 것 취소" : "샀어요"}</button><a href="https://www.google.com/search?tbm=isch&q=${encodeURIComponent(it.name + " " + (it.size || ""))}" target="_blank" rel="noopener">사진 더 보기</a></div>
+          </div>` : "";
+        return `<li class="item${done[id] ? " done" : ""}"><button type="button" class="row" data-id="${esc(id)}" aria-expanded="${open === id}">
+          <span class="thumb">${thumb}</span>
+          <span class="info"><div class="name">${esc(it.name)}</div><div class="meta">${esc(it.size || "")} · ${price}</div><div class="meta">${esc(it.where[0] || "")}</div></span>
+          ${right}</button>${more}</li>`;
       }
 
       function render() {
-        const order = { price: 0, only: 1, popular: 2 };
-        const onlyPrice = $("#only-price").checked;
-        const list = data.items
-          .map((it, i) => ({ ...it, id: `${it.cat}:${it.name}`, i }))
-          .filter((it) => (cat === "all" || it.cat === cat) && (!onlyPrice || it.gain === "price"))
-          .sort((a, b) => order[a.gain] - order[b.gain] || a.i - b.i);
-        $("#items").innerHTML = list.length
-          ? list
-              .map((it) => {
-                const [cls, label] = GAIN[it.gain] || GAIN.popular;
-                return `<li class="item${done[it.id] ? " done" : ""}" data-id="${esc(it.id)}"><div class="row"><div class="main">
-          <p class="name">${esc(it.name)}</p>
-          <div class="badges"><span class="badge ${cls}">${label}</span><span class="where">${esc(it.where)}</span></div>
-          <p class="why">${esc(it.why)}</p>${priceBox(it)}
-          <div class="srcs">${srcLinks(it.src)}</div></div>
-          <button type="button" class="check" aria-pressed="${done[it.id] ? "true" : "false"}" aria-label="${esc(it.name)} 샀어요">✓</button></div></li>`;
-              })
-              .join("")
-          : `<li class="empty">이 조건에 맞는 품목이 없어요</li>`;
-
-        // 요약: 가격 비교가 있는 품목을 하나씩 샀을 때 아끼는 금액
-        const priced = data.items.filter((it) => it.gain === "price" && it.jp && it.kr);
-        const saveAll = priced.reduce((s, it) => s + Math.max(0, it.kr - won(it.jp)), 0);
-        const boughtCount = Object.values(done).filter(Boolean).length;
-        $("#summary").innerHTML = `<div><small>가격 비교 품목</small><b>${priced.length}개</b></div><div><small>하나씩 사면 아끼는 돈</small><b>약 ${fmtWon(saveAll)}</b></div><div><small>산 것</small><b>${boughtCount}개</b></div>`;
+        let list = data.items.map((it, i) => ({ ...it, i })).filter((it) => cat === "all" || it.cat === cat);
+        if (sortBySave) list.sort((a, b) => (saving(b) ?? -1e12) - (saving(a) ?? -1e12) || a.i - b.i);
+        $("#items").innerHTML = list.length ? list.map(row).join("") : `<li class="empty">품목이 없어요</li>`;
+        $("#count").textContent = `${list.length}개 · 비교 ${list.filter((x) => saving(x) !== null).length}개`;
+        $("#sort").textContent = sortBySave ? "절약 큰 순 ⇅" : "기본 순 ⇅";
+        const total = data.items.reduce((s, it) => s + Math.max(0, saving(it) ?? 0), 0);
+        $("#total").textContent = `약 ${man(total)}`;
       }
 
       async function init() {
-        try {
-          const res = await fetch("/travel/japan.json");
-          data = await res.json();
-        } catch {
-          $("#items").innerHTML = `<li class="empty">리스트를 불러오지 못했어요. 잠시 후 다시 열어 주세요.</li>`;
-          return;
-        }
+        try { data = await (await fetch("/travel/japan.json")).json(); }
+        catch { $("#items").innerHTML = `<li class="empty">리스트를 불러오지 못했어요</li>`; return; }
         $("#rate").value = rate;
-        $("#tabs").innerHTML = [{ key: "all", name: "전체" }, ...data.categories]
-          .map((c) => `<button type="button" data-cat="${esc(c.key)}" aria-pressed="${c.key === cat}">${esc(c.name)}</button>`)
-          .join("");
-        $("#tips").innerHTML = data.tips.map((t) => `<div class="tip"><h3>${esc(t.title)}</h3><p>${esc(t.body)}</p><div class="srcs">${srcLinks(t.src)}</div></div>`).join("");
-        $("#sources").innerHTML = Object.values(data.sources).map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a></li>`).join("");
+        $("#cats").innerHTML = [{ key: "all", name: "전체", icon: "🇯🇵" }, ...data.categories]
+          .map((c) => `<button type="button" data-cat="${esc(c.key)}" aria-pressed="${c.key === cat}">${c.icon} ${esc(c.name)}</button>`).join("");
+        $("#tips").innerHTML = data.tips.map((t) => `<div class="tip"><b>${esc(t.title)}</b><p>${esc(t.body)}</p><a href="${esc(t.url)}" target="_blank" rel="noopener">출처: ${esc(host(t.url))}</a></div>`).join("");
         render();
       }
-
-      $("#tabs").addEventListener("click", (e) => {
-        const b = e.target.closest("button");
-        if (!b) return;
-        cat = b.dataset.cat;
-        document.querySelectorAll("#tabs button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+      $("#cats").addEventListener("click", (e) => {
+        const b = e.target.closest("button"); if (!b) return;
+        cat = b.dataset.cat; open = null;
+        document.querySelectorAll("#cats button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
         render();
       });
-      $("#only-price").addEventListener("change", render);
-      $("#rate").addEventListener("input", (e) => {
-        const v = Number(e.target.value);
-        if (!(v > 0)) return;
-        rate = v;
-        store.set("travel.rate.jp", v);
-        render();
-      });
+      $("#sort").addEventListener("click", () => { sortBySave = !sortBySave; store.set("travel.sort.jp", sortBySave); render(); });
+      $("#rate").addEventListener("input", (e) => { const v = Number(e.target.value); if (!(v > 0)) return; rate = v; store.set("travel.rate.jp", v); render(); });
       $("#items").addEventListener("click", (e) => {
-        const b = e.target.closest(".check");
-        if (!b) return;
-        const id = b.closest(".item").dataset.id;
-        done[id] = !done[id];
-        if (!done[id]) delete done[id];
-        store.set("travel.done.jp", done);
-        render();
+        const d = e.target.closest("[data-done]");
+        if (d) { const id = d.dataset.done; if (done[id]) delete done[id]; else done[id] = true; store.set("travel.done.jp", done); return render(); }
+        const r = e.target.closest("button.row"); if (!r) return;
+        open = open === r.dataset.id ? null : r.dataset.id; render();
       });
       if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
       init();
