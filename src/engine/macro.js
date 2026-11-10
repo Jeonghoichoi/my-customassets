@@ -276,8 +276,11 @@ function fxSummary(series) {
 }
 
 // ---------- 코스톨라니 달걀: 금리 · 거래량(참여도) · 심리 세 축으로 지금 국면을 고른다 ----------
-// 각 국면이 기대하는 모습과 지금 데이터가 얼마나 맞는지 축마다 1(맞음)·0.5(일부)·0(아님)으로 채점해
-// 합계가 가장 높은 국면을 지금 위치로 본다. 규칙이 단순한 만큼 '가장 가까운 국면' 정도로 읽어야 한다.
+// 달걀은 금리 사이클을 따라 몇 달~몇 년에 걸쳐 도는 모형이라, 하루 등락으로 국면이 바뀌지 않게 만든다.
+// 1) 금리 방향이 큰 틀(A 상승 쪽 / B 하락 쪽)을 정하고, 거래량·심리는 그 안에서 단계만 고른다.
+// 2) 거래량·심리는 하루 값이 아니라 20일 평균으로 본다. 하루짜리 급등락은 '경고 신호'로만 따로 보여준다.
+// 3) 지난 24주의 금요일마다 다시 판정해, 같은 새 국면이 3주 연속 나와야 국면을 바꾼다(상태 저장 없이 매번 같은 답).
+// 각 축은 1(맞음)·0.5(일부)·0(아님)으로 채점한다. 규칙이 단순한 만큼 '가장 가까운 국면' 정도로 읽어야 한다.
 // guide: 그 국면에서 코스톨라니식으로 '보통 이렇게 행동한다'는 안내 (화면 문구라 해요체)
 // asset: 국내에서 널리 쓰는 '자산 이동' 해석 (예금 → 채권 → 주식 → 부동산 → 예금)
 const EGG = [
@@ -295,88 +298,210 @@ const EGG = [
     guide: "금리가 높은 곳에서 투매와 공포가 터져 나와요. 보통 바로 다 사기보다 살 종목과 현금을 준비해 두고, 금리 인하 신호(A1으로 넘어가는 신호)가 보이면 나눠서 사기 시작해요." },
 ];
 
-function kostolany(data, spx) {
-  const r = (v, d = 2) => (v === null || v === undefined || Number.isNaN(v) ? null : Number(v.toFixed(d)));
-  // 금리: 방향은 연준 정책금리 6개월 변화(없으면 10년물 3개월 변화), 높낮이는 10년물의 1년 범위 위치
-  const ty = data.tenYear || [];
-  const year = ty.slice(-252).map((p) => p.value);
-  const tyNow = ty.length ? last(ty).value : null;
-  const hi = year.length ? Math.max(...year) : null, lo = year.length ? Math.min(...year) : null;
-  const pos = tyNow !== null && hi > lo ? ((tyNow - lo) / (hi - lo)) * 100 : null;
-  const ty3m = tyNow !== null && valueDaysAgo(ty, 90) ? tyNow - valueDaysAgo(ty, 90) : null;
-  const fed6m = data.fedFunds?.length && valueDaysAgo(data.fedFunds, 180) ? last(data.fedFunds).value - valueDaysAgo(data.fedFunds, 180) : null;
-  const dir = fed6m !== null && Math.abs(fed6m) >= 0.25 ? (fed6m > 0 ? "up" : "down") : ty3m !== null && Math.abs(ty3m) >= 0.15 ? (ty3m > 0 ? "up" : "down") : "flat";
-  const level = pos === null ? null : pos >= 65 ? "high" : pos <= 35 ? "low" : "mid";
-  const offHigh = tyNow !== null && hi !== null ? hi - tyNow : null;
+const EGG_CONFIRM_WEEKS = 3; // 새 국면이 이만큼 연속으로 나와야 국면을 바꿔요
+const EGG_HISTORY_WEEKS = 24; // 매번 지난 24주(금요일 기준)를 다시 판정해요
 
-  // 거래량: S&P 500 지수 거래량 (오늘 ÷ 50일 평균, 20일 평균 ÷ 50일 평균) + 신용잔고(참여도)
-  let volToday = null, vol20 = null, dayChg = null;
-  const vs = (spx || []).filter((p) => p.volume > 0);
-  if (vs.length >= 55) {
-    const avg50 = vs.slice(-51, -1).reduce((a, p) => a + p.volume, 0) / 50;
-    const avg20 = vs.slice(-20).reduce((a, p) => a + p.volume, 0) / 20;
-    volToday = last(vs).volume / avg50;
-    vol20 = avg20 / avg50;
-    const prev = vs[vs.length - 2].value;
-    dayChg = ((last(vs).value - prev) / prev) * 100;
-  }
-  let marginFromRecord = null, marginYoy = null;
+// asOf(YYYY-MM-DD) 이전까지만 남긴 시계열 (미래 값을 섞지 않기)
+const upTo = (series, asOf) => {
+  if (!Array.isArray(series)) return [];
+  let i = series.length;
+  while (i > 0 && series[i - 1].date > asOf) i--;
+  return series.slice(0, i);
+};
+const shiftDate = (ymd, days) => new Date(new Date(ymd + "T00:00:00Z").getTime() - days * 864e5).toISOString().slice(0, 10);
+const valueAt = (series, ymd) => {
+  for (let i = series.length - 1; i >= 0; i--) if (series[i].date <= ymd) return series[i].value;
+  return null;
+};
+const mean = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
+const finite = (v) => typeof v === "number" && Number.isFinite(v);
+
+function marginInputs() {
   try {
     const m = require("../../data/margin-debt.json");
-    marginFromRecord = ((m.latest - m.record) / m.record) * 100;
-    marginYoy = ((m.latest - m.yearAgo) / m.yearAgo) * 100;
-  } catch {}
-  const spike = volToday !== null && volToday >= 1.5;
-  const selloff = spike && dayChg !== null && dayChg <= -2;
+    if (!finite(m.latest) || !finite(m.record) || !finite(m.yearAgo) || !m.record || !m.yearAgo) return { fromRecord: null, yoy: null };
+    return { fromRecord: ((m.latest - m.record) / m.record) * 100, yoy: ((m.latest - m.yearAgo) / m.yearAgo) * 100 };
+  } catch {
+    return { fromRecord: null, yoy: null };
+  }
+}
+
+// 금리 방향이 정하는 큰 틀: 오르는 쪽이면 B, 내리는 쪽이면 A
+function allowedPhases(dir, level) {
+  if (dir === "up") return ["B1", "B2", "B3"];
+  if (dir === "down") return ["A1", "A2", "A3"];
+  if (level === "high") return ["B3", "A1"]; // 고점 부근에서 멈춤: 하락장 끝 또는 인하 직전
+  if (level === "low") return ["A3", "B1"]; // 저점 부근에서 멈춤: 상승장 끝 또는 인상 직전
+  return ["A1", "A2", "A3", "B1", "B2", "B3"];
+}
+
+// 한 시점(asOf)의 국면 판정. 모든 값은 asOf까지의 자료만 써요
+function eggAt(data, spx, margin, asOf) {
+  const ty = upTo(data.tenYear, asOf).filter((p) => finite(p.value));
+  const fed = upTo(data.fedFunds, asOf).filter((p) => finite(p.value));
+  const vx = upTo(data.vix, asOf).filter((p) => finite(p.value));
+  const vs = upTo(spx, asOf).filter((p) => finite(p.value) && finite(p.volume) && p.volume > 0);
+
+  // 금리: 방향은 정책금리 6개월 변화(±0.25%p), 없거나 작으면 10년물 20일 평균의 3개월 변화(±0.15%p)
+  const tyVals = ty.map((p) => p.value);
+  const year = tyVals.slice(-252);
+  const tyNow = tyVals.length ? tyVals[tyVals.length - 1] : null;
+  const ty20 = tyVals.length >= 20 ? mean(tyVals.slice(-20)) : null;
+  const ty20ago = tyVals.length >= 83 ? mean(tyVals.slice(-83, -63)) : null;
+  const ty3m = ty20 !== null && ty20ago !== null ? ty20 - ty20ago : null;
+  const hi = year.length >= 60 ? Math.max(...year) : null;
+  const lo = year.length >= 60 ? Math.min(...year) : null;
+  const pos = ty20 !== null && hi !== null && hi > lo ? Math.min(100, Math.max(0, ((ty20 - lo) / (hi - lo)) * 100)) : null;
+  const fedNow = fed.length ? fed[fed.length - 1].value : null;
+  const fedAgo = fed.length ? valueAt(fed, shiftDate(asOf, 182)) : null;
+  const fed6m = fedNow !== null && fedAgo !== null && fed[0].date <= shiftDate(asOf, 182) ? fedNow - fedAgo : null;
+  const dir = fed6m !== null && Math.abs(fed6m) >= 0.25 ? (fed6m > 0 ? "up" : "down") : ty3m !== null && Math.abs(ty3m) >= 0.15 ? (ty3m > 0 ? "up" : "down") : "flat";
+  const level = pos === null ? null : pos >= 65 ? "high" : pos <= 35 ? "low" : "mid";
+  const offHigh = ty20 !== null && hi !== null ? hi - ty20 : null;
+
+  // 거래량: 20일 평균 ÷ 긴 평균(최대 200일). 투매는 20일 안에 '급증+2% 이상 하락' 날이 2번 이상일 때만
+  let vol20 = null, spikeDays = null, selloffDays = null;
+  if (vs.length >= 80) {
+    spikeDays = 0;
+    selloffDays = 0;
+    const base = vs.slice(-Math.min(200, vs.length - 20) - 20, -20); // 최근 20일을 뺀 긴 기준
+    const baseAvg = mean(base.map((p) => p.volume));
+    const recent = vs.slice(-20);
+    vol20 = baseAvg ? mean(recent.map((p) => p.volume)) / baseAvg : null;
+    for (let i = vs.length - 20; i < vs.length; i++) {
+      const avg50 = mean(vs.slice(Math.max(0, i - 50), i).map((p) => p.volume));
+      const ret = ((vs[i].value - vs[i - 1].value) / vs[i - 1].value) * 100;
+      if (avg50 && vs[i].volume / avg50 >= 1.5) {
+        spikeDays++;
+        if (ret <= -2) selloffDays++;
+      }
+    }
+  }
+  const selloff = selloffDays >= 2;
   const volUp = vol20 !== null && vol20 >= 1.05;
   const volDown = vol20 !== null && vol20 < 0.95;
-  const volBoom = (vol20 !== null && vol20 >= 1.2 && !selloff) || (marginFromRecord !== null && marginFromRecord >= -3 && marginYoy >= 25 && !selloff);
+  const volBoom = !selloff && ((vol20 !== null && vol20 >= 1.2) || (margin.fromRecord !== null && margin.fromRecord >= -3 && margin.yoy >= 25));
 
-  // 심리: VIX
-  const vx = data.vix || [];
-  const vix = vx.length ? last(vx).value : null;
-  const vixPeak = vx.length ? Math.max(...vx.slice(-63).map((p) => p.value)) : null;
-  const vixPrev = vx.length > 1 ? vx[vx.length - 2].value : null;
-  const vixJump = vix !== null && vixPrev ? ((vix - vixPrev) / vixPrev) * 100 : null;
-  const fear = vix !== null && (vix >= 28 || (vixJump !== null && vixJump >= 30 && vix >= 22));
-  const pessim = vix !== null && vix >= 24;
-  const recovering = vix !== null && vixPeak >= 25 && vix < vixPeak * 0.8 && vix < 25;
-  const greed = vix !== null && vix < 14;
-  const optim = vix !== null && vix < 18;
-  const anxious = vix !== null && vix >= 18 && vix < 28;
+  // 심리: VIX 20일 평균
+  const vVals = vx.map((p) => p.value);
+  const vix20 = vVals.length >= 20 ? mean(vVals.slice(-20)) : null;
+  const vixPeak = vVals.length ? Math.max(...vVals.slice(-63)) : null;
+  const fear = vix20 !== null && vix20 >= 28;
+  const pessim = vix20 !== null && vix20 >= 24;
+  const recovering = vix20 !== null && vixPeak >= 25 && vix20 < vixPeak * 0.8 && vix20 < 25;
+  const greed = vix20 !== null && vix20 < 14;
+  const optim = vix20 !== null && vix20 < 18;
+  const anxious = vix20 !== null && vix20 >= 18 && vix20 < 28;
+  const vixRising = vix20 !== null && vVals.length >= 40 && vix20 > mean(vVals.slice(-40, -20)) * 1.15;
 
-  const has = { rate: level !== null, volume: volToday !== null || marginFromRecord !== null, mood: vix !== null };
   const sc = (cond1, cond05) => (cond1 ? 1 : cond05 ? 0.5 : 0);
   const fit = {
-    A1: [sc(level === "high" && dir !== "up" && offHigh >= 0.2, level === "high" || dir === "down"), sc(volDown && !spike, !volUp && !spike), sc(pessim && !fear, fear)],
+    A1: [sc(level === "high" && dir !== "up" && offHigh >= 0.2, level === "high" || dir === "down"), sc(volDown && !selloff, !volUp && !selloff), sc(pessim && !fear, fear)],
     A2: [sc(dir === "down" && level !== "high", dir === "down"), sc(volUp && !selloff, false), sc(recovering, anxious && !fear)],
     A3: [sc(level === "low" && dir !== "up", level === "low"), sc(volBoom, volUp && !selloff), sc(greed, optim)],
-    B1: [sc(level !== "high" && dir === "up" && (fed6m === null || fed6m <= 0.5), dir === "up"), sc(volDown, !volUp && !spike), sc(optim && !greed, greed)],
-    B2: [sc(dir === "up" && level === "mid", dir === "up"), sc(volDown && !spike, !volUp && !spike), sc(anxious, fear)],
-    B3: [sc(level === "high", level === "mid" && dir === "up"), sc(selloff, spike), sc(fear, anxious && vixJump >= 15)],
+    B1: [sc(level !== "high" && dir === "up" && (fed6m === null || fed6m <= 0.5), dir === "up"), sc(volDown, !volUp && !selloff), sc(optim && !greed, greed)],
+    B2: [sc(dir === "up" && level === "mid", dir === "up"), sc(volDown && !selloff, !volUp && !selloff), sc(anxious, fear)],
+    B3: [sc(level === "high", level === "mid" && dir === "up"), sc(selloff, spikeDays >= 2), sc(fear, anxious && vixRising)],
   };
-  const ranked = EGG.map((e) => ({ ...e, fit: fit[e.id], score: fit[e.id].reduce((a, b) => a + b, 0) })).sort((a, b) => b.score - a.score);
-  const best = ranked[0], second = ranked[1];
+  const allowed = allowedPhases(dir, level);
+  const order = EGG.map((e) => e.id);
+  const ranked = EGG.map((e) => ({ id: e.id, fit: fit[e.id], score: fit[e.id].reduce((a, b) => a + b, 0), allowed: allowed.includes(e.id) }))
+    // 큰 틀 안의 국면 먼저, 같은 점수면 순환 순서(A1→…→B3)로 정해 결과가 매번 같게
+    .sort((a, b) => b.allowed - a.allowed || b.score - a.score || order.indexOf(a.id) - order.indexOf(b.id));
+  const ok = level !== null && vix20 !== null; // 금리·심리 자료가 없으면 판정하지 않아요
+  return {
+    asOf, ok, best: ranked[0].id, ranked,
+    st: { dir, level, selloff, spikeDays, volBoom, volUp, volDown, fear, pessim, recovering, greed, optim, hasVol: vol20 !== null || margin.fromRecord !== null },
+    inputs: { tyNow, ty20, pos, ty3m, fed6m, fedNow, vol20, spikeDays, selloffDays, vix20, vixPeak },
+  };
+}
 
-  // 지금 데이터를 표의 말로 옮긴 것 (화면 표시용)
+// 하루짜리 신호: 국면을 바꾸지 않고 '경고'로만 보여줘요
+function dailyAlerts(data, spx) {
+  const out = [];
+  const vs = (spx || []).filter((p) => finite(p.value) && finite(p.volume) && p.volume > 0);
+  if (vs.length >= 52) {
+    const lastP = vs[vs.length - 1], prev = vs[vs.length - 2];
+    const avg50 = mean(vs.slice(-51, -1).map((p) => p.volume));
+    const ratio = avg50 ? lastP.volume / avg50 : null;
+    const chg = ((lastP.value - prev.value) / prev.value) * 100;
+    if (ratio !== null && ratio >= 1.5 && chg <= -2) out.push({ kind: "down", date: lastP.date, text: `S&P 500이 ${chg.toFixed(1)}% 빠지며 거래량이 평소의 ${ratio.toFixed(1)}배로 터졌어요` });
+    else if (ratio !== null && ratio >= 1.5) out.push({ kind: "info", date: lastP.date, text: `S&P 500 거래량이 평소의 ${ratio.toFixed(1)}배로 늘었어요` });
+  }
+  const vx = (data.vix || []).filter((p) => finite(p.value));
+  if (vx.length >= 2) {
+    const a = vx[vx.length - 2].value, b = vx[vx.length - 1].value;
+    const j = a ? ((b - a) / a) * 100 : null;
+    if (j !== null && j >= 30) out.push({ kind: "down", date: vx[vx.length - 1].date, text: `VIX가 하루 만에 ${j.toFixed(0)}% 뛰었어요 (${b.toFixed(1)})` });
+    else if (j !== null && j <= -20) out.push({ kind: "up", date: vx[vx.length - 1].date, text: `VIX가 하루 만에 ${Math.abs(j).toFixed(0)}% 내렸어요 (${b.toFixed(1)})` });
+  }
+  return out;
+}
+
+function kostolany(data, spx) {
+  const r = (v, d = 2) => (finite(v) ? Number(v.toFixed(d)) : null);
+  data = data || {};
+  const margin = marginInputs();
+  // 판정 날짜: 금리·VIX 중 늦은 쪽 마지막 날짜. 주간 판정은 그 이전 금요일에 고정해 한 주 안에서는 답이 같아요
+  const lastDates = [data.tenYear, data.vix].map((s) => (Array.isArray(s) && s.length ? s[s.length - 1].date : null)).filter(Boolean);
+  if (!lastDates.length) return null;
+  const today = lastDates.sort().pop();
+  const anchor = shiftDate(today, (new Date(today + "T00:00:00Z").getUTCDay() + 2) % 7); // 오늘 이전(포함) 금요일
+  const weeks = [];
+  for (let w = EGG_HISTORY_WEEKS - 1; w >= 0; w--) weeks.push(eggAt(data, spx, margin, shiftDate(anchor, w * 7)));
+  const valid = weeks.filter((x) => x.ok);
+  const nowEval = eggAt(data, spx, margin, today); // 화면의 지금 값·점수는 오늘 자료로
+  if (!valid.length || !nowEval.ok) return null;
+
+  // 확정 국면: 같은 새 국면이 3주 연속 나와야 바꿔요
+  let phase = valid[0].best, since = valid[0].asOf, cand = null, candN = 0, candSince = null; // eslint-disable-line no-unused-vars
+  for (const x of valid.slice(1)) {
+    if (x.best === phase) {
+      cand = null; candN = 0;
+      continue;
+    }
+    if (x.best === cand) candN++;
+    else { cand = x.best; candN = 1; candSince = x.asOf; }
+    if (candN >= EGG_CONFIRM_WEEKS) {
+      phase = cand; since = candSince; cand = null; candN = 0;
+    }
+  }
+  // 기우는 쪽: 주간 판정에서 쌓이는 새 국면, 없으면 오늘 자료로 본 국면이 다를 때 (0주)
+  if (!cand && nowEval.best !== phase) { cand = nowEval.best; candN = 0; }
+  const leaning = cand && cand !== phase ? { id: cand, name: EGG.find((e) => e.id === cand).name, weeks: candN, need: EGG_CONFIRM_WEEKS } : null;
+  const fullHistory = valid.length >= EGG_CONFIRM_WEEKS + 1;
+
+  const best = EGG.find((e) => e.id === phase);
+  const cur = nowEval.ranked.find((x) => x.id === phase);
+  const second = nowEval.ranked.find((x) => x.id !== phase && x.id !== (leaning && leaning.id) && x.allowed);
+  const st = nowEval.st, i = nowEval.inputs;
   const now = {
     rate:
-      level === null ? "자료 없음" :
-      `${{ high: "1년 범위 상단", mid: "1년 범위 중간", low: "1년 범위 하단" }[level]}, ${{ up: "인상·상승 쪽", down: "인하·하락 쪽", flat: "방향 없음" }[dir]}`,
-    volume: !has.volume ? "자료 없음" : selloff ? "투매로 급증" : spike ? "급증" : volBoom ? "폭증" : volUp ? "증가" : volDown ? "감소" : "보통",
-    mood: vix === null ? "자료 없음" : fear ? "공포" : pessim ? "비관" : recovering ? "회복" : greed ? "탐욕" : optim ? "낙관" : "불안",
+      st.level === null ? "자료 없음" :
+      `${{ high: "1년 범위 상단", mid: "1년 범위 중간", low: "1년 범위 하단" }[st.level]}, ${{ up: "인상·상승 쪽", down: "인하·하락 쪽", flat: "방향 없음" }[st.dir]}`,
+    volume: !st.hasVol ? "자료 없음" : st.selloff ? "투매로 급증" : st.volBoom ? "폭증" : st.spikeDays >= 2 ? "급증" : st.volUp ? "증가" : st.volDown ? "감소" : "보통",
+    mood: i.vix20 === null ? "자료 없음" : st.fear ? "공포" : st.pessim ? "비관" : st.recovering ? "회복" : st.greed ? "탐욕" : st.optim ? "낙관" : "불안",
   };
+  const vixLast = (data.vix || []).length ? data.vix[data.vix.length - 1].value : null;
   return {
-    phase: best.id, name: best.name, action: best.action, guide: best.guide, asset: best.asset, score: best.score,
-    runnerUp: second.score >= best.score - 0.5 ? { id: second.id, name: second.name, score: second.score } : null,
+    phase: best.id, name: best.name, action: best.action, guide: best.guide, asset: best.asset, score: cur.score,
+    since, sinceWeeks: Math.round((new Date(today) - new Date(since)) / (7 * 864e5)), confirmWeeks: EGG_CONFIRM_WEEKS, fullHistory,
+    side: { up: "B", down: "A", flat: null }[st.dir],
+    leaning,
+    runnerUp: second && second.score >= cur.score - 0.5 ? { id: second.id, name: EGG.find((e) => e.id === second.id).name, score: second.score } : null,
+    alerts: dailyAlerts(data, spx),
     now,
     inputs: {
-      tenYear: r(tyNow), tenYearPos: r(pos, 0), tenYear3m: r(ty3m), fed6m: r(fed6m), fedNow: data.fedFunds?.length ? r(last(data.fedFunds).value) : null,
-      volToday: r(volToday), vol20: r(vol20), spxDay: r(dayChg), volDate: vs.length ? last(vs).date : null,
-      marginFromRecord: r(marginFromRecord, 1), marginYoy: r(marginYoy, 0),
-      vix: r(vix, 1), vixPeak3m: r(vixPeak, 1), vixJump: r(vixJump, 0),
+      tenYear: r(i.tyNow), tenYear20: r(i.ty20), tenYearPos: r(i.pos, 0), tenYear3m: r(i.ty3m), fed6m: r(i.fed6m), fedNow: r(i.fedNow),
+      vol20: r(i.vol20), spikeDays: i.spikeDays, selloffDays: i.selloffDays,
+      marginFromRecord: r(margin.fromRecord, 1), marginYoy: r(margin.yoy, 0),
+      vix: r(vixLast, 1), vix20: r(i.vix20, 1), vixPeak3m: r(i.vixPeak, 1),
     },
-    phases: ranked.map((x) => ({ id: x.id, score: x.score, fit: x.fit })),
+    history: valid.map((x) => ({ date: x.asOf, phase: x.best })),
+    phases: EGG.map((e) => {
+      const x = nowEval.ranked.find((y) => y.id === e.id);
+      return { id: e.id, score: x.score, fit: x.fit, allowed: x.allowed };
+    }),
     table: EGG,
   };
 }

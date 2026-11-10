@@ -3035,17 +3035,27 @@
         const pct = (v, d = 2) => (v === null || v === undefined ? "–" : `${v >= 0 ? "+" : ""}${v.toFixed(d)}`);
         const rows = [
           ["금리", e.now.rate, ex.rate, fitOf[0],
-            `10년물 ${i.tenYear ?? "–"}% (1년 범위 ${i.tenYearPos ?? "–"}% 위치, 3개월 ${pct(i.tenYear3m)}%p) · 정책금리 ${i.fedNow ?? "–"}% (6개월 ${pct(i.fed6m)}%p)`],
+            `10년물 20일 평균 ${i.tenYear20 ?? "–"}% (1년 범위 ${i.tenYearPos ?? "–"}% 위치, 3개월 ${pct(i.tenYear3m)}%p) · 정책금리 ${i.fedNow ?? "–"}% (6개월 ${pct(i.fed6m)}%p)`],
           ["거래량·참여도", e.now.volume, ex.volume, fitOf[1],
-            `S&P 500 거래량 ${i.volToday ?? "–"}배 (50일 평균 대비, ${i.volDate ? dayText(i.volDate) : "–"} 지수 ${pct(i.spxDay)}%) · 20일 평균 ${i.vol20 ?? "–"}배 · 신용잔고 최고치 대비 ${pct(i.marginFromRecord, 1)}%`],
-          ["심리", e.now.mood, ex.mood, fitOf[2], `VIX ${i.vix ?? "–"} (3개월 최고 ${i.vixPeak3m ?? "–"}, 전날 대비 ${pct(i.vixJump, 0)}%)`],
+            `${i.vol20 !== null && i.vol20 !== undefined ? `S&P 500 최근 20일 평균 거래량이 평소의 ${i.vol20}배예요 · 20일 중 거래량 급증 ${i.spikeDays}일(그중 2% 넘게 빠진 날 ${i.selloffDays}일)` : "S&P 500 거래량 자료를 받지 못했어요"} · 신용잔고 최고치 대비 ${pct(i.marginFromRecord, 1)}%`],
+          ["심리", e.now.mood, ex.mood, fitOf[2], `VIX 20일 평균 ${i.vix20 ?? "–"} (오늘 ${i.vix ?? "–"}, 3개월 최고 ${i.vixPeak3m ?? "–"})`],
         ];
         card.hidden = false;
         card.innerHTML = `<p class="eyebrow" id="egg-title">코스톨라니 달걀${tip("코스톨라니 달걀")}</p>
         <strong class="stance">지금은 <span style="color:var(--primary)">${esc(e.name)}</span> 국면에 가까워요</strong>
+        <p class="sub" style="margin-top:4px">${e.since ? `${esc(dayText(e.since))} 무렵부터 이어지고 있어요. ` : ""}같은 새 국면이 ${e.confirmWeeks || 3}주 연속 나와야 바뀌어요.</p>
         <div class="tally"><span class="chip">세 축 중 ${e.score}점 일치</span>${
-          e.runnerUp ? `<span class="chip">차순위 ${esc(e.runnerUp.name)} (${e.runnerUp.score}점)</span>` : ""
+          e.leaning
+            ? `<span class="chip">${esc(e.leaning.name)} 쪽으로 기우는 중 (${e.leaning.weeks ? `${e.leaning.weeks}/${e.leaning.need}주` : "이번 주 처음"})</span>`
+            : e.runnerUp ? `<span class="chip">차순위 ${esc(e.runnerUp.name)} (${e.runnerUp.score}점)</span>` : ""
         }</div>
+        ${
+          e.alerts && e.alerts.length
+            ? `<div class="callout"><b>하루짜리 신호예요 · 국면 판단에는 바로 넣지 않아요</b>${e.alerts
+                .map((a) => `<span style="display:block;margin-top:4px">${esc(dayText(a.date))} ${esc(a.text)}</span>`)
+                .join("")}</div>`
+            : ""
+        }
         <div class="callout"><b>이럴 땐 보통 이렇게 행동해요 · ${esc(e.action)}</b>${esc(e.guide || "")}${
           e.asset ? `<span style="display:block;margin-top:8px;font-weight:600;color:var(--ink)">자산 포지션: ${esc(e.asset.label)} (${esc(e.asset.flow)})</span>` : ""
         }</div>
@@ -3075,7 +3085,7 @@
               }</p></details></li>`
             )
             .join("")}</ul>
-          <p class="foot" style="margin:12px 0 0">금리·거래량·심리 세 축이 각 국면의 모습과 얼마나 맞는지 단순 규칙(맞음 1, 일부 0.5)으로 채점해 가장 가까운 국면을 골랐어요. 실제 국면 판단이나 투자 권유가 아니에요. 자산 포지션(예금 → 채권 → 주식 → 부동산 → 예금)은 코스톨라니의 주식 원칙을 여러 자산으로 넓힌, 국내에서 널리 쓰는 해석이에요.</p>
+          <p class="foot" style="margin:12px 0 0">금리 방향이 큰 틀(내리는 쪽 A, 오르는 쪽 B)을 정하고, 거래량·심리는 하루 값이 아닌 20일 평균으로 그 안의 단계를 골라요. 각 축은 단순 규칙(맞음 1, 일부 0.5)으로 채점하고, 지난 24주를 금요일마다 다시 판정해 같은 새 국면이 3주 연속 나올 때만 국면을 바꿔요. 그래서 하루 급등락에는 국면이 흔들리지 않아요. 실제 국면 판단이나 투자 권유가 아니에요. 자산 포지션(예금 → 채권 → 주식 → 부동산 → 예금)은 코스톨라니의 주식 원칙을 여러 자산으로 넓힌, 국내에서 널리 쓰는 해석이에요.</p>
         </div></details>`;
         document.querySelectorAll("#egg-card .egg-pt").forEach((g) => g.classList.remove("picked"));
       }

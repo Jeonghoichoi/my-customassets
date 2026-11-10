@@ -34,7 +34,7 @@ async function getMacro() {
   return cached("macro", TTL.macro * 1e3, async () => {
     // VIX·환율은 네이버가 FRED보다 1~2일 빨라요. 네이버가 안 되면 FRED 값을 그대로 써요
     const fxP = naver.marketIndexSeries("exchange/FX_USDKRW").catch(() => null);
-    const spxP = naver.indexSeries(".INX", 200).catch(() => null); // 코스톨라니 달걀의 거래량 축
+    const spxP = naver.indexSeries(".INX", 420).catch(() => null); // 코스톨라니 달걀의 거래량 축
     // 김영익 판독에서 비교할 지금 코스피·S&P 500 (롤링 지수와 캐시를 같이 써요)
     const kospiP = cached("indices", TTL.indices * 1e3, () => naver.indices()).catch(() => []);
     const [data, commodities, vixNv, fxSeries] = demo
