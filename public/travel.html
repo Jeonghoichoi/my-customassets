@@ -71,6 +71,25 @@
       .tip b { font-size: 14px; }
       .tip p { margin: 2px 0 0; font-size: 13px; color: var(--ink-2); }
       .tip a { font-size: 12px; color: var(--ink-3); }
+      .sec-t { margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -0.02em; }
+      .sec-s { margin: 2px 0 0; font-size: 13px; color: var(--ink-3); }
+      .picks { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
+      .pick { display: flex; gap: 12px; align-items: center; background: var(--fill); border-radius: 14px; padding: 12px 14px; }
+      .pick .ic { font-size: 24px; flex: none; }
+      .pick small { display: block; font-size: 12px; color: var(--ink-3); font-weight: 600; }
+      .pick b { display: block; font-size: 15px; font-weight: 800; }
+      .pick span { display: block; font-size: 12px; color: var(--ink-2); margin-top: 1px; }
+      details.cc { border-top: 1px solid var(--line); }
+      details.cc:first-of-type { border-top: 0; }
+      details.cc summary { list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 13px 0; cursor: pointer; }
+      details.cc summary::-webkit-details-marker { display: none; }
+      details.cc summary b { font-size: 15px; }
+      details.cc summary em { font-style: normal; font-size: 12px; font-weight: 600; color: var(--ink-3); white-space: nowrap; }
+      details.cc dl { margin: 0 0 14px; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 13px; }
+      details.cc dt { color: var(--ink-3); font-weight: 600; white-space: nowrap; }
+      details.cc dd { margin: 0; color: var(--ink-2); }
+      details.cc dd a { color: var(--ink-3); font-size: 12px; }
+      .cardlist { margin-top: 14px; }
       .foot { font-size: 12px; color: var(--ink-3); margin: 14px 4px 0; }
       .empty { color: var(--ink-3); text-align: center; padding: 24px 0; }
     </style>
@@ -83,6 +102,14 @@
         <small>일본에서 한 개씩만 사도 아끼는 돈</small>
         <strong class="big" id="total">–</strong>
         <div class="rate"><label for="rate">환율 100엔 =</label><input id="rate" type="number" inputmode="decimal" min="1" /><span>원 (직접 고쳐요)</span></div>
+      </section>
+
+      <section class="card" id="cardsec" hidden>
+        <h2 class="sec-t">어떤 카드 쓸까요? 💳</h2>
+        <p class="sec-s" id="cardsAsOf"></p>
+        <ul class="picks" id="picks"></ul>
+        <div class="cardlist" id="cardlist"></div>
+        <details class="tips" style="margin-top:8px"><summary>카드 쓸 때 지킬 것 3가지</summary><div id="cardtips"></div></details>
       </section>
 
       <section class="card">
@@ -155,7 +182,21 @@
         $("#cats").innerHTML = [{ key: "all", name: "전체", icon: "🇯🇵" }, ...data.categories]
           .map((c) => `<button type="button" data-cat="${esc(c.key)}" aria-pressed="${c.key === cat}">${c.icon} ${esc(c.name)}</button>`).join("");
         $("#tips").innerHTML = data.tips.map((t) => `<div class="tip"><b>${esc(t.title)}</b><p>${esc(t.body)}</p><a href="${esc(t.url)}" target="_blank" rel="noopener">출처: ${esc(host(t.url))}</a></div>`).join("");
+        renderCards(data.cards);
         render();
+      }
+
+      function renderCards(c) {
+        if (!c || !c.list?.length) return;
+        $("#cardsAsOf").textContent = `${c.asOf.replace(/^(\d+)-(\d+)-(\d+)$/, (_, y, m, d) => `${+m}월 ${+d}일`)} 기준이에요. 혜택은 자주 바뀌니 떠나기 전에 카드사 앱에서 한 번 더 확인해요.`;
+        $("#picks").innerHTML = (c.picks || []).map((p) => `<li class="pick"><span class="ic" aria-hidden="true">${esc(p.icon)}</span><div><small>${esc(p.use)}</small><b>${esc(p.card)}</b><span>${esc(p.why)}</span></div></li>`).join("");
+        const rows = [["환전", "fx"], ["결제", "pay"], ["ATM", "atm"], ["혜택", "perk"], ["되팔기", "refund"]];
+        $("#cardlist").innerHTML = c.list.map((k) => `<details class="cc"><summary><b>${esc(k.name)}</b><em>${esc(k.issuer)} · ${esc(k.type)} ›</em></summary><dl>
+            ${rows.filter(([, f]) => k[f]).map(([t, f]) => `<dt>${t}</dt><dd>${esc(k[f])}</dd>`).join("")}
+            <dt>출처</dt><dd>${[k.url, k.url2].filter(Boolean).map((u) => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(host(u))}</a>`).join(" · ")}</dd>
+          </dl></details>`).join("");
+        $("#cardtips").innerHTML = (c.tips || []).map((t) => `<div class="tip"><b>${esc(t.title)}</b><p>${esc(t.body)}</p></div>`).join("");
+        $("#cardsec").hidden = false;
       }
       $("#cats").addEventListener("click", (e) => {
         const b = e.target.closest("button"); if (!b) return;
