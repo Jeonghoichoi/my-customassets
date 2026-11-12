@@ -1,38 +1,38 @@
 {
-  "date": "2026-11-12",
-  "generatedAt": "2026-11-11T22:02:01.632Z",
-  "headline": "AI 기대가 되살아나 S&P 500이 1.31% 올랐고, 코스피는 외국인 6,587억 원 순매수에 2.60% 오른 5,375, 코스닥은 5.62% 급등했어요.",
+  "date": "2026-11-13",
+  "generatedAt": "2026-11-12T22:03:26Z",
+  "headline": "엔비디아 젠슨 황 CEO 사임과 금리 인상 우려에 S&P 500이 0.35% 내렸고, 코스피는 기관 매도에 0.61% 내린 5,342로 마감했어요.",
   "us": {
-    "date": "2026-11-11",
+    "date": "2026-11-12",
     "closed": false,
     "indices": [
       {
         "name": "S&P 500",
-        "value": 7619.38,
-        "changePct": 1.31
+        "value": 7592.4,
+        "changePct": -0.35
       },
       {
         "name": "나스닥",
-        "value": 25466.19,
-        "changePct": 1.6
+        "value": 25366.09,
+        "changePct": -0.39
       },
       {
         "name": "다우",
-        "value": 52486.49,
-        "changePct": 0.49
+        "value": 52297.09,
+        "changePct": -0.36
       },
       {
         "name": "러셀2000",
-        "value": 2846.26,
-        "changePct": 0.88
+        "value": 2799.06,
+        "changePct": -1.66
       }
     ],
     "macro": [
       {
         "name": "미 10년물",
-        "value": "4.98%",
-        "change": "채권시장 휴장",
-        "dir": 0
+        "value": "5.125%",
+        "change": "30년물 입찰 부진 뒤 상승",
+        "dir": 1
       },
       {
         "name": "달러인덱스",
@@ -42,134 +42,124 @@
       },
       {
         "name": "WTI",
-        "value": "$86.53",
-        "change": "+0.57%",
+        "value": "$88.90",
+        "change": "+2.74%",
         "dir": 1
       },
       {
         "name": "금",
-        "value": "$4,000.5",
-        "change": "-0.74%",
+        "value": "$3,877.8",
+        "change": "-3.07%",
         "dir": -1
       },
       {
         "name": "비트코인",
-        "value": "$74,500 안팎",
-        "change": "+1.0~1.1%",
-        "dir": 1
+        "value": "$71,545 안팎",
+        "change": "-3.7% 안팎",
+        "dir": -1
       },
       {
         "name": "VIX",
-        "value": "17.5 안팎",
-        "change": "-10% 안팎",
-        "dir": -1
+        "value": "18.71",
+        "change": "+6.98%",
+        "dir": 1
       }
     ],
     "movers": [
       {
-        "name": "코어위브",
-        "symbol": null,
-        "changePct": 24.2,
-        "why": "3분기 매출이 168% 늘고 연간 전망을 올려 AI 투자 기대를 되살렸어요"
-      },
-      {
-        "name": "샌디스크",
-        "symbol": null,
-        "changePct": 13.3,
-        "why": "메모리주 강세 흐름에 크게 올랐어요"
-      },
-      {
-        "name": "블룸에너지",
-        "symbol": null,
-        "changePct": 12.5,
-        "why": "코어위브 실적 뒤 AI 전력 수요 기대가 커졌어요"
-      },
-      {
         "name": "엔비디아",
         "symbol": "NVDA",
-        "changePct": 2.92,
-        "why": "CEO 관련 의혹 보도로 이틀 내린 뒤 반등했어요"
+        "changePct": -4.34,
+        "why": "젠슨 황 CEO가 즉시 사임했어요. 장 초반 14% 가까이 빠졌다가 낙폭을 줄였어요."
       },
       {
-        "name": "룰루레몬",
+        "name": "AMD",
+        "symbol": "AMD",
+        "changePct": 5.86,
+        "why": "엔비디아 경영 공백의 수혜를 볼 수 있다는 기대가 나왔어요."
+      },
+      {
+        "name": "브로드컴",
         "symbol": null,
-        "changePct": null,
-        "why": "매출 둔화와 거듭된 전망 하향으로 장중 3%대 약세였어요"
+        "changePct": 5.54,
+        "why": "AMD와 함께 엔비디아 대안으로 돈이 옮겨갔어요."
+      },
+      {
+        "name": "알파벳",
+        "symbol": null,
+        "changePct": 1.79,
+        "why": "방어적인 대형 기술주로 자금이 들어왔어요."
+      },
+      {
+        "name": "마이크론",
+        "symbol": "MU",
+        "changePct": -1.59,
+        "why": "AI 반도체 전반의 불확실성에 약했어요."
       }
     ]
   },
   "kr": {
-    "date": "2026-11-11",
+    "date": "2026-11-12",
     "closed": false,
     "indices": [
       {
         "name": "코스피",
-        "value": 5375.36,
-        "changePct": 2.6
+        "value": 5342.73,
+        "changePct": -0.61
       },
       {
         "name": "코스닥",
-        "value": 705.1,
-        "changePct": 5.62
+        "value": 696.53,
+        "changePct": -1.22
       }
     ],
     "fx": {
       "name": "원·달러",
-      "value": "1,333.6원",
-      "change": "-3.9원",
+      "value": "1,330.7원",
+      "change": "-2.9원",
       "dir": -1
     },
     "movers": [
       {
-        "name": "SK하이닉스",
-        "symbol": "000660",
-        "changePct": 5.36,
-        "why": "외국인이 1,306억 원 순매수하며 반도체 반등을 이끌었어요"
+        "name": "메리츠금융지주",
+        "symbol": null,
+        "changePct": -13.05,
+        "why": "3분기 지배주주순이익이 4,707억 원으로 예상치를 26%가량 밑돌았어요."
+      },
+      {
+        "name": "DB하이텍",
+        "symbol": null,
+        "changePct": -16.36,
+        "why": "3분기 잠정 영업이익 900억 원이 예상(1,107억 원)에 못 미쳤어요."
+      },
+      {
+        "name": "NAVER",
+        "symbol": "035420",
+        "changePct": -6.43,
+        "why": "매출은 역대 최대였지만 영업이익이 부진했어요."
+      },
+      {
+        "name": "JYP Ent.",
+        "symbol": null,
+        "changePct": 16.54,
+        "why": "3분기 영업이익이 480억 원으로 예상을 웃돌았어요."
       },
       {
         "name": "삼성전자",
         "symbol": "005930",
-        "changePct": 3.57,
-        "why": "외국인 순매수 1위(5,375억 원)였어요"
-      },
-      {
-        "name": "에코프로비엠",
-        "symbol": "247540",
-        "changePct": 11.39,
-        "why": "코스닥 2차전지로 매수가 몰렸어요"
-      },
-      {
-        "name": "주성엔지니어링",
-        "symbol": null,
-        "changePct": 17.14,
-        "why": "코스닥 반도체 장비주가 급등했어요"
-      },
-      {
-        "name": "삼성화재",
-        "symbol": "000810",
-        "changePct": -5.51,
-        "why": "증시 강세 속에서도 대형 손보주가 내렸어요"
+        "changePct": 0.97,
+        "why": "외국인이 7,449억 원어치 사들였어요."
       }
     ],
     "flows": {
       "foreign": {
-        "kospi": 6587,
-        "kosdaq": -1319,
+        "kospi": 3705,
+        "kosdaq": -3530,
         "buy": [
           {
             "name": "삼성전자",
             "symbol": "005930",
-            "amount": 5375
-          },
-          {
-            "name": "SK하이닉스",
-            "symbol": "000660",
-            "amount": 1306
-          },
-          {
-            "name": "KB금융",
-            "symbol": "105560",
-            "amount": null
+            "amount": 7449
           },
           {
             "name": "SK스퀘어",
@@ -177,167 +167,187 @@
             "amount": null
           },
           {
-            "name": "삼성전기",
-            "symbol": "009150",
-            "amount": null
-          }
-        ],
-        "sell": [
-          {
             "name": "삼성전자우",
             "symbol": "005935",
             "amount": null
           },
           {
-            "name": "대덕전자",
-            "symbol": null,
+            "name": "KB금융",
+            "symbol": "105560",
             "amount": null
           },
           {
-            "name": "이수페타시스",
+            "name": "HD현대일렉트릭",
             "symbol": null,
-            "amount": null
+            "amount": 292
           }
         ],
-        "into": "전기·전자(반도체 대형주)·금융",
-        "outOf": "반도체 소부장·소비재(KT&G 등)",
-        "note": "전기·전자 업종만 6,410억 원 순매수했어요"
+        "sell": [
+          {
+            "name": "SK하이닉스",
+            "symbol": "000660",
+            "amount": -8720
+          }
+        ],
+        "into": "삼성전자·금융지주",
+        "outOf": "SK하이닉스·반도체 부품주",
+        "note": "3거래일 연속 순매수예요. 코스닥에서는 3,500억 원대를 팔았어요."
       },
       "institution": {
-        "kospi": -4816,
-        "kosdaq": 3135,
+        "kospi": -6911,
+        "kosdaq": 436,
+        "buy": [],
+        "sell": [],
+        "into": null,
+        "outOf": null,
+        "note": "금융투자가 9,753억 원 순매도해 하락 폭을 키웠어요"
+      },
+      "individual": {
+        "kospi": -2040,
+        "kosdaq": 3075,
         "buy": [],
         "sell": [],
         "into": "코스닥",
         "outOf": "코스피 전기·전자",
-        "note": "연기금은 코스피에서 291억 원 순매수했어요"
+        "note": "코스피에서 4거래일 연속 순매도예요"
       },
-      "individual": {
-        "kospi": -7156,
-        "kosdaq": -1856,
-        "buy": [],
-        "sell": [],
-        "into": null,
-        "outOf": "코스피 전기·전자",
-        "note": "전기·전자 업종에서 8,323억 원 순매도했어요"
-      },
-      "summary": "코스피는 외국인 혼자 샀고 기관·개인은 팔았어요. 코스닥은 기관 혼자 3,135억 원을 샀어요."
+      "summary": "코스피는 외국인만 사고 기관·개인은 팔아 엇갈렸어요. 코스닥은 외국인이 팔고 개인이 받았어요."
     }
   },
-  "usFlows": "10월 한 달 미국 상장 ETF로 1,881억 달러(퍼스트트러스트)~2,042억 달러(팩트셋)가 들어왔고, 주식형 ETF로 가장 많이 몰렸어요. (11월 6·9일 발표, 10월 기준)",
+  "usFlows": "11월 10일 미국 ETF 전체에서 21.5억 달러가 빠졌어요. QQQ(+23.6억)·IVV(+22.2억 달러)로 들어오고 SPY(-41.9억)·SOXX(-41.3억 달러)에서 나갔어요. (11월 10일 기준)",
   "issues": [
     {
-      "title": "코어위브 깜짝 실적에 AI 투자 심리 회복",
-      "body": "코어위브 3분기 매출이 37억 달러로 168% 늘고 연간 매출 전망을 130~133억 달러로 올렸어요. 앤트로픽 상장 공모가 상향 검토 보도도 겹쳐 반도체·AI주가 반등했어요."
+      "title": "엔비디아 젠슨 황 CEO 사임",
+      "body": "엔비디아가 젠슨 황의 즉시 사임을 발표했고, 콜레트 크레스 CFO가 임시 CEO를 맡아요. 회사는 사유를 밝히지 않았고, 외신은 사생활 의혹과 이사회 압박을 보도했어요. 주가는 4.34% 내렸고 AMD·브로드컴으로 돈이 옮겨갔어요."
     },
     {
-      "title": "엔비디아 이틀 급락 뒤 반등",
-      "body": "CEO 관련 의혹 보도로 이틀 내렸던 엔비디아가 2.92% 올랐어요. 다만 베어드는 투자의견을 중립으로 낮추고 목표가를 200달러로 내렸어요."
+      "title": "연준 금리 인상 우려",
+      "body": "10월 CPI가 예상보다 높게 나온 뒤 12월 금리 인상이 시장에 완전히 반영됐어요. 30년물 입찰 수요가 부진해 미 10년물 금리가 5.125%까지 올랐어요."
     },
     {
-      "title": "물가 부담에 금리 인상 경계 여전",
-      "body": "전날 나온 10월 CPI가 전월 대비 0.4%, 근원 0.3%로 예상보다 0.1%p 높았어요. 12월 금리 인상 우려가 남아 있고, 11일은 재향군인의 날로 미 채권시장이 쉬었어요."
+      "title": "유가 급등, 금 급락",
+      "body": "트럼프 대통령이 이란과의 협상이 필요 없다고 하자 브렌트유가 4%가량 올랐어요. 금은 달러·금리 강세에 3% 넘게 빠졌어요."
     },
     {
-      "title": "코스닥 이틀 연속 매수 사이드카",
-      "body": "코스닥이 5.62% 올라 705로 마쳤어요. 반도체 장비·2차전지로 매수가 몰렸고, 기관이 3,135억 원을 순매수했어요. 코스닥 지원책 기대도 거론됐어요."
+      "title": "국내 금융·보험주 실적 쇼크",
+      "body": "메리츠금융지주가 13% 넘게 빠지고 삼성화재도 7% 넘게 내리면서 보험 업종 14개 중 13개가 하락했어요."
     },
     {
-      "title": "11월 1~10일 수출 급증",
-      "body": "관세청 집계로 11월 1~10일 수출이 1년 전보다 111.9% 늘었고, 반도체 수출은 331.2% 늘었어요."
+      "title": "코스피 급등 뒤 차익실현",
+      "body": "이틀간 7.1% 오른 뒤 옵션 만기와 엔비디아 해임 보도가 겹쳐 3거래일 만에 내렸어요. 금융투자가 9,753억 원 순매도했어요."
     }
   ],
   "dividend": [
-    "코스트코가 주당 30달러 특별배당과 40억 달러 자사주 매입을 발표했어요.",
-    "국내 보험주는 엇갈렸어요. 삼성화재 -5.51%, 현대해상 -2.76%, DB손해보험 -1.74%로 대형 손보가 내렸고, 삼성생명은 +1.02%로 사흘째 올랐어요.",
-    "외국인은 KB금융·DB손해보험·현대해상 등 금융주를 순매수했어요."
+    "11월 10일 JEPI로 하루 4.1억 달러가 들어왔어요.",
+    "메리츠금융지주는 실적이 부진했지만 연결 순이익 50% 주주환원 정책은 유지한다고 했어요.",
+    "국내 보험주는 실적 부진에 대부분 내렸어요. 삼성화재 -7.24%, 현대해상 -5.15%, DB손해보험 -4.13%였고 삼성생명만 +1.01% 올랐어요."
   ],
   "today": [
     {
-      "time": "종일",
-      "title": "국내 옵션 만기일 (수급 변동성 주의)"
+      "time": "오전",
+      "title": "금융위원회 자본시장 전문가 간담회 (한국거래소)"
     },
     {
       "time": "종일",
-      "title": "넥스아이 코스닥 상장"
+      "title": "공모주 청약 마감: 제이앤티지·씨앤엠·엠비디"
     },
     {
-      "time": "미국 장 전",
-      "title": "네비우스(NBIS) 실적 발표"
+      "time": "22:30",
+      "title": "미국 10월 생산자물가지수(PPI)"
     },
     {
-      "time": "미국 장 후",
-      "title": "어플라이드머티리얼즈(AMAT) 실적 발표 예정 (보도 기준)"
+      "time": "토 02:00",
+      "title": "데일리 샌프란시스코 연은 총재 발언"
+    },
+    {
+      "time": "다음 주 18일 07:00",
+      "title": "엔비디아 실적 발표 (사임 이후 첫 실적)"
     }
   ],
   "sources": [
     {
-      "title": "AP via KRMG: How major US stock indexes fared 11/11/2026",
-      "url": "https://krmg.com/2026/11/11/how-major-us-stock-indexes-fared-wednesday-11-11-2026/"
+      "title": "AP: How major US stock indexes fared 11/12/2026",
+      "url": "https://krmg.com/2026/11/12/how-major-us-stock-indexes-fared-thursday-11-12-2026/"
     },
     {
-      "title": "TheStreet: Stock Market Today (Nov. 11, 2026)",
-      "url": "https://www.thestreet.com/stock-market-today/stock-market-today-dow-jones-sp-500-nasdaq-updates-nov-11-2026"
+      "title": "Yahoo Finance 11월 12일 라이브",
+      "url": "https://finance.yahoo.com/markets/live/stock-market-today-thursday-november-12-sp-500-nasdaq-dow-nvidia-invest-110027430.html"
     },
     {
-      "title": "Yahoo Finance: Stock market today Nov 11",
-      "url": "https://finance.yahoo.com/markets/live/stock-market-today-wednesday-november-11-dow-sp-500-nasdaq-nvidia-treasurys-veterans-day-140638547.html"
+      "title": "TradingKey: Nvidia CEO Jensen Huang resigns",
+      "url": "https://www.tradingkey.com/analysis/stocks/us-stocks/262303336-us-stock-nvidia-ceo-jensen-huang-resigns-nasdaq-falls-tradingkey"
     },
     {
-      "title": "Investrade: Market Review November 11, 2026",
-      "url": "https://investrade.com/market-review-november-11-2026/"
+      "title": "엔비디아 CEO 교체 발표 (SEC)",
+      "url": "https://www.sec.gov/Archives/edgar/data/0001045810/000104581026000082/nvidiaannouncesceotransiti.htm"
     },
     {
-      "title": "24/7 Wall St: Closing bell Nov 11",
-      "url": "https://247wallst.com/cards/tech-did-the-heavy-lifting-again-the-nasdaq-s-1-55-close-m-gspc-market-bell-01m766s5wqxj8egm37q8ks13gp"
+      "title": "portfolio-terminal 마감 시황",
+      "url": "https://portfolio-terminal.com/markets/stock-market-close"
     },
     {
-      "title": "Vista Partners: Stock Market Today Nov 11, 2026",
-      "url": "https://vistapglobal.com/stock-market-today-november-11-2026-nasdaq-leads-veterans-day-rally-as-ai-shares-rebound-ant-be-cost-crwv-eprx-googl-modd-nvda-ser-spcx/"
+      "title": "TipRanks: U.S. market ends lower",
+      "url": "https://www.tipranks.com/news/u-s-market-ends-lower-as-nvidias-stock-falls"
     },
     {
-      "title": "한국경제: 외인들 6680억 쓸어담은 종목",
-      "url": "https://www.hankyung.com/article/2026111106306"
+      "title": "Kitco: Nvidia CEO's exit rattles AI stocks",
+      "url": "https://www.kitco.com/news/off-the-wire/2026-11-12/sp-500-nasdaq-fall-nvidia-ceos-exit-rattles-ai-stocks"
     },
     {
-      "title": "아시아경제: 코스피 이틀째 반등, 코스닥 5.62% 급등",
-      "url": "https://view.asiae.co.kr/article/2026111116091976491"
+      "title": "rallies.ai: 에너지 업종 강세",
+      "url": "https://rallies.ai/news/us-stocks-close-lower-as-nvidia-drop-outweighs-energy-gains-95928f1c15293e55"
     },
     {
-      "title": "블록미디어: 퇴근길 시황",
-      "url": "https://www.blockmedia.co.kr/archives/1164445"
+      "title": "Yahoo: ETF fund flows Nov 10",
+      "url": "https://finance.yahoo.com/markets/options/articles/etf-fund-flows-nov-10-235434793.html"
     },
     {
-      "title": "라이센스뉴스: 마감시황",
-      "url": "https://www.lcnews.co.kr/news/articleView.html?idxno=211221"
+      "title": "TD Economics 경제 일정",
+      "url": "https://economics.td.com/domains/economics.td.com/documents/reports/bottom-line/tables/2026-11-06/upcoming.htm"
     },
     {
-      "title": "핀포인트뉴스: 거래소 외국인 매매",
-      "url": "https://www.pinpointnews.co.kr/news/articleView.html?idxno=503105"
+      "title": "시사저널e 마켓클로징",
+      "url": "https://www.sisajournal-e.com/news/articleView.html?idxno=424992"
     },
     {
-      "title": "보험저널: 11일 보험주 마감시황",
-      "url": "https://www.insjournal.co.kr/news/articleView.html?idxno=33877"
+      "title": "글로벌이코노믹 코스피 마감",
+      "url": "https://www.g-enews.com/article/Securities/2026/11/202611121548529646923c501012_1"
     },
     {
-      "title": "메디파나뉴스: 11월 11일 제약·바이오 등락",
-      "url": "https://medipana.com/news/articleView.html?idxno=421556"
+      "title": "알파경제 마감 시황",
+      "url": "https://www.alphabiz.co.kr/news/articleView.html?idxno=197795"
     },
     {
-      "title": "미디어워치: 26.11.11 증시 인싸잇",
-      "url": "https://www.mediawatch.kr/news/article.html?no=261702"
+      "title": "디지털데일리 마감 시황",
+      "url": "https://ddaily.co.kr/page/view/2026111216231917748"
     },
     {
-      "title": "장전: 2026년 11월 증시 캘린더",
-      "url": "https://jangjeon.kr/calendar/2026-11/"
+      "title": "파이낸셜뉴스 업종 시황",
+      "url": "https://www.fnnews.com/news/202611121616199842"
     },
     {
-      "title": "First Trust: Asset Flows Monitor November 2026",
-      "url": "https://www.ftportfolios.com/blogs/InvestBlog/2026/11/9/asset-flows-monitor-november-2026-edition"
+      "title": "인베스팅닷컴 국내 마감",
+      "url": "https://kr.investing.com/news/stock-market-news/article-2172100"
     },
     {
-      "title": "FactSet: U.S. ETF Monthly Summary October 2026",
-      "url": "https://insight.factset.com/u.s.-etf-monthly-summary-october-2026-results"
+      "title": "코리아리포트 마감 시황",
+      "url": "https://www.koreareport.co.kr/news/articleView.html?idxno=54660"
+    },
+    {
+      "title": "강원도민일보 수급",
+      "url": "https://www.kado.net/news/articleView.html?idxno=2084455"
+    },
+    {
+      "title": "남도일보 외국인 순매수",
+      "url": "https://www.namdonews.com/news/articleView.html?idxno=929079"
+    },
+    {
+      "title": "한국경제 엔비디아 여파",
+      "url": "https://hankyung.com/article/2026111236161"
+    },
+    {
+      "title": "노컷뉴스 NAVER 하락",
+      "url": "https://www.nocutnews.co.kr/news/6606048"
     }
   ],
   "themes": [
@@ -346,72 +356,69 @@
       "name": "반도체",
       "hot": true,
       "us": {
-        "changePct": null,
+        "changePct": -0.54,
         "proxy": "필라델피아 반도체 지수"
       },
       "kr": {
         "changePct": null,
-        "proxy": "KRX 반도체"
+        "proxy": "코스피 전기·전자 (약보합)"
       },
-      "summary": "AI 기대에 양쪽 모두 메모리·장비주가 크게 올랐어요.",
-      "detail": "코어위브 실적이 AI 투자 기대를 되살려 미국 메모리주(샌디스크·마이크론 등)가 급등했어요. 한국은 외국인이 코스피 전기·전자 업종을 6,410억 원 사들였고 개인(-8,323억)·기관(-2,470억)이 팔았어요. 코스닥 장비주도 10%대 급등했어요.",
+      "summary": "엔비디아는 빠지고 AMD·브로드컴으로 돈이 옮겨갔어요.",
+      "detail": "젠슨 황 사임으로 엔비디아가 4.34% 내렸지만 AMD·브로드컴은 5%대 올라 반도체 지수 낙폭은 0.54%에 그쳤어요. 한국에서는 외국인이 SK하이닉스를 8,720억 원 팔고 삼성전자를 7,449억 원 사들여 메모리 안에서 갈아탔어요.",
       "flows": {
-        "foreign": 6410,
-        "institution": -2470,
-        "individual": -8323
+        "foreign": 3429,
+        "institution": -2248,
+        "individual": -5261
       },
-      "usFlow": null,
+      "usFlow": "11월 10일 SOXX에서 41.3억 달러, SMH에서 10.4억 달러가 빠졌어요. (11월 10일 기준)",
       "leaders": [
+        {
+          "name": "엔비디아",
+          "symbol": "NVDA",
+          "changePct": -4.34
+        },
+        {
+          "name": "AMD",
+          "symbol": "AMD",
+          "changePct": 5.86
+        },
         {
           "name": "SK하이닉스",
           "symbol": "000660",
-          "changePct": 5.36
+          "changePct": -1.8
         },
         {
           "name": "삼성전자",
           "symbol": "005930",
-          "changePct": 3.57
-        },
-        {
-          "name": "엔비디아",
-          "symbol": "NVDA",
-          "changePct": 2.92
-        },
-        {
-          "name": "주성엔지니어링",
-          "symbol": null,
-          "changePct": 17.14
+          "changePct": 0.97
         }
       ]
     },
     {
       "key": "bigtech",
       "name": "빅테크(AI·플랫폼)",
-      "hot": true,
       "us": {
-        "changePct": 1.6,
+        "changePct": -0.39,
         "proxy": "나스닥 종합"
       },
-      "kr": null,
-      "summary": "코어위브 깜짝 실적에 AI 인프라주가 반등했어요.",
-      "detail": "코어위브가 24% 급등했고 델·Arm도 11%대 올랐어요. 앤트로픽 상장 공모가 상향 검토 보도도 AI 투자 심리를 거들었어요.",
+      "kr": {
+        "changePct": -3.11,
+        "proxy": "코스피 IT서비스"
+      },
+      "summary": "미국은 방어적 대형주로 버텼고, 한국은 NAVER가 크게 빠졌어요.",
+      "detail": "AI 인프라주가 흔들리자 알파벳·애플 같은 대형주로 돈이 몰렸고 애플은 사상 최고가를 찍었어요. 한국은 NAVER가 3분기 영업이익 부진에 6.43% 내려 IT서비스 업종이 3% 넘게 빠졌어요.",
       "flows": null,
-      "usFlow": null,
+      "usFlow": "11월 10일 QQQ로 23.6억 달러, XLK로 6.3억 달러가 들어왔어요. (11월 10일 기준)",
       "leaders": [
         {
-          "name": "코어위브",
+          "name": "알파벳",
           "symbol": null,
-          "changePct": 24.2
+          "changePct": 1.79
         },
         {
-          "name": "델",
-          "symbol": null,
-          "changePct": 11.9
-        },
-        {
-          "name": "Arm",
-          "symbol": null,
-          "changePct": 11.9
+          "name": "NAVER",
+          "symbol": "035420",
+          "changePct": -6.43
         }
       ]
     },
@@ -429,133 +436,128 @@
     {
       "key": "health",
       "name": "헬스케어·바이오",
-      "us": {
-        "changePct": null,
-        "proxy": "S&P 500 헬스케어"
+      "us": null,
+      "kr": {
+        "changePct": 0.79,
+        "proxy": "코스피 제약"
       },
-      "kr": null,
-      "summary": "미국은 약했고, 한국은 종목별로 크게 엇갈렸어요.",
-      "detail": "미국 헬스케어는 장중 약세 업종이었고 마감 무렵 보합권이었어요. 한국은 알테오젠이 올랐지만 삼성바이오로직스·루닛은 내렸어요.",
+      "summary": "대형 바이오는 올랐지만 코스닥 제약은 2%대 내렸어요.",
+      "detail": "삼성바이오로직스·셀트리온이 1%대 오르며 코스피 제약 업종을 받쳤어요. 코스닥 제약은 -2.1%로 알테오젠이 3% 넘게 빠졌어요.",
       "flows": null,
       "usFlow": null,
       "leaders": [
         {
-          "name": "알테오젠",
-          "symbol": "196170",
-          "changePct": 4.08
-        },
-        {
           "name": "삼성바이오로직스",
           "symbol": "207940",
-          "changePct": -2.59
+          "changePct": 1.33
         },
         {
-          "name": "메드팩토",
-          "symbol": null,
-          "changePct": 29.99
+          "name": "셀트리온",
+          "symbol": "068270",
+          "changePct": 1.21
         },
         {
-          "name": "루닛",
-          "symbol": null,
-          "changePct": -16.03
+          "name": "알테오젠",
+          "symbol": "196170",
+          "changePct": -3.32
         }
       ]
     },
     {
       "key": "battery",
       "name": "2차전지·전기차",
-      "hot": true,
       "us": null,
-      "kr": {
-        "changePct": null,
-        "proxy": "코스닥 2차전지"
-      },
-      "summary": "코스닥 2차전지가 10%대 급등했어요.",
-      "detail": "코스닥이 이틀 연속 매수 사이드카가 걸릴 만큼 강했고, 에코프로 형제로 매수가 몰렸어요. 코스닥에서는 기관이 3,135억 원을 순매수했어요.",
+      "kr": null,
+      "summary": "한국 2차전지 대형주가 1~2%대 내렸어요.",
+      "detail": "LG에너지솔루션·삼성SDI·에코프로비엠이 함께 내렸어요. 미국은 러셀2000이 1.66% 빠지며 루시드가 11% 급락했어요.",
       "flows": null,
       "usFlow": null,
       "leaders": [
         {
-          "name": "에코프로비엠",
-          "symbol": "247540",
-          "changePct": 11.39
-        },
-        {
-          "name": "에코프로",
-          "symbol": "086520",
-          "changePct": 10.03
-        },
-        {
           "name": "LG에너지솔루션",
           "symbol": "373220",
-          "changePct": 1.51
+          "changePct": -1.79
+        },
+        {
+          "name": "삼성SDI",
+          "symbol": "006400",
+          "changePct": -1.15
+        },
+        {
+          "name": "에코프로비엠",
+          "symbol": "247540",
+          "changePct": -2.18
         }
       ]
     },
     {
       "key": "finance",
       "name": "금융·보험",
-      "us": {
-        "changePct": null,
-        "proxy": "S&P 500 금융"
+      "hot": true,
+      "us": null,
+      "kr": {
+        "changePct": -2.28,
+        "proxy": "코스피 보험"
       },
-      "kr": null,
-      "summary": "미국 금융은 뒤처졌고, 한국 보험은 엇갈렸어요.",
-      "detail": "미국 금융주는 기술주 쏠림 속에 약한 편이었어요. 한국은 외국인이 KB금융·손보주를 샀지만 대형 손보 3사는 내렸고 생보주는 올랐어요.",
+      "summary": "메리츠·삼성화재 실적 쇼크에 보험주가 줄줄이 빠졌어요.",
+      "detail": "메리츠금융지주가 3분기 이익이 예상보다 26%가량 적어 13% 넘게 빠졌고, 삼성화재도 순이익 감소에 7% 넘게 내렸어요. 보험 14개 종목 중 13개가 내렸지만, 외국인은 KB금융 등 금융지주는 순매수했어요.",
       "flows": null,
       "usFlow": null,
       "leaders": [
         {
-          "name": "미래에셋생명",
+          "name": "메리츠금융지주",
           "symbol": null,
-          "changePct": 8.11
-        },
-        {
-          "name": "삼성생명",
-          "symbol": "032830",
-          "changePct": 1.02
+          "changePct": -13.05
         },
         {
           "name": "삼성화재",
           "symbol": "000810",
-          "changePct": -5.51
+          "changePct": -7.24
+        },
+        {
+          "name": "KB금융",
+          "symbol": "105560",
+          "changePct": -0.98
+        },
+        {
+          "name": "삼성생명",
+          "symbol": "032830",
+          "changePct": 1.01
         }
       ]
     },
     {
       "key": "energy",
       "name": "에너지·원자재",
+      "hot": true,
       "us": {
-        "changePct": 0.57,
-        "proxy": "WTI 원유(12월물)"
+        "changePct": 1.5,
+        "proxy": "S&P 500 에너지 업종"
       },
-      "kr": null,
-      "summary": "이란 관련 공급 우려에 유가가 소폭 올랐어요.",
-      "detail": "호르무즈 해협 유조선 사고 등 이란 관련 우려로 WTI가 86.53달러로 올랐고, 금은 0.74% 내렸어요. AI 전력 수요 기대에 블룸에너지가 급등했어요.",
+      "kr": {
+        "changePct": -1.89,
+        "proxy": "코스피 화학"
+      },
+      "summary": "유가 급등에 미국 에너지주가 11개 업종 중 가장 강했어요.",
+      "detail": "트럼프 대통령의 이란 협상 불필요 발언에 브렌트유가 4%가량 올라 96달러를 넘었고, 미국 에너지 업종은 4일 연속 올랐어요. 반대로 금은 금리·달러 강세에 3% 넘게 빠졌고, 한국 화학 업종은 내렸어요.",
       "flows": null,
       "usFlow": null,
-      "leaders": [
-        {
-          "name": "블룸에너지",
-          "symbol": null,
-          "changePct": 12.5
-        }
-      ]
+      "leaders": []
     },
     {
       "key": "defense",
       "name": "방산·조선",
       "us": null,
       "kr": null,
-      "summary": "LIG는 로봇 기대에 올랐고, 한화에어로는 외국인이 팔았어요.",
-      "detail": "LIG디펜스앤에어로스페이스가 로봇 테마와 함께 9.73% 올랐어요. 외국인은 한화에어로스페이스를 순매도한 것으로 집계됐어요.",
+      "summary": "한화에어로스페이스가 소폭 내렸어요.",
+      "detail": "방산 대표주 한화에어로스페이스는 0.76% 내렸어요. 외국인 순매수 종목에 HD현대중공업·삼성중공업·LIG가 언급됐지만 금액은 확인되지 않았어요.",
       "flows": null,
       "usFlow": null,
       "leaders": [
         {
-          "name": "LIG디펜스앤에어로스페이스",
-          "symbol": null,
-          "changePct": 9.73
+          "name": "한화에어로스페이스",
+          "symbol": "012450",
+          "changePct": -0.76
         }
       ]
     },
@@ -563,26 +565,24 @@
       "key": "consumer",
       "name": "소비재",
       "us": null,
-      "kr": null,
-      "summary": "양쪽 모두 소비재는 소외됐어요.",
-      "detail": "미국은 룰루레몬·클로락스가 장중 3%대 내렸고, 코스트코는 특별배당을 발표했어요. 한국은 현대차·기아가 내렸고 외국인이 KT&G·코스맥스를 팔았어요.",
+      "kr": {
+        "changePct": 0.49,
+        "proxy": "코스피 음식료·담배"
+      },
+      "summary": "화장품·식품 일부가 강했고 유통은 약했어요.",
+      "detail": "코스맥스가 5.3%, 삼양식품이 3.4% 올랐어요. 유통 업종은 0.5% 내렸고 달바글로벌은 14% 가까이 빠졌어요.",
       "flows": null,
       "usFlow": null,
       "leaders": [
         {
-          "name": "현대차",
-          "symbol": "005380",
-          "changePct": -0.91
+          "name": "코스맥스",
+          "symbol": null,
+          "changePct": 5.3
         },
         {
-          "name": "기아",
-          "symbol": "000270",
-          "changePct": -1.56
-        },
-        {
-          "name": "코스트코",
-          "symbol": "COST",
-          "changePct": null
+          "name": "삼양식품",
+          "symbol": null,
+          "changePct": 3.4
         }
       ]
     },
@@ -590,34 +590,15 @@
       "key": "defensive",
       "name": "통신·유틸리티",
       "us": null,
-      "kr": null,
-      "summary": "확인된 큰 움직임은 없었어요.",
-      "detail": null,
+      "kr": {
+        "changePct": -0.63,
+        "proxy": "코스피 통신"
+      },
+      "summary": "한국 통신은 내리고 전기·가스는 1% 올랐어요.",
+      "detail": "코스피 통신 업종은 0.63% 내렸고, 전기·가스 업종은 1.01% 올랐어요.",
       "flows": null,
       "usFlow": null,
       "leaders": []
-    },
-    {
-      "key": "robot",
-      "name": "로봇",
-      "us": null,
-      "kr": null,
-      "summary": "로봇 관련주가 크게 올랐어요.",
-      "detail": "두산(+8.18%)과 LIG디펜스앤에어로스페이스(+9.73%) 등 로봇 관련주가 강했어요.",
-      "flows": null,
-      "usFlow": null,
-      "leaders": [
-        {
-          "name": "두산",
-          "symbol": "000150",
-          "changePct": 8.18
-        },
-        {
-          "name": "삼익THK",
-          "symbol": null,
-          "changePct": 3.52
-        }
-      ]
     }
   ]
 }
