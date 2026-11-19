@@ -92,6 +92,15 @@
       .cardlist { margin-top: 14px; }
       .foot { font-size: 12px; color: var(--ink-3); margin: 14px 4px 0; }
       .empty { color: var(--ink-3); text-align: center; padding: 24px 0; }
+      .seg { display: flex; gap: 4px; padding: 4px; margin-top: 12px; border-radius: 12px; background: var(--fill); }
+      .seg button { flex: 1; border: 0; border-radius: 9px; padding: 9px 0; background: none; font: 700 14px var(--sans); color: var(--ink-3); cursor: pointer; }
+      .seg button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 3px rgba(0, 27, 55, 0.08); }
+      .store-desc { margin: 10px 0 0; font-size: 13px; color: var(--ink-2); }
+      .item .thumb { position: relative; }
+      .rk { position: absolute; left: -4px; top: -4px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: var(--ink); color: var(--card); font: 800 11px/20px var(--sans); text-align: center; }
+      .item .why { color: var(--good); font-weight: 600; }
+      .store-src { margin: 10px 0 0; font-size: 12px; color: var(--ink-3); }
+      .store-src a { color: var(--ink-3); }
     </style>
   </head>
   <body>
@@ -112,6 +121,15 @@
         <details class="tips" style="margin-top:8px"><summary>카드 쓸 때 지킬 것 3가지</summary><div id="cardtips"></div></details>
       </section>
 
+      <section class="card" id="storesec" hidden>
+        <h2 class="sec-t">매장별로 많이 사는 것 🛒</h2>
+        <p class="sec-s">한국 여행객이 많이 사는 순서예요</p>
+        <div class="seg" id="storetabs" role="group" aria-label="매장"></div>
+        <p class="store-desc" id="storedesc"></p>
+        <ul class="items" id="storeitems"></ul>
+        <p class="store-src" id="storesrc"></p>
+      </section>
+
       <section class="card">
         <div class="chips" id="cats" role="group" aria-label="카테고리"></div>
         <div class="sortbar"><span id="count"></span><button type="button" id="sort"></button></div>
@@ -121,7 +139,7 @@
       <section class="card">
         <details class="tips"><summary>이득 지키는 법 4가지</summary><div id="tips"></div></details>
       </section>
-      <p class="foot">가격은 2026년 11월 조사 기준이에요. 사진은 위키미디어 공용 또는 판매처 사진이에요. 품목을 누르면 출처가 보여요.</p>
+      <p class="foot">가격은 2026년 11월 조사 기준이에요. 매장 순위는 공개된 판매·스캔 순위와 여행 후기를 합친 것이라 매장마다 다를 수 있어요. 사진은 위키미디어 공용 또는 판매처 사진이에요. 품목을 누르면 출처가 보여요.</p>
     </div>
 
     <script>
@@ -141,27 +159,28 @@
       const icon = (c) => data.categories.find((x) => x.key === c)?.icon || "🛍️";
       const host = (u) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return "출처"; } };
 
-      function row(it) {
+      function row(it, rank = null, why = "") {
         const sv = saving(it);
         const pct = sv !== null ? Math.round((sv / it.kr) * 100) : null;
-        const id = `${it.cat}:${it.name}`;
+        const id = `${rank ? "s" : ""}${it.cat}:${it.name}`;
+        const doneId = `${it.cat}:${it.name}`;
         const thumb = it.img
           ? `<img src="${esc(it.img)}" alt="${esc(it.name)} 사진" loading="lazy" referrerpolicy="no-referrer" onerror="this.replaceWith(document.createTextNode('${icon(it.cat)}'))">`
           : icon(it.cat);
         const price = it.jp ? `<b>¥${it.jp.toLocaleString("ko-KR")}</b> · <span style="white-space:nowrap">약 ${man(won(it.jp))}</span>` : "가격 확인 중";
         const right =
-          sv === null ? `<div class="save none"><span>한국 비교 없음</span></div>`
+          sv === null ? (rank ? "" : `<div class="save none"><span>한국 비교 없음</span></div>`)
           : sv > 0 ? `<div class="save"><strong>−${man(sv)}</strong><span>${pct}% 절약</span></div>`
           : `<div class="save none"><span>한국과 비슷해요</span></div>`;
         const more = open === id ? `<div class="more">
             <div class="stores">${it.where.map((w) => `<span>${esc(w)}</span>`).join("")}</div>
             ${it.kr ? `<p>한국 ${esc(it.krText || man(it.kr))}</p>` : ""}${it.note ? `<p>${esc(it.note)}</p>` : ""}
             <div class="links">${[["일본 가격", it.jpSrc], ["한국 가격", it.krSrc], ["사진", it.imgSrc]].filter(([, u]) => u).map(([t, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${t}: ${esc(host(u))}</a>`).join(" · ")}</div>
-            <div class="acts"><button type="button" data-done="${esc(id)}">${done[id] ? "산 것 취소" : "샀어요"}</button><a href="https://www.google.com/search?tbm=isch&q=${encodeURIComponent(it.name + " " + (it.size || ""))}" target="_blank" rel="noopener">사진 더 보기</a></div>
+            <div class="acts"><button type="button" data-done="${esc(doneId)}">${done[doneId] ? "산 것 취소" : "샀어요"}</button><a href="https://www.google.com/search?tbm=isch&q=${encodeURIComponent(it.name + " " + (it.size || ""))}" target="_blank" rel="noopener">사진 더 보기</a></div>
           </div>` : "";
-        return `<li class="item${done[id] ? " done" : ""}"><button type="button" class="row" data-id="${esc(id)}" aria-expanded="${open === id}">
-          <span class="thumb">${thumb}</span>
-          <span class="info"><div class="name">${esc(it.name)}</div><div class="meta">${esc(it.size || "")} · ${price}</div><div class="meta">${esc(it.where[0] || "")}</div></span>
+        return `<li class="item${done[doneId] ? " done" : ""}"><button type="button" class="row" data-id="${esc(id)}" aria-expanded="${open === id}">
+          <span class="thumb">${thumb}${rank ? `<span class="rk">${rank}</span>` : ""}</span>
+          <span class="info"><div class="name">${esc(it.name)}</div><div class="meta">${esc(it.size || "")} · ${price}</div><div class="meta${why ? " why" : ""}">${esc(why || it.where[0] || "")}</div></span>
           ${right}</button>${more}</li>`;
       }
 
@@ -171,6 +190,7 @@
         $("#items").innerHTML = list.length ? list.map(row).join("") : `<li class="empty">품목이 없어요</li>`;
         $("#count").textContent = `${list.length}개 · 비교 ${list.filter((x) => saving(x) !== null).length}개`;
         $("#sort").textContent = sortBySave ? "절약 큰 순 ⇅" : "기본 순 ⇅";
+        renderStore();
         const total = data.items.reduce((s, it) => s + Math.max(0, saving(it) ?? 0), 0);
         $("#total").textContent = `약 ${man(total)}`;
       }
@@ -185,6 +205,25 @@
         renderCards(data.cards);
         render();
       }
+
+      // 매장별 인기 순위 (data.stores)
+      let shop = store.get("travel.shop.jp", null);
+      function renderStore() {
+        const list = data.stores || [];
+        if (!list.length) return;
+        const st = list.find((x) => x.key === shop) || list[0];
+        shop = st.key;
+        $("#storesec").hidden = false;
+        $("#storetabs").innerHTML = list.map((x) => `<button type="button" data-shop="${esc(x.key)}" aria-pressed="${x.key === shop}">${x.icon} ${esc(x.name)}</button>`).join("");
+        $("#storedesc").textContent = st.desc || "";
+        const byName = new Map(data.items.map((it) => [it.name, it]));
+        $("#storeitems").innerHTML = st.picks.map((p, i) => (byName.has(p.item) ? row(byName.get(p.item), i + 1, p.why) : "")).join("");
+        $("#storesrc").innerHTML = "참고: " + (st.sources || []).map((x) => `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title)}</a>`).join(" · ");
+      }
+      $("#storetabs").addEventListener("click", (e) => {
+        const b = e.target.closest("[data-shop]"); if (!b) return;
+        shop = b.dataset.shop; store.set("travel.shop.jp", shop); open = null; render();
+      });
 
       function renderCards(c) {
         if (!c || !c.list?.length) return;
@@ -206,12 +245,14 @@
       });
       $("#sort").addEventListener("click", () => { sortBySave = !sortBySave; store.set("travel.sort.jp", sortBySave); render(); });
       $("#rate").addEventListener("input", (e) => { const v = Number(e.target.value); if (!(v > 0)) return; rate = v; store.set("travel.rate.jp", v); render(); });
-      $("#items").addEventListener("click", (e) => {
+      const onItems = (e) => {
         const d = e.target.closest("[data-done]");
         if (d) { const id = d.dataset.done; if (done[id]) delete done[id]; else done[id] = true; store.set("travel.done.jp", done); return render(); }
         const r = e.target.closest("button.row"); if (!r) return;
         open = open === r.dataset.id ? null : r.dataset.id; render();
-      });
+      };
+      $("#items").addEventListener("click", onItems);
+      $("#storeitems").addEventListener("click", onItems);
       if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
       init();
     </script>

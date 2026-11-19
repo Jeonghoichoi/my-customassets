@@ -1,7 +1,7 @@
 {
  "country": "일본",
  "flag": "🇯🇵",
- "asOf": "2026-11-08",
+ "asOf": "2026-11-19",
  "_설명": "jp는 엔화(세금 포함), kr은 한국 원화. kr이 있는 품목만 절약액을 계산해요. img가 없으면 그림 아이콘을 보여줘요. 사진은 위키미디어 공용(자유 이용) 또는 판매처 사진 링크예요.",
  "categories": [
   {
@@ -214,6 +214,61 @@
    ]
   },
   {
+   "cat": "coffee",
+   "name": "칼디 마일드칼디 드립백",
+   "size": "10개입",
+   "jp": 734,
+   "jpSrc": "https://www.kaldi.co.jp/ec/Ranking?category=11000000000",
+   "where": [
+    "칼디"
+   ],
+   "note": "칼디 대표 블렌드예요. 가볍고 부피가 작아 선물용으로 제일 많이 사요."
+  },
+  {
+   "cat": "coffee",
+   "name": "칼디 마일드칼디 원두",
+   "size": "200g",
+   "jp": 1166,
+   "jpSrc": "https://www.kaldi.co.jp/ec/Ranking?category=11000000000",
+   "where": [
+    "칼디"
+   ],
+   "note": "매장에서 원하는 굵기로 갈아줘요."
+  },
+  {
+   "cat": "coffee",
+   "name": "칼디 포션커피 무가당",
+   "size": "10개입",
+   "jp": 581,
+   "jpSrc": "https://www.kaldi.co.jp/ec/Ranking?category=11000000000",
+   "where": [
+    "칼디"
+   ],
+   "note": "물이나 우유에 타는 농축 커피예요. 공식몰 커피 판매 1위예요. 액체라 맡기는 짐에 넣어요."
+  },
+  {
+   "cat": "coffee",
+   "name": "칼디 카페오레 베이스",
+   "size": "500ml",
+   "jp": 448,
+   "jpSrc": "https://www.kaldi.co.jp/ec/Ranking?category=11000000000",
+   "where": [
+    "칼디"
+   ],
+   "note": "우유에 섞으면 카페오레가 돼요. 액체라 맡기는 짐에 넣어요."
+  },
+  {
+   "cat": "coffee",
+   "name": "호머 로열 밀크티 베이스 (무가당)",
+   "size": "500ml",
+   "jp": 375,
+   "jpSrc": "https://www.kaldi.co.jp/ec/Ranking?category=11000000000",
+   "where": [
+    "칼디"
+   ],
+   "note": "우유에 타는 밀크티 원액이에요. 액체라 맡기는 짐에 넣어요."
+  },
+  {
    "cat": "snack",
    "name": "킷캣 말차 (일본 한정)",
    "size": "10개입",
@@ -299,6 +354,39 @@
     "슈퍼",
     "돈키호테"
    ]
+  },
+  {
+   "cat": "snack",
+   "name": "칼디 판다 행인두부 (미니)",
+   "size": "215g",
+   "jp": 246,
+   "jpSrc": "https://www.kaldi.co.jp/ec/Ranking?category=11000000000",
+   "where": [
+    "칼디"
+   ],
+   "note": "판다 그림 팩에 든 행인두부예요. 칼디 디저트 판매 1위예요. 젤리류라 맡기는 짐에 넣어요."
+  },
+  {
+   "cat": "snack",
+   "name": "칼디 모카 킬리만자로 커피젤리",
+   "size": "205g",
+   "jp": 388,
+   "jpSrc": "https://www.kaldi.co.jp/ec/Ranking?category=11000000000",
+   "where": [
+    "칼디"
+   ],
+   "note": "커피 맛이 진한 젤리예요. 맡기는 짐에 넣어요."
+  },
+  {
+   "cat": "snack",
+   "name": "카키노타네 초코바",
+   "size": "1개",
+   "jp": 127,
+   "jpSrc": "https://www.kaldi.co.jp/ec/Ranking?category=11000000000",
+   "where": [
+    "칼디"
+   ],
+   "note": "감씨 과자를 초콜릿으로 굳힌 바예요. 싸고 가벼워서 나눠주기 좋아요."
   },
   {
    "cat": "sauce",
@@ -416,6 +504,50 @@
    ],
    "img": "https://netsuper.r10s.jp/item/beisia/69/4902475211669.jpg",
    "imgSrc": "https://netsuper.rakuten.co.jp/beisia/item/4902475211669/"
+  },
+  {
+   "cat": "sauce",
+   "name": "TKG 계란밥 소스 (돈키 PB)",
+   "size": "8봉",
+   "jp": 647,
+   "jpSrc": "https://news.mynavi.jp/article/20260506-4400837/",
+   "where": [
+    "돈키호테"
+   ],
+   "note": "돈키호테 자체 브랜드 「秒でどこでもTKG!」예요. 2026년 1월 한국인 관심이 크게 늘었어요."
+  },
+  {
+   "cat": "sauce",
+   "name": "칼디 바르고 구우면 퀸아망 스프레드",
+   "size": "110g",
+   "jp": 367,
+   "jpSrc": "https://www.kaldi.co.jp/ec/Ranking?category=11000000000",
+   "where": [
+    "칼디"
+   ],
+   "note": "식빵에 발라 구우면 퀸아망 맛이 나요. 카레빵·멜론빵 맛도 있어요."
+  },
+  {
+   "cat": "sauce",
+   "name": "모헤지 샐러드 우마타레 (드레싱)",
+   "size": "290ml",
+   "jp": 528,
+   "jpSrc": "https://www.kaldi.co.jp/ec/Ranking?category=11000000000",
+   "where": [
+    "칼디"
+   ],
+   "note": "공식몰 조미료 판매 1위예요. 액체라 맡기는 짐에 넣어요."
+  },
+  {
+   "cat": "sauce",
+   "name": "청고추 마늘 라유",
+   "size": "120g",
+   "jp": 550,
+   "jpSrc": "https://www.kaldi.co.jp/ec/Ranking?category=11000000000",
+   "where": [
+    "칼디"
+   ],
+   "note": "입소문으로 유명한 매운 고추기름이에요. 밥·두부에 올려 먹어요."
   },
   {
    "cat": "kitchen",
@@ -580,6 +712,30 @@
    "imgSrc": "https://netshop.create-sd.co.jp/shop/g/g4987167007263/"
   },
   {
+   "cat": "medicine",
+   "name": "페아 아크네 크림 W (여드름 연고)",
+   "size": "24g",
+   "jp": 1754,
+   "jpSrc": "https://www.matsukiyococokara-online.com/store/catalog/product/view/id/4903301025726",
+   "where": [
+    "돈키호테",
+    "드럭스토어"
+   ],
+   "note": "일반의약품이에요. 외국인 스캔 순위 2위(2026년 9월)예요."
+  },
+  {
+   "cat": "medicine",
+   "name": "로토 비타40α (피로 안약)",
+   "size": "12ml",
+   "jp": 312,
+   "jpSrc": "https://www.matsukiyococokara-online.com/store/catalog/product/view/id/4987241100521",
+   "where": [
+    "돈키호테",
+    "드럭스토어"
+   ],
+   "note": "비타민 안약이에요. 외국인 스캔 순위 6위(2026년 9월)예요. 가격은 마쓰키요 온라인 기준이에요."
+  },
+  {
    "cat": "beauty",
    "name": "비오레 UV 아쿠아리치",
    "size": "70g",
@@ -689,6 +845,18 @@
    "imgSrc": "https://netshop.create-sd.co.jp/shop/g/g4901433037075/"
   },
   {
+   "cat": "beauty",
+   "name": "나메라카혼포 눈가 크림 NC",
+   "size": "20g",
+   "jp": 880,
+   "jpSrc": "https://www.matsukiyococokara-online.com/store/catalog/product/view/id/4964596483783",
+   "where": [
+    "돈키호테",
+    "드럭스토어"
+   ],
+   "note": "두유 성분 눈가 크림이에요. 외국인 스캔 순위 1위(2026년 9월)예요."
+  },
+  {
    "cat": "living",
    "name": "휴족시간",
    "size": "18매",
@@ -714,6 +882,17 @@
    ],
    "img": "https://netshop.create-sd.co.jp/img/goods/L/4901301460547.jpg",
    "imgSrc": "https://netshop.create-sd.co.jp/shop/g/g4901301460547/"
+  },
+  {
+   "cat": "living",
+   "name": "칼디 에코백",
+   "size": "1개",
+   "jp": 350,
+   "jpSrc": "https://www.pricey.jp/web/articles/3917",
+   "where": [
+    "칼디"
+   ],
+   "note": "색이 자주 바뀌고 금방 품절돼요. 가볍고 접혀서 선물용으로 좋아요."
   },
   {
    "cat": "muji",
@@ -931,6 +1110,11 @@
    "title": "싸게 사는 곳",
    "body": "술은 공항보다 시내 주류점·빅카메라가 싼 편이에요. 약·화장품은 드럭스토어끼리 가격을 비교해요.",
    "url": "https://kr.imboldn.com/digest/%EC%9D%BC%EB%B3%B8-%EC%97%AC%ED%96%89%EC%97%90%EC%84%9C-%EA%BC%AD-%EC%82%AC%EC%95%BC-%ED%95%A0-%EC%9C%84%EC%8A%A4%ED%82%A4-%EC%B6%94%EC%B2%9C-11/"
+  },
+  {
+   "title": "액체·젤리는 맡기는 짐에",
+   "body": "칼디 포션커피·카페오레 베이스·드레싱·행인두부는 100ml가 넘어서 기내에 못 들고 타요. 고기가 든 파테·소시지는 한국 반입이 안 돼요.",
+   "url": "https://www.channeul.com/kaldi-coffee-farm-hakatamaruiten/"
   }
  ],
  "cards": {
@@ -1045,5 +1229,159 @@
     "body": "비자·마스터를 한 장씩 챙기고 현금도 조금 들고 가요. 선불카드는 잃어버리면 바로 신고해야 보상받기 쉬워요."
    }
   ]
- }
+ },
+ "stores": [
+  {
+   "key": "donki",
+   "name": "돈키호테",
+   "icon": "🐧",
+   "desc": "외국인 바코드 스캔 순위와 한국 여행객 추천을 합쳐 정리했어요. 약·화장품·간식이 한 번에 돼요.",
+   "picks": [
+    {
+     "item": "나메라카혼포 눈가 크림 NC",
+     "why": "외국인 스캔 1위예요. 1,000엔도 안 되는 눈가 크림이에요"
+    },
+    {
+     "item": "페아 아크네 크림 W (여드름 연고)",
+     "why": "외국인 스캔 2위, 바르는 여드름약이에요"
+    },
+    {
+     "item": "파브론 골드A (감기약)",
+     "why": "외국인 스캔 4위, 상비약으로 많이 사요"
+    },
+    {
+     "item": "모공나데시코 쌀 마스크",
+     "why": "외국인 스캔 5위, 시트팩 묶음 선물용이에요"
+    },
+    {
+     "item": "로토 비타40α (피로 안약)",
+     "why": "외국인 스캔 6위, 300엔대라 여러 개 사요"
+    },
+    {
+     "item": "휴족시간",
+     "why": "외국인 스캔 11위, 한국보다 훨씬 싸요"
+    },
+    {
+     "item": "TKG 계란밥 소스 (돈키 PB)",
+     "why": "한국인 관심이 급하게 늘어난 돈키 전용 소스예요"
+    },
+    {
+     "item": "카베진 코와 α플러스",
+     "why": "한국인 위장약 1순위예요"
+    },
+    {
+     "item": "로이히츠보코 (동전파스)",
+     "why": "부피가 작아 많이 사요"
+    },
+    {
+     "item": "이브 A정 (진통제)",
+     "why": "두통·생리통약으로 많이 사요"
+    },
+    {
+     "item": "메구리즘 스팀 아이마스크",
+     "why": "비행기·숙소에서 쓰기 좋아요"
+    },
+    {
+     "item": "비오레 UV 아쿠아리치",
+     "why": "한국보다 절반 가격이에요"
+    },
+    {
+     "item": "센카 퍼펙트휩",
+     "why": "묶음으로 많이 사는 폼클렌징이에요"
+    },
+    {
+     "item": "킷캣 말차 (일본 한정)",
+     "why": "나눠주기 좋은 일본 한정 맛이에요"
+    }
+   ],
+   "sources": [
+    {
+     "title": "돈키호테 외국인 인기 상품 순위 (Payke, 2026년 9월)",
+     "url": "https://honichi.com/goods/store_categories/discount_shop/268/ranking/"
+    },
+    {
+     "title": "한국인 급상승 상품 (Payke, 2026년 1월)",
+     "url": "https://prtimes.jp/main/html/rd/p/000000074.000022289.html"
+    },
+    {
+     "title": "오사카 돈키호테 쇼핑 리스트 2026",
+     "url": "https://www.tripstore.kr/blog/%EC%98%A4%EC%82%AC%EC%B9%B4-%EB%8F%88%ED%82%A4%ED%98%B8%ED%85%8C-%EC%87%BC%ED%95%91-%EB%A6%AC%EC%8A%A4%ED%8A%B8-2026-%ED%95%84%EC%88%98-%EC%B6%94%EC%B2%9C%ED%85%9C-%EC%B4%9D%EC%A0%95%EB%A6%AC"
+    }
+   ]
+  },
+  {
+   "key": "kaldi",
+   "name": "칼디",
+   "icon": "☕",
+   "desc": "커피·소스·디저트가 강한 수입 식료품점이에요. 칼디 공식몰 판매 순위와 한국 여행객 추천을 합쳐 정리했어요.",
+   "picks": [
+    {
+     "item": "칼디 마일드칼디 드립백",
+     "why": "한국인이 가장 많이 사는 선물용 커피예요"
+    },
+    {
+     "item": "칼디 판다 행인두부 (미니)",
+     "why": "칼디 디저트 판매 1위예요"
+    },
+    {
+     "item": "칼디 바르고 구우면 퀸아망 스프레드",
+     "why": "한국에 없는 칼디 스프레드 대표예요"
+    },
+    {
+     "item": "칼디 포션커피 무가당",
+     "why": "공식몰 커피 판매 1위예요"
+    },
+    {
+     "item": "칼디 카페오레 베이스",
+     "why": "공식몰 커피 판매 2위예요"
+    },
+    {
+     "item": "칼디 마일드칼디 원두",
+     "why": "집에서 내려 마시는 사람용이에요"
+    },
+    {
+     "item": "칼디 모카 킬리만자로 커피젤리",
+     "why": "디저트 인기 3위예요"
+    },
+    {
+     "item": "카키노타네 초코바",
+     "why": "127엔이라 나눠주기 좋아요"
+    },
+    {
+     "item": "모헤지 샐러드 우마타레 (드레싱)",
+     "why": "공식몰 조미료 판매 1위예요"
+    },
+    {
+     "item": "청고추 마늘 라유",
+     "why": "입소문 1위 매운 소스예요"
+    },
+    {
+     "item": "호머 로열 밀크티 베이스 (무가당)",
+     "why": "우유만 있으면 밀크티가 돼요"
+    },
+    {
+     "item": "칼디 에코백",
+     "why": "가볍고 금방 품절되는 기념품이에요"
+    }
+   ],
+   "sources": [
+    {
+     "title": "칼디 공식 온라인몰 판매 순위 (2026-11-19)",
+     "url": "https://www.kaldi.co.jp/ec/Ranking?category=11000000000"
+    },
+    {
+     "title": "칼디 인기 순위 정리 (pricey, 2026-11)",
+     "url": "https://www.pricey.jp/web/articles/3917"
+    },
+    {
+     "title": "후쿠오카 칼디 쇼핑 추천 (2026-08)",
+     "url": "https://www.channeul.com/kaldi-coffee-farm-hakatamaruiten/"
+    },
+    {
+     "title": "도쿄 쇼핑리스트 칼디 (2026-04)",
+     "url": "https://brunch.co.kr/@jiny711/213"
+    }
+   ]
+  }
+ ]
 }
