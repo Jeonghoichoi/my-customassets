@@ -187,7 +187,7 @@
       function render() {
         let list = data.items.map((it, i) => ({ ...it, i })).filter((it) => cat === "all" || it.cat === cat);
         if (sortBySave) list.sort((a, b) => (saving(b) ?? -1e12) - (saving(a) ?? -1e12) || a.i - b.i);
-        $("#items").innerHTML = list.length ? list.map(row).join("") : `<li class="empty">품목이 없어요</li>`;
+        $("#items").innerHTML = list.length ? list.map((it) => row(it)).join("") : `<li class="empty">품목이 없어요</li>`;
         $("#count").textContent = `${list.length}개 · 비교 ${list.filter((x) => saving(x) !== null).length}개`;
         $("#sort").textContent = sortBySave ? "절약 큰 순 ⇅" : "기본 순 ⇅";
         renderStore();
