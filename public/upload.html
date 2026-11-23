@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#F2F4F6" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#17171C" media="(prefers-color-scheme: dark)" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <title>유튜브 업로드</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f2f4f6;
+        --card: #ffffff;
+        --fill: #f2f4f6;
+        --ink: #191f28;
+        --ink-2: #4e5968;
+        --ink-3: #8b95a1;
+        --line: #eef0f2;
+        --blue: #3182f6;
+        --blue-soft: #e8f3ff;
+        --red: #f04452;
+        --sans: "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          color-scheme: dark;
+          --bg: #17171c;
+          --card: #202027;
+          --fill: #2c2c35;
+          --ink: #ececef;
+          --ink-2: #b0b8c1;
+          --ink-3: #7e8590;
+          --line: #2c2c35;
+          --blue-soft: #1d2a3d;
+        }
+      }
+      * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+      html, body { margin: 0; }
+      body { background: var(--bg); color: var(--ink); font: 15px/1.6 var(--sans); word-break: keep-all; padding: 0 16px calc(40px + env(safe-area-inset-bottom)); }
+      .wrap { max-width: 640px; margin: 0 auto; }
+      header { padding: calc(14px + env(safe-area-inset-top)) 4px 6px; }
+      .back { display: inline-flex; align-items: center; gap: 4px; color: var(--ink-3); text-decoration: none; font-weight: 600; font-size: 14px; padding: 6px 0; }
+      header h1 { margin: 4px 0 0; font-size: 24px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.35; }
+      header p { margin: 4px 0 0; color: var(--ink-2); }
+      .card { background: var(--card); border-radius: 22px; padding: 20px; margin-top: 14px; }
+      .card h2 { margin: 0 0 6px; font-size: 17px; font-weight: 700; }
+      .muted { color: var(--ink-3); font-size: 13px; }
+      .big { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; }
+      .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0 16px; }
+      .stats div { background: var(--fill); border-radius: 14px; padding: 12px; }
+      .stats b { display: block; font-size: 22px; font-weight: 800; }
+      .btn { display: block; width: 100%; border: 0; border-radius: 14px; padding: 15px; font: 700 16px var(--sans); background: var(--blue); color: #fff; cursor: pointer; }
+      .btn:disabled { opacity: 0.45; cursor: default; }
+      .btn.sub { background: var(--blue-soft); color: var(--blue); }
+      .btn.sm { display: inline-block; width: auto; padding: 9px 14px; font-size: 14px; border-radius: 10px; }
+      ol.steps { margin: 8px 0 0; padding-left: 20px; color: var(--ink-2); }
+      ol.steps li { margin: 8px 0; }
+      code, .key { font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--fill); border-radius: 8px; padding: 2px 6px; word-break: break-all; }
+      .key { display: block; padding: 12px; margin: 10px 0; user-select: all; }
+      input { font: 15px var(--sans); color: var(--ink); background: var(--fill); border: 0; border-radius: 12px; padding: 12px; width: 100%; }
+      .day { margin: 22px 4px 0; font-size: 14px; font-weight: 700; color: var(--ink-3); }
+      .item { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 14px; padding: 16px; align-items: start; }
+      .item + .item { margin-top: 8px; }
+      .thumb { width: 96px; aspect-ratio: 16/9; border-radius: 10px; object-fit: cover; background: var(--fill); }
+      .item.short .thumb { aspect-ratio: 9/16; width: 64px; margin-left: 16px; }
+      .item .t { font-weight: 700; line-height: 1.45; }
+      .badge { display: inline-block; font-size: 12px; font-weight: 700; border-radius: 6px; padding: 1px 7px; margin-right: 6px; background: var(--fill); color: var(--ink-2); vertical-align: 1px; }
+      .badge.long { background: var(--blue-soft); color: var(--blue); }
+      .row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
+      .row input[type="datetime-local"] { flex: 1 1 100%; min-width: 0; max-width: 100%; padding: 8px 10px; font-size: 14px; }
+      .state { font-size: 14px; font-weight: 700; }
+      .state.done { color: var(--blue); }
+      .state.err { color: var(--red); font-weight: 500; }
+      .bar { height: 6px; background: var(--fill); border-radius: 3px; overflow: hidden; margin-top: 10px; }
+      .bar i { display: block; height: 100%; background: var(--blue); width: 0; transition: width 0.3s; }
+      .pv { grid-column: 1 / -1; }
+      .pv video { display: block; width: 100%; max-height: 72vh; border-radius: 14px; background: #000; margin-top: 4px; }
+      .meta { white-space: pre-line; margin: 8px 0; word-break: break-all; }
+      .meta b { color: var(--ink); }
+      .notes { margin: 8px 0 0; padding: 0; list-style: none; color: var(--ink-2); font-size: 13px; }
+      .notes li::before { content: "· "; }
+      details { margin-top: 8px; font-size: 13px; color: var(--ink-2); }
+      details summary { cursor: pointer; color: var(--ink-3); font-weight: 600; }
+      a { color: var(--blue); }
+      [hidden] { display: none !important; }
+      @media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <a class="back" href="/">‹ 홈</a>
+        <h1>유튜브 업로드</h1>
+        <p>Claude가 만들어 둔 영상을 확인하고 예약 업로드해요.</p>
+      </header>
+
+      <section class="card" id="codeCard" hidden>
+        <h2>접근 코드를 넣어 주세요</h2>
+        <p class="muted">판독기에서 쓰는 코드와 같아요.</p>
+        <input id="code" type="password" autocomplete="current-password" placeholder="접근 코드" />
+        <div style="height: 10px"></div>
+        <button class="btn" id="codeBtn">확인</button>
+      </section>
+
+
+      <section class="card" id="connectCard" hidden>
+        <h2>유튜브 채널을 연결해 주세요</h2>
+        <p class="muted">구글 로그인 화면에서 배당셰프 채널 계정을 고르고 허용을 눌러요. '확인되지 않은 앱' 경고가 나오면 '고급 → 이동'을 누르면 돼요. 노아 님이 만든 앱이라 괜찮아요.</p>
+        <button class="btn" id="connectBtn">유튜브 연결</button>
+      </section>
+
+      <section class="card" id="tokenCard" hidden>
+        <h2>연결 키를 받았어요</h2>
+        <p class="muted">아래 키를 Vercel 환경변수 <code>YT_REFRESH_TOKEN</code>에 붙여 넣고 Redeploy해 주세요. 이 키는 비밀번호처럼 다른 사람에게 보여 주지 마세요.</p>
+        <span class="key" id="token"></span>
+        <button class="btn sub" id="copyToken">키 복사</button>
+      </section>
+
+      <section class="card" id="sumCard" hidden>
+        <p class="muted" id="channel"></p>
+        <div class="big" id="sumTitle"></div>
+        <div class="stats">
+          <div><span class="muted">대기</span><b id="nWait">0</b></div>
+          <div><span class="muted">예약됨</span><b id="nSched">0</b></div>
+          <div><span class="muted">공개됨</span><b id="nPub">0</b></div>
+        </div>
+        <button class="btn" id="allBtn">남은 영상 전부 예약 업로드</button>
+        <p class="muted" id="nDraft" style="margin: 10px 0 0"></p>
+        <p class="muted" style="margin: 10px 0 0">올리는 동안 이 화면을 켜 두세요. 영상 하나에 30초쯤 걸려요. 하루 최대 100개까지 올릴 수 있어요.</p>
+      </section>
+
+      <p class="card state err" id="err" hidden></p>
+      <div id="list"></div>
+      <section class="card" id="setupCard" hidden>
+        <h2>유튜브 연결 방법 (처음 한 번만)</h2>
+        <p class="muted">10분 정도 걸려요. 키는 노아 님만 볼 수 있는 Vercel 환경변수에만 넣어요.</p>
+        <ol class="steps">
+          <li><a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">Google Cloud</a>에서 새 프로젝트를 만들고, 'API 및 서비스 → 라이브러리'에서 <b>YouTube Data API v3</b>를 사용 설정해요.</li>
+          <li>'OAuth 동의 화면'에서 외부 앱을 만들고, <b>게시 상태를 '프로덕션'</b>으로 바꿔요. 테스트 상태면 7일마다 연결이 끊겨요.</li>
+          <li>'사용자 인증 정보 → OAuth 클라이언트 ID → 웹 애플리케이션'을 만들고, 승인된 리디렉션 URI에 아래 주소를 그대로 넣어요.<span class="key" id="redirect"></span></li>
+          <li>Vercel → 판독기 프로젝트 → Settings → Environment Variables에 <code>YT_CLIENT_ID</code>, <code>YT_CLIENT_SECRET</code>을 넣고 Redeploy해요.</li>
+          <li>다시 이 화면으로 와서 '유튜브 연결'을 눌러요.</li>
+        </ol>
+        <p class="muted" id="needCode" hidden>Vercel에 <code>ACCESS_CODE</code>도 꼭 넣어 주세요. 접근 코드가 없으면 업로드 버튼이 잠겨 있어요.</p>
+      </section>
+    </div>
+
+    <script>
+      const $ = (s) => document.querySelector(s);
+      const show = (id, on = true) => ($(id).hidden = !on);
+      let items = [];
+      let busy = false;
+      const RAW = "https://raw.githubusercontent.com/Jeonghoichoi/my-customassets/media/";
+      const CDN = "https://cdn.jsdelivr.net/gh/Jeonghoichoi/my-customassets@media/";
+
+      async function api(path, headers = {}) {
+        const code = localStorage.getItem("accessCode") || "";
+        const res = await fetch("/api/" + path, { method: "POST", headers: { ...(code ? { "x-access-code": code } : {}), ...headers } });
+        const j = await res.json().catch(() => ({ error: "서버 응답을 읽지 못했어요." }));
+        if (!res.ok) {
+          const e = new Error(j.error || "오류가 났어요.");
+          e.status = res.status;
+          throw e;
+        }
+        return j;
+      }
+
+      function err(msg) {
+        $("#err").textContent = msg || "";
+        show("#err", Boolean(msg));
+      }
+
+      const DAYS = "일월화수목금토";
+      const dayLabel = (d) => `${d.getMonth() + 1}월 ${d.getDate()}일 ${DAYS[d.getDay()]}요일`;
+      const timeLabel = (d) => `${d.getHours() < 12 ? "오전" : "오후"} ${((d.getHours() + 11) % 12) + 1}시${d.getMinutes() ? ` ${d.getMinutes()}분` : ""}`;
+      const localInput = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60e3).toISOString().slice(0, 16);
+      const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+      function phase(it) {
+        if (!it.done && it.draft) return "draft";
+        if (!it.done) return "wait";
+        if (it.done.privacy === "public") return "pub";
+        return "sched";
+      }
+
+      function render() {
+        const n = { wait: 0, sched: 0, pub: 0, draft: 0 };
+        items.forEach((it) => n[phase(it)]++);
+        $("#nWait").textContent = n.wait;
+        $("#nSched").textContent = n.sched;
+        $("#nPub").textContent = n.pub;
+        $("#sumTitle").textContent = n.wait ? `올릴 영상 ${n.wait}개가 있어요` : n.draft ? `만드는 중인 영상 ${n.draft}개` : "모두 올렸어요";
+        $("#nDraft").textContent = n.draft ? `만드는 중 ${n.draft}개는 완성되면 버튼이 켜져요.` : "";
+        $("#allBtn").disabled = busy || !n.wait;
+
+        let html = "";
+        let last = "";
+        for (const it of items) {
+          const at = new Date(it.publishAt);
+          const day = dayLabel(at);
+          if (day !== last) html += `<p class="day">${day}</p>`;
+          last = day;
+          const p = phase(it);
+          const pubAt = it.done?.publishAt ? new Date(it.done.publishAt) : at;
+          const st = { wait: `<span class="state">대기 중</span>`, sched: `<span class="state done">✓ 예약됨 · ${dayLabel(pubAt)} ${timeLabel(pubAt)} 공개</span>`, pub: `<span class="state done">✓ 공개됨</span>`, draft: `<span class="state">🍳 만드는 중 · ${esc(it.draft || "")}</span>` }[p];
+          html += `<article class="card item ${it.kind}" id="it-${it.id}">
+            <img class="thumb" src="${RAW + esc(it.thumb)}" alt="" onerror="this.style.visibility='hidden'" />
+            <div>
+              <div class="t"><span class="badge ${it.kind}">${it.kind === "long" ? `${it.ep}편 본편` : `${it.ep}편 쇼츠`}</span>${esc(it.title)}</div>
+              <div class="row">${st}${it.done ? ` <a href="https://youtu.be/${esc(it.done.id)}" target="_blank" rel="noopener">보기</a>` : ""}</div>
+              ${p === "wait" ? `<div class="row">
+                <input type="datetime-local" data-time="${it.id}" value="${localInput(at)}" aria-label="공개 시각" />
+                <button class="btn sm" data-up="${it.id}" ${busy ? "disabled" : ""}>예약 업로드</button></div>
+                <div class="row" data-parentrow="${it.id}" hidden><input data-parent="${it.id}" inputmode="url" placeholder="본편 주소 (https://youtu.be/...)" /></div>` : ""}
+              <div class="bar" data-bar="${it.id}" hidden><i></i></div>
+              <p class="state err" data-err="${it.id}" hidden></p>
+              <ul class="notes" data-notes="${it.id}"></ul>
+              <div class="row">${it.video ? `<button class="btn sm sub" data-pv="${it.id}">▶ 미리보기</button>` : ""}</div>
+              <details><summary>제목·설명·태그 보기</summary>
+                <p class="meta"><b>제목</b><br />${esc(it.title)}</p>
+                <p class="meta"><b>설명</b><br />${esc(it.description)}</p>
+                <p class="meta"><b>태그 ${it.tags.length}개</b><br />${esc(it.tags.join(", "))}</p>
+              </details>
+              ${it.pinned || it.kind === "short" ? `<details><summary>올린 뒤 유튜브 앱에서 할 일</summary>
+                ${it.kind === "short" ? `<p>관련 동영상에 ${it.ep}편 본편을 연결해 주세요. (API로는 연결이 안 돼요)</p>` : ""}
+                ${it.pinned ? `<p>공개된 뒤 아래 댓글을 달고 고정해 주세요.</p><p style="white-space:pre-line">${esc(it.pinned)}</p><button class="btn sm sub" data-copy="${it.id}">댓글 복사</button>` : ""}
+              </details>` : ""}
+            </div>
+            <div class="pv" data-pvbox="${it.id}" hidden></div>
+          </article>`;
+        }
+        $("#list").innerHTML = html;
+      }
+
+      async function upload(id) {
+        const it = items.find((x) => x.id === id);
+        const card = $(`#it-${id}`);
+        const bar = card.querySelector(`[data-bar="${id}"]`);
+        const errEl = card.querySelector(`[data-err="${id}"]`);
+        const time = card.querySelector(`[data-time="${id}"]`)?.value;
+        const parent = card.querySelector(`[data-parent="${id}"]`)?.value.trim();
+        errEl.hidden = true;
+        bar.hidden = false;
+        const set = (f) => (bar.firstElementChild.style.width = `${Math.round(f * 100)}%`);
+        set(0.03);
+        try {
+          const h = {};
+          if (time) h["x-yt-publish"] = new Date(time).toISOString();
+          if (parent) h["x-yt-parent"] = parent;
+          const s = await api(`yt/start/${id}`, h);
+          let off = 0;
+          let vid = null;
+          let tries = 0;
+          while (!vid) {
+            try {
+              const r = await api(`yt/chunk/${id}`, { "x-yt-session": s.session, "x-yt-offset": String(off) });
+              off = r.offset;
+              vid = r.videoId || null;
+              tries = 0;
+              set(0.05 + 0.85 * (off / s.size));
+            } catch (e) {
+              if (++tries > 3) throw e;
+              await new Promise((r) => setTimeout(r, 2000 * tries));
+            }
+          }
+          const f = await api(`yt/finish/${id}`, { "x-yt-video": vid });
+          set(1);
+          it.done = { id: vid, privacy: "private", publishAt: h["x-yt-publish"] || it.publishAt };
+          render();
+          $(`[data-notes="${id}"]`).innerHTML = f.notes.map((n) => `<li>${esc(n)}</li>`).join("");
+          return true;
+        } catch (e) {
+          bar.hidden = true;
+          errEl.textContent = e.message;
+          errEl.hidden = false;
+          if (e.status === 409) card.querySelector(`[data-parentrow="${id}"]`).hidden = false;
+          return false;
+        }
+      }
+
+      async function run(ids) {
+        busy = true;
+        render();
+        for (const id of ids) {
+          busy = true;
+          const ok = await upload(id);
+          if (!ok && /오늘/.test($(`[data-err="${id}"]`)?.textContent || "")) break; // 하루 한도면 멈춰요
+        }
+        busy = false;
+        render();
+      }
+
+      $("#list").addEventListener("click", (e) => {
+        const up = e.target.closest("[data-up]");
+        if (up && !busy) {
+          // 같은 화면의 다른 업로드를 막고 이 영상만 올려요
+          const id = up.dataset.up;
+          busy = true;
+          document.querySelectorAll("[data-up]").forEach((b) => (b.disabled = true));
+          $("#allBtn").disabled = true;
+          upload(id).finally(() => {
+            busy = false;
+            render();
+          });
+        }
+        const pv = e.target.closest("[data-pv]");
+        if (pv) {
+          // 영상은 누를 때만 불러와요 (데이터 아끼기). jsDelivr가 휴대폰에서 바로 재생되는 형식으로 보내 줘요
+          const it = items.find((x) => x.id === pv.dataset.pv);
+          const box = $(`[data-pvbox="${it.id}"]`);
+          if (box.hidden) {
+            box.innerHTML = `<video controls playsinline preload="metadata" poster="${RAW + esc(it.thumb)}" src="${CDN + esc(it.video)}" onerror="this.src='${RAW + esc(it.video)}'"></video>`;
+            box.hidden = false;
+            pv.textContent = "미리보기 닫기";
+          } else {
+            box.innerHTML = "";
+            box.hidden = true;
+            pv.textContent = "▶ 미리보기";
+          }
+        }
+        const cp = e.target.closest("[data-copy]");
+        if (cp) {
+          const it = items.find((x) => x.id === cp.dataset.copy);
+          navigator.clipboard?.writeText(it.pinned).then(() => (cp.textContent = "복사했어요"));
+        }
+      });
+      $("#allBtn").addEventListener("click", () => {
+        if (busy) return;
+        // 본편이 먼저 올라가야 쇼츠 설명에 본편 링크를 넣을 수 있어요
+        const ids = items.filter((x) => !x.done && !x.draft).sort((a, b) => (a.kind === b.kind ? a.publishAt.localeCompare(b.publishAt) : a.kind === "long" ? -1 : 1)).map((x) => x.id);
+        run(ids);
+      });
+      $("#connectBtn").addEventListener("click", async () => {
+        try {
+          location.href = (await api("yt/auth")).url;
+        } catch (e) {
+          err(e.message);
+        }
+      });
+      $("#copyToken").addEventListener("click", () => navigator.clipboard?.writeText($("#token").textContent).then(() => ($("#copyToken").textContent = "복사했어요")));
+      $("#codeBtn").addEventListener("click", () => {
+        localStorage.setItem("accessCode", $("#code").value);
+        load();
+      });
+
+      async function load() {
+        err("");
+        $("#redirect").textContent = `${location.origin}/upload.html`;
+        const q = new URLSearchParams(location.search);
+        try {
+          if (q.get("code")) {
+            // 구글 로그인에서 돌아온 경우: 일회용 코드를 연결 키로 바꿔요
+            const g = q.get("code");
+            history.replaceState(null, "", "/upload.html");
+            const t = await api("yt/token", { "x-yt-code": g });
+            $("#token").textContent = t.refreshToken;
+            show("#tokenCard");
+          } else if (q.get("error")) {
+            history.replaceState(null, "", "/upload.html");
+            err("구글 연결을 취소했어요. 다시 '유튜브 연결'을 눌러 주세요.");
+          }
+          const s = await api("yt/status");
+          show("#codeCard", false);
+          const cfg = await fetch("/api/config").then((r) => r.json()).catch(() => ({}));
+          show("#needCode", !cfg.needsCode);
+          items = s.items || [];
+          show("#setupCard", !s.ready);
+          show("#connectCard", s.ready && !s.connected && $("#tokenCard").hidden);
+          show("#sumCard", true);
+          $("#channel").textContent = s.connected ? `${s.channel} 채널에 연결됐어요` : "아직 연결 전이라 올린 상태는 확인하지 못해요";
+          $("#allBtn").hidden = !s.connected;
+          render();
+          if (!s.connected) document.querySelectorAll("[data-up]").forEach((b) => (b.disabled = true));
+        } catch (e) {
+          if (e.status === 401 && /접근 코드/.test(e.message)) {
+            show("#codeCard");
+            return;
+          }
+          err(e.message);
+        }
+      }
+      load();
+    </script>
+  </body>
+</html>

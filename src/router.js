@@ -9,6 +9,7 @@ const { priceStats } = require("./engine/indicators");
 const { judgeStock, streetReading } = require("./engine/judges");
 const { kimMarket, kimLens, kimUsLens } = require("./engine/kim");
 const { resolve, marketLabel, normalizeQuery, looksLikeKrEtf } = require("./sources/symbols");
+const { handleYt } = require("./youtube");
 
 const env = () => ({
   demo: process.env.DEMO === "1" || !process.env.FRED_API_KEY || !process.env.FMP_API_KEY,
@@ -389,6 +390,13 @@ async function handle(path, headers = {}) {
       return { status: 200, body: { demo, ai, needsCode: Boolean(code), demoSymbols: demo ? demoSymbols : [] }, maxAge: 0 };
     if (code && headers["x-access-code"] !== code)
       return { status: 401, body: { error: "접근 코드가 맞지 않아요." }, maxAge: 0 };
+    // 유튜브 예약 업로드 (public/upload.html). 채널에 올리는 기능이라 접근 코드가 꼭 있어야 해요
+    if (path.startsWith("yt/")) {
+      if (!code && path !== "yt/status")
+        return { status: 403, body: { error: "Vercel에 ACCESS_CODE(접근 코드)를 먼저 넣어 주세요." }, maxAge: 0 };
+      const body = await handleYt(path, headers);
+      if (body) return { status: 200, body, maxAge: 0 };
+    }
     if (path === "macro") return { status: 200, body: await getMacro(), maxAge: TTL.macro };
     // 아침 브리핑: 매일 아침 예약 작업이 data/briefing.json을 올리면 배포와 함께 바뀌어요
     if (path === "briefing") return { status: 200, body: getBriefing(), maxAge: 300 };

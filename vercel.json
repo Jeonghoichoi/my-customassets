@@ -1,5 +1,11 @@
 {
   "rewrites": [
     { "source": "/api/:path((?!router).*)", "destination": "/api/router?path=:path" }
-  ]
+  ],
+  "functions": {
+    "api/router.js": { "maxDuration": 60 }
+  },
+  "git": {
+    "deploymentEnabled": { "media": false }
+  }
 }
