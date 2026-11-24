@@ -79,6 +79,10 @@
       .state.err { color: var(--red); font-weight: 500; }
       .bar { height: 6px; background: var(--fill); border-radius: 3px; overflow: hidden; margin-top: 10px; }
       .bar i { display: block; height: 100%; background: var(--blue); width: 0; transition: width 0.3s; }
+      .ab { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 8px 0; }
+      .ab a { position: relative; display: block; }
+      .ab img { display: block; width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; }
+      .ab span { position: absolute; left: 4px; top: 4px; background: rgba(0,0,0,.6); color: #fff; font-size: 11px; font-weight: 700; border-radius: 4px; padding: 0 5px; }
       .pv { grid-column: 1 / -1; }
       .pv video { display: block; width: 100%; max-height: 72vh; border-radius: 14px; background: #000; margin-top: 4px; }
       .meta { white-space: pre-line; margin: 8px 0; word-break: break-all; }
@@ -227,6 +231,11 @@
                 <p class="meta"><b>설명</b><br />${esc(it.description)}</p>
                 <p class="meta"><b>태그 ${it.tags.length}개</b><br />${esc(it.tags.join(", "))}</p>
               </details>
+              ${it.ab ? `<details><summary>썸네일·제목 A/B 테스트 (3개씩)</summary>
+                <p class="meta">유튜브 API로는 A/B 테스트를 넣을 수 없어요. 예약 업로드는 1번으로 올라가요. 올린 뒤 PC 유튜브 스튜디오 → 영상 세부정보 → 썸네일 옆 <b>'테스트 및 비교'</b>에서 아래 3개를 넣어 주세요. 이미지는 눌러서 길게 누르면 저장돼요.</p>
+                <div class="ab">${it.ab.thumbs.map((t, i) => `<a href="${RAW + esc(t)}" target="_blank" rel="noopener"><img src="${RAW + esc(t)}" alt="썸네일 ${i + 1}" /><span>${i + 1}</span></a>`).join("")}</div>
+                ${it.ab.titles.map((t, i) => `<p class="meta"><b>제목 ${i + 1}</b><br />${esc(t)}<br /><button class="btn sm sub" data-copytext="${esc(t)}">복사</button></p>`).join("")}
+              </details>` : ""}
               ${it.pinned || it.kind === "short" ? `<details><summary>올린 뒤 유튜브 앱에서 할 일</summary>
                 ${it.kind === "short" ? `<p>관련 동영상에 ${it.ep}편 본편을 연결해 주세요. (API로는 연결이 안 돼요)</p>` : ""}
                 ${it.pinned ? `<p>공개된 뒤 아래 댓글을 달고 고정해 주세요.</p><p style="white-space:pre-line">${esc(it.pinned)}</p><button class="btn sm sub" data-copy="${it.id}">댓글 복사</button>` : ""}
@@ -324,6 +333,8 @@
             pv.textContent = "▶ 미리보기";
           }
         }
+        const ct = e.target.closest("[data-copytext]");
+        if (ct) navigator.clipboard?.writeText(ct.dataset.copytext).then(() => (ct.textContent = "복사했어요"));
         const cp = e.target.closest("[data-copy]");
         if (cp) {
           const it = items.find((x) => x.id === cp.dataset.copy);
