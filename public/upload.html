@@ -68,7 +68,7 @@
       .item { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 14px; padding: 16px; align-items: start; }
       .item + .item { margin-top: 8px; }
       .thumb { width: 96px; aspect-ratio: 16/9; border-radius: 10px; object-fit: cover; background: var(--fill); }
-      .item.short .thumb { aspect-ratio: 9/16; width: 64px; margin-left: 16px; }
+      .item.short .thumb, .item.daily .thumb { aspect-ratio: 9/16; width: 64px; margin-left: 16px; }
       .item .t { font-weight: 700; line-height: 1.45; }
       .badge { display: inline-block; font-size: 12px; font-weight: 700; border-radius: 6px; padding: 1px 7px; margin-right: 6px; background: var(--fill); color: var(--ink-2); vertical-align: 1px; }
       .badge.long { background: var(--blue-soft); color: var(--blue); }
@@ -138,7 +138,8 @@
         <button class="btn sub" id="planBtn" style="margin-bottom: 10px">⏰ 추천 시간으로 자동 배치</button>
         <details class="muted" style="margin: 0 0 12px"><summary>추천 시간은 이렇게 정해요</summary>
           <p class="meta">· 본편: <b>화 오전 7시 · 일 오전 8시</b> — 180만 개 영상 분석에서 롱폼은 아침(8~11시)과 일요일 오전이 가장 강했고, 한국 유튜브 사용시간도 일요일이 가장 길어요. 피크 1~2시간 전에 올려 유튜브가 먼저 시험 노출할 시간을 줘요.</p>
-          <p class="meta">· 쇼츠: <b>월~토 저녁 6시 (금은 5시)</b> — 쇼츠는 저녁 6~11시, 특히 금요일 오후·저녁이 가장 강했어요. 하루 1개만, 본편이 나간 뒤에만 공개해요.</p>
+          <p class="meta">· 본편 쇼츠: <b>월~토 저녁 6시 (금은 5시)</b> — 쇼츠는 저녁 6~11시, 특히 금요일 오후·저녁이 가장 강했어요. 본편이 나간 뒤에만 공개해요.</p>
+          <p class="meta">· 데일리 시장 쇼츠: <b>화~토 낮 12시</b> — 미국장 다음 날 점심시간에 올려요. 본편 쇼츠와 6시간 떨어져 있어서 서로 노출을 나눠 먹지 않아요.</p>
           <p class="meta">· 이미 잡힌 예약과 겹치지 않게 비어 있는 다음 칸에 넣어요. 채널마다 시청자 시간이 달라서, 유튜브 스튜디오 '시청자' 탭 자료가 쌓이면 시간을 다시 맞춰요.</p>
         </details>
         <button class="btn" id="allBtn">남은 영상 전부 예약 업로드</button>
@@ -201,7 +202,8 @@
       // 모바일인덱스(한국 유튜브 사용시간 일요일 최다·목요일 최저), 피크 1~2시간 전 공개 권장(Buffer·SocialPilot·vidIQ)
       const SLOTS = {
         long: [{ d: 2, h: 7 }, { d: 0, h: 8 }], // 화 오전 7시(출근길) · 일 오전 8시(주말 오전 피크 전)
-        short: [{ d: 1, h: 18 }, { d: 2, h: 18 }, { d: 3, h: 18 }, { d: 4, h: 18 }, { d: 5, h: 17 }, { d: 6, h: 18 }], // 월~토 저녁 (금은 5시)
+        short: [{ d: 1, h: 18 }, { d: 2, h: 18 }, { d: 3, h: 18 }, { d: 4, h: 18 }, { d: 5, h: 17 }, { d: 6, h: 18 }], // 본편 쇼츠: 월~토 저녁 (금은 5시)
+        daily: [{ d: 2, h: 12 }, { d: 3, h: 12 }, { d: 4, h: 12 }, { d: 5, h: 12 }, { d: 6, h: 12 }], // 데일리 시장 쇼츠: 화~토 낮 12시 (미국장 다음 날)
       };
       const KST = 9 * 3600e3;
       const kstParts = (ms) => { const d = new Date(ms + KST); return { y: d.getUTCFullYear(), m: d.getUTCMonth(), day: d.getUTCDate(), dow: d.getUTCDay() }; };
@@ -227,6 +229,11 @@
         items.filter((x) => phase(x) === "pub").forEach((x) => x.kind === "long" && (longT[x.ep] = 0));
         for (const it of live.filter((x) => x.kind === "long").sort((a, b) => a.ep.localeCompare(b.ep))) {
           const t = nextSlot("long", now, taken); taken.add(t); plan[it.id] = t; longT[it.ep] = t;
+        }
+        // 데일리 쇼츠는 그날 시장 이야기라, 정해 둔 날짜(publishAt)의 낮 12시 칸을 그대로 써요
+        for (const it of live.filter((x) => x.kind === "daily")) {
+          const d = new Date(it.publishAt).getTime();
+          const t = d >= now ? d : nextSlot("daily", now, taken); taken.add(t); plan[it.id] = t;
         }
         for (const it of live.filter((x) => x.kind === "short").sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }))) {
           const t = nextSlot("short", Math.max(now, (longT[it.ep] || 0) + 3600e3), taken); taken.add(t); plan[it.id] = t;
@@ -271,7 +278,7 @@
           html += `<article class="card item ${it.kind}" id="it-${it.id}">
             <img class="thumb" src="${RAW + esc(pick(it))}" alt="" onerror="this.style.visibility='hidden'" />
             <div>
-              <div class="t"><span class="badge ${it.kind}">${it.kind === "long" ? `${it.ep}편 본편` : `${it.ep}편 쇼츠`}</span>${esc(it.title)}</div>
+              <div class="t"><span class="badge ${it.kind}">${it.kind === "long" ? `${it.ep}편 본편` : it.kind === "daily" ? "데일리 쇼츠" : `${it.ep}편 쇼츠`}</span>${esc(it.title)}</div>
               <div class="row">${st}${it.done ? ` <a href="https://youtu.be/${esc(it.done.id)}" target="_blank" rel="noopener">보기</a>` : ""}</div>
               ${p === "wait" ? `<div class="row">
                 <input type="datetime-local" data-time="${it.id}" value="${localInput(at)}" aria-label="공개 시각" />
@@ -292,6 +299,11 @@
                 <div class="ab">${it.ab.thumbs.map((t, i) => `<button class="pick ${pick(it) === t ? "on" : ""}" data-pick="${it.id}" data-thumb="${esc(t)}"><img src="${RAW + esc(t)}" alt="썸네일 ${i + 1}" /><span>${pick(it) === t ? "✓ 선택" : i + 1}</span></button>`).join("")}</div>
                 <div class="row"><a href="${RAW + esc(pick(it))}" target="_blank" rel="noopener" class="muted">고른 썸네일 원본 보기</a>${it.done ? `<button class="btn sm sub" data-rethumb="${it.id}">이 썸네일로 바꾸기</button>` : ""}</div>
                 ${it.ab.titles.map((t, i) => `<p class="meta"><b>제목 ${i + 1}</b><br />${esc(t)}<br /><button class="btn sm sub" data-copytext="${esc(t)}">복사</button></p>`).join("")}
+              </details>` : ""}
+              ${it.blog ? `<details><summary>📝 네이버 블로그용 글</summary>
+                <p class="meta">네이버는 블로그 자동 글쓰기를 막아 둬서, 복사해 붙여 넣는 방식이에요. ① '글 복사' → 네이버 블로그 앱 글쓰기에 붙여넣기 ② [사진 N] 자리에 아래 사진을 순서대로 넣기 ③ 발행. 3분이면 돼요.</p>
+                <button class="btn sm sub" data-copyblog="${it.id}">글 복사 (${it.blog.text.replace(/\s/g, "").length.toLocaleString()}자)</button>
+                <div class="ab">${it.blog.images.map((t, i) => `<a href="${RAW + esc(t)}" target="_blank" rel="noopener"><img src="${RAW + esc(t)}" alt="사진 ${i + 1}" /><span>사진 ${i + 1}</span></a>`).join("")}</div>
               </details>` : ""}
               ${it.pinned || it.kind === "short" ? `<details><summary>올린 뒤 유튜브 앱에서 할 일</summary>
                 ${it.kind === "short" ? `<p>관련 동영상에 ${it.ep}편 본편을 연결해 주세요. (API로는 연결이 안 돼요)</p>` : ""}
@@ -409,6 +421,12 @@
             box.hidden = true;
             pv.textContent = "▶ 미리보기";
           }
+        }
+        const cb = e.target.closest("[data-copyblog]");
+        if (cb) {
+          const it = items.find((x) => x.id === cb.dataset.copyblog);
+          const link = it.done ? `https://youtu.be/${it.done.id}` : "(영상 링크를 여기에 붙여 주세요)";
+          navigator.clipboard?.writeText(it.blog.text.replace("(영상 링크를 여기에 붙여 주세요)", link)).then(() => (cb.textContent = "복사했어요 ✓"));
         }
         const ct = e.target.closest("[data-copytext]");
         if (ct) navigator.clipboard?.writeText(ct.dataset.copytext).then(() => (ct.textContent = "복사했어요"));
