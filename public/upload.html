@@ -79,10 +79,11 @@
       .state.err { color: var(--red); font-weight: 500; }
       .bar { height: 6px; background: var(--fill); border-radius: 3px; overflow: hidden; margin-top: 10px; }
       .bar i { display: block; height: 100%; background: var(--blue); width: 0; transition: width 0.3s; }
-      .ab { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 8px 0; }
-      .ab a { position: relative; display: block; }
+      .ab { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin: 8px 0; }
+      .ab a, .ab .pick { position: relative; display: block; padding: 0; border: 3px solid transparent; border-radius: 11px; background: none; cursor: pointer; }
+      .ab .pick.on { border-color: var(--blue); }
       .ab img { display: block; width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; }
-      .ab span { position: absolute; left: 4px; top: 4px; background: rgba(0,0,0,.6); color: #fff; font-size: 11px; font-weight: 700; border-radius: 4px; padding: 0 5px; }
+      .ab span { position: absolute; right: 6px; bottom: 6px; background: rgba(0,0,0,.6); color: #fff; font-size: 11px; font-weight: 700; border-radius: 4px; padding: 0 5px; }
       .pv { grid-column: 1 / -1; }
       .pv video { display: block; width: 100%; max-height: 72vh; border-radius: 14px; background: #000; margin-top: 4px; }
       .meta { white-space: pre-line; margin: 8px 0; word-break: break-all; }
@@ -167,6 +168,8 @@
       let items = [];
       let busy = false;
       let PLAN = {};
+      const pick = (it) => { try { return localStorage.getItem("thumb-" + it.id) || it.thumb; } catch { return it.thumb; } };
+      const setPick = (id, t) => { try { localStorage.setItem("thumb-" + id, t); } catch {} };
       const RAW = "https://raw.githubusercontent.com/Jeonghoichoi/my-customassets/media/";
       const CDN = "https://cdn.jsdelivr.net/gh/Jeonghoichoi/my-customassets@media/";
 
@@ -266,7 +269,7 @@
           const pubAt = it.done?.publishAt ? new Date(it.done.publishAt) : at;
           const st = { wait: `<span class="state">대기 중</span>`, sched: `<span class="state done">✓ 예약됨 · ${dayLabel(pubAt)} ${timeLabel(pubAt)} 공개</span>`, pub: `<span class="state done">✓ 공개됨</span>`, draft: `<span class="state">🍳 만드는 중 · ${esc(it.draft || "")}</span>` }[p];
           html += `<article class="card item ${it.kind}" id="it-${it.id}">
-            <img class="thumb" src="${RAW + esc(it.thumb)}" alt="" onerror="this.style.visibility='hidden'" />
+            <img class="thumb" src="${RAW + esc(pick(it))}" alt="" onerror="this.style.visibility='hidden'" />
             <div>
               <div class="t"><span class="badge ${it.kind}">${it.kind === "long" ? `${it.ep}편 본편` : `${it.ep}편 쇼츠`}</span>${esc(it.title)}</div>
               <div class="row">${st}${it.done ? ` <a href="https://youtu.be/${esc(it.done.id)}" target="_blank" rel="noopener">보기</a>` : ""}</div>
@@ -284,9 +287,10 @@
                 <p class="meta"><b>설명</b><br />${esc(it.description)}</p>
                 <p class="meta"><b>태그 ${it.tags.length}개</b><br />${esc(it.tags.join(", "))}</p>
               </details>
-              ${it.ab ? `<details><summary>썸네일·제목 A/B 테스트 (3개씩)</summary>
-                <p class="meta">유튜브 API로는 A/B 테스트를 넣을 수 없어요. 예약 업로드는 1번으로 올라가요. 올린 뒤 PC 유튜브 스튜디오 → 영상 세부정보 → 썸네일 옆 <b>'테스트 및 비교'</b>에서 아래 3개를 넣어 주세요. 이미지는 눌러서 길게 누르면 저장돼요.</p>
-                <div class="ab">${it.ab.thumbs.map((t, i) => `<a href="${RAW + esc(t)}" target="_blank" rel="noopener"><img src="${RAW + esc(t)}" alt="썸네일 ${i + 1}" /><span>${i + 1}</span></a>`).join("")}</div>
+              ${it.ab ? `<details ${it.ab.thumbs.length > 1 ? "open" : ""}><summary>썸네일 고르기 (${it.ab.thumbs.length}개) · 제목 ${it.ab.titles.length}개</summary>
+                <p class="meta">눌러서 고르면 그 썸네일로 올라가요. A/B 테스트를 하려면 올린 뒤 PC 유튜브 스튜디오 → 영상 세부정보 → 썸네일 옆 <b>'테스트 및 비교'</b>에 마음에 드는 2~3개를 넣어 주세요. 저장은 '원본'을 눌러 길게 누르면 돼요.</p>
+                <div class="ab">${it.ab.thumbs.map((t, i) => `<button class="pick ${pick(it) === t ? "on" : ""}" data-pick="${it.id}" data-thumb="${esc(t)}"><img src="${RAW + esc(t)}" alt="썸네일 ${i + 1}" /><span>${pick(it) === t ? "✓ 선택" : i + 1}</span></button>`).join("")}</div>
+                <div class="row"><a href="${RAW + esc(pick(it))}" target="_blank" rel="noopener" class="muted">고른 썸네일 원본 보기</a>${it.done ? `<button class="btn sm sub" data-rethumb="${it.id}">이 썸네일로 바꾸기</button>` : ""}</div>
                 ${it.ab.titles.map((t, i) => `<p class="meta"><b>제목 ${i + 1}</b><br />${esc(t)}<br /><button class="btn sm sub" data-copytext="${esc(t)}">복사</button></p>`).join("")}
               </details>` : ""}
               ${it.pinned || it.kind === "short" ? `<details><summary>올린 뒤 유튜브 앱에서 할 일</summary>
@@ -331,7 +335,7 @@
               await new Promise((r) => setTimeout(r, 2000 * tries));
             }
           }
-          const f = await api(`yt/finish/${id}`, { "x-yt-video": vid });
+          const f = await api(`yt/finish/${id}`, { "x-yt-video": vid, "x-yt-thumb": pick(it) });
           set(1);
           it.done = { id: vid, privacy: "private", publishAt: h["x-yt-publish"] || it.publishAt };
           render();
@@ -370,6 +374,16 @@
             busy = false;
             render();
           });
+        }
+        const pk = e.target.closest("[data-pick]");
+        if (pk) { setPick(pk.dataset.pick, pk.dataset.thumb); render(); const d = $(`#it-${pk.dataset.pick} details`); return; }
+        const rt = e.target.closest("[data-rethumb]");
+        if (rt && !busy) {
+          const it = items.find((x) => x.id === rt.dataset.rethumb);
+          rt.disabled = true; rt.textContent = "바꾸는 중…";
+          api(`yt/thumb/${it.id}`, { "x-yt-video": it.done.id, "x-yt-thumb": pick(it) })
+            .then(() => (rt.textContent = "바꿨어요 ✓"))
+            .catch((er) => (rt.textContent = er.message));
         }
         const mv = e.target.closest("[data-move]");
         if (mv && !busy) {

@@ -220,6 +220,31 @@ async function chunk(id, headers) {
   throw fail(502, ytMessage(j.error?.errors?.[0]?.reason || res.status, j.error?.message));
 }
 
+function pickThumb(it, headers) {
+  const want = headers["x-yt-thumb"];
+  const ok = [it.thumb, ...((it.ab && it.ab.thumbs) || [])];
+  return want && ok.includes(want) ? want : it.thumb;
+}
+
+async function setThumb(videoId, path) {
+  const img = Buffer.from(await (await fetch(media(path))).arrayBuffer());
+  await yt(`https://www.googleapis.com/upload/youtube/v3/thumbnails/set?videoId=${videoId}&uploadType=media`, {
+    method: "POST",
+    headers: { "content-type": "image/png", "content-length": String(img.length) },
+    body: img,
+  });
+}
+
+// 이미 올린 영상의 썸네일만 바꾸기
+async function thumb(id, headers) {
+  const it = item(id);
+  const videoId = headers["x-yt-video"] || "";
+  if (!/^[\w-]{6,20}$/.test(videoId)) throw fail(400, "영상 ID가 이상해요.");
+  const path = pickThumb(it, headers);
+  await setThumb(videoId, path);
+  return { videoId, thumb: path };
+}
+
 // 3단계: 썸네일·자막 붙이기 (실패해도 영상은 이미 올라가 있어요)
 async function finish(id, headers) {
   const it = item(id);
@@ -228,12 +253,7 @@ async function finish(id, headers) {
   const notes = [];
   if (it.thumb) {
     try {
-      const img = Buffer.from(await (await fetch(media(it.thumb))).arrayBuffer());
-      await yt(`https://www.googleapis.com/upload/youtube/v3/thumbnails/set?videoId=${videoId}&uploadType=media`, {
-        method: "POST",
-        headers: { "content-type": "image/png", "content-length": String(img.length) },
-        body: img,
-      });
+      await setThumb(videoId, pickThumb(it, headers));
       notes.push(it.kind === "short" ? "커버 이미지를 보냈어요 (쇼츠는 유튜브 앱에서 커버가 다르게 보일 수 있어요)" : "썸네일을 넣었어요");
     } catch (e) {
       notes.push(`썸네일은 못 넣었어요: ${e.message}`);
@@ -294,10 +314,10 @@ async function handleYt(path, headers) {
   if (path === "yt/status") return status();
   if (path === "yt/auth") return authUrl(headers);
   if (path === "yt/token") return exchange(headers);
-  const m = path.match(/^yt\/(start|chunk|finish|reschedule)\/([\w-]{1,20})$/);
+  const m = path.match(/^yt\/(start|chunk|finish|reschedule|thumb)\/([\w-]{1,20})$/);
   if (!m) return null;
   if (!cfg().refresh) throw fail(400, "아직 유튜브가 연결되지 않았어요.");
-  return { start, chunk, finish, reschedule }[m[1]](m[2], headers);
+  return { start, chunk, finish, reschedule, thumb }[m[1]](m[2], headers);
 }
 
 module.exports = { handleYt };
