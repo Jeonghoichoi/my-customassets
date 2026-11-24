@@ -262,15 +262,42 @@ async function finish(id, headers) {
   return { videoId, url: `https://youtu.be/${videoId}`, notes };
 }
 
+// 이미 예약한 영상의 공개 시각 옮기기 (아직 비공개 예약 상태일 때만)
+async function reschedule(id, headers) {
+  const videoId = headers["x-yt-video"] || "";
+  if (!/^[\w-]{6,20}$/.test(videoId)) throw fail(400, "영상 ID가 이상해요.");
+  const at = publishTime({ publishAt: "" }, headers);
+  const cur = await (await yt(`https://www.googleapis.com/youtube/v3/videos?part=status&id=${videoId}`)).json();
+  const st = cur.items?.[0]?.status;
+  if (!st) throw fail(404, "채널에서 이 영상을 찾지 못했어요.");
+  if (st.privacyStatus !== "private" || !st.publishAt) throw fail(409, "이미 공개된 영상은 시각을 옮길 수 없어요.");
+  await yt("https://www.googleapis.com/youtube/v3/videos?part=status", {
+    method: "PUT",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      id: videoId,
+      status: {
+        privacyStatus: "private",
+        publishAt: at,
+        embeddable: st.embeddable,
+        license: st.license,
+        publicStatsViewable: st.publicStatsViewable,
+        selfDeclaredMadeForKids: st.madeForKids ?? false,
+      },
+    }),
+  });
+  return { videoId, publishAt: at };
+}
+
 // path 예: "yt/status", "yt/auth", "yt/token", "yt/start/52", "yt/chunk/52", "yt/finish/52-1"
 async function handleYt(path, headers) {
   if (path === "yt/status") return status();
   if (path === "yt/auth") return authUrl(headers);
   if (path === "yt/token") return exchange(headers);
-  const m = path.match(/^yt\/(start|chunk|finish)\/([\w-]{1,20})$/);
+  const m = path.match(/^yt\/(start|chunk|finish|reschedule)\/([\w-]{1,20})$/);
   if (!m) return null;
   if (!cfg().refresh) throw fail(400, "아직 유튜브가 연결되지 않았어요.");
-  return { start, chunk, finish }[m[1]](m[2], headers);
+  return { start, chunk, finish, reschedule }[m[1]](m[2], headers);
 }
 
 module.exports = { handleYt };

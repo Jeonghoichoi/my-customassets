@@ -134,6 +134,12 @@
           <div><span class="muted">예약됨</span><b id="nSched">0</b></div>
           <div><span class="muted">공개됨</span><b id="nPub">0</b></div>
         </div>
+        <button class="btn sub" id="planBtn" style="margin-bottom: 10px">⏰ 추천 시간으로 자동 배치</button>
+        <details class="muted" style="margin: 0 0 12px"><summary>추천 시간은 이렇게 정해요</summary>
+          <p class="meta">· 본편: <b>화 오전 7시 · 일 오전 8시</b> — 180만 개 영상 분석에서 롱폼은 아침(8~11시)과 일요일 오전이 가장 강했고, 한국 유튜브 사용시간도 일요일이 가장 길어요. 피크 1~2시간 전에 올려 유튜브가 먼저 시험 노출할 시간을 줘요.</p>
+          <p class="meta">· 쇼츠: <b>월~토 저녁 6시 (금은 5시)</b> — 쇼츠는 저녁 6~11시, 특히 금요일 오후·저녁이 가장 강했어요. 하루 1개만, 본편이 나간 뒤에만 공개해요.</p>
+          <p class="meta">· 이미 잡힌 예약과 겹치지 않게 비어 있는 다음 칸에 넣어요. 채널마다 시청자 시간이 달라서, 유튜브 스튜디오 '시청자' 탭 자료가 쌓이면 시간을 다시 맞춰요.</p>
+        </details>
         <button class="btn" id="allBtn">남은 영상 전부 예약 업로드</button>
         <p class="muted" id="nDraft" style="margin: 10px 0 0"></p>
         <p class="muted" style="margin: 10px 0 0">올리는 동안 이 화면을 켜 두세요. 영상 하나에 30초쯤 걸려요. 하루 최대 100개까지 올릴 수 있어요.</p>
@@ -160,6 +166,7 @@
       const show = (id, on = true) => ($(id).hidden = !on);
       let items = [];
       let busy = false;
+      let PLAN = {};
       const RAW = "https://raw.githubusercontent.com/Jeonghoichoi/my-customassets/media/";
       const CDN = "https://cdn.jsdelivr.net/gh/Jeonghoichoi/my-customassets@media/";
 
@@ -186,6 +193,50 @@
       const localInput = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60e3).toISOString().slice(0, 16);
       const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
+      // ── 추천 공개 시각 (한국 시간) ──
+      // 근거: Buffer 180만 개 영상 분석(롱폼은 아침·일요일, 쇼츠는 저녁 6~9시·금요일 강세),
+      // 모바일인덱스(한국 유튜브 사용시간 일요일 최다·목요일 최저), 피크 1~2시간 전 공개 권장(Buffer·SocialPilot·vidIQ)
+      const SLOTS = {
+        long: [{ d: 2, h: 7 }, { d: 0, h: 8 }], // 화 오전 7시(출근길) · 일 오전 8시(주말 오전 피크 전)
+        short: [{ d: 1, h: 18 }, { d: 2, h: 18 }, { d: 3, h: 18 }, { d: 4, h: 18 }, { d: 5, h: 17 }, { d: 6, h: 18 }], // 월~토 저녁 (금은 5시)
+      };
+      const KST = 9 * 3600e3;
+      const kstParts = (ms) => { const d = new Date(ms + KST); return { y: d.getUTCFullYear(), m: d.getUTCMonth(), day: d.getUTCDate(), dow: d.getUTCDay() }; };
+      const kstAt = (y, m, day, h) => Date.UTC(y, m, day, h) - KST;
+      function nextSlot(kind, after, taken) {
+        for (let i = 0; i < 60; i++) {
+          const p = kstParts(after + i * 86400e3);
+          for (const s of SLOTS[kind]) {
+            if (s.d !== p.dow) continue;
+            const t = kstAt(p.y, p.m, p.day, s.h);
+            if (t >= after && !taken.has(t)) return t;
+          }
+        }
+        return after;
+      }
+      // 아직 공개 전인 영상(대기·예약됨)을 본편 → 쇼츠 순서로 추천 시각에 배치해요. 쇼츠는 자기 본편 공개 뒤에만 나가요
+      function planTimes() {
+        const now = Date.now() + 3 * 3600e3;
+        const taken = new Set();
+        const plan = {};
+        const live = items.filter((x) => !x.draft || x.done).filter((x) => phase(x) !== "pub");
+        const longT = {};
+        items.filter((x) => phase(x) === "pub").forEach((x) => x.kind === "long" && (longT[x.ep] = 0));
+        for (const it of live.filter((x) => x.kind === "long").sort((a, b) => a.ep.localeCompare(b.ep))) {
+          const t = nextSlot("long", now, taken); taken.add(t); plan[it.id] = t; longT[it.ep] = t;
+        }
+        for (const it of live.filter((x) => x.kind === "short").sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }))) {
+          const t = nextSlot("short", Math.max(now, (longT[it.ep] || 0) + 3600e3), taken); taken.add(t); plan[it.id] = t;
+        }
+        return plan;
+      }
+      const fmtSlot = (ms) => { const d = new Date(ms); return `${dayLabel(d)} ${timeLabel(d)}`; };
+      function autoPlace() {
+        const plan = planTimes();
+        items.forEach((it) => { if (phase(it) === "wait" && plan[it.id]) it.publishAt = new Date(plan[it.id]).toISOString(); });
+        render();
+      }
+
       function phase(it) {
         if (!it.done && it.draft) return "draft";
         if (!it.done) return "wait";
@@ -203,10 +254,11 @@
         $("#nDraft").textContent = n.draft ? `만드는 중 ${n.draft}개는 완성되면 버튼이 켜져요.` : "";
         $("#allBtn").disabled = busy || !n.wait;
 
+        PLAN = planTimes();
         let html = "";
         let last = "";
         for (const it of items) {
-          const at = new Date(it.publishAt);
+          const at = new Date(it.done?.publishAt || it.publishAt);
           const day = dayLabel(at);
           if (day !== last) html += `<p class="day">${day}</p>`;
           last = day;
@@ -222,6 +274,7 @@
                 <input type="datetime-local" data-time="${it.id}" value="${localInput(at)}" aria-label="공개 시각" />
                 <button class="btn sm" data-up="${it.id}" ${busy ? "disabled" : ""}>예약 업로드</button></div>
                 <div class="row" data-parentrow="${it.id}" hidden><input data-parent="${it.id}" inputmode="url" placeholder="본편 주소 (https://youtu.be/...)" /></div>` : ""}
+              ${p === "sched" && PLAN[it.id] && Math.abs(PLAN[it.id] - pubAt.getTime()) > 60e3 ? `<div class="row"><span class="muted">추천: ${fmtSlot(PLAN[it.id])}</span><button class="btn sm sub" data-move="${it.id}" data-t="${PLAN[it.id]}" ${busy ? "disabled" : ""}>이 시각으로 옮기기</button></div>` : ""}
               <div class="bar" data-bar="${it.id}" hidden><i></i></div>
               <p class="state err" data-err="${it.id}" hidden></p>
               <ul class="notes" data-notes="${it.id}"></ul>
@@ -318,6 +371,16 @@
             render();
           });
         }
+        const mv = e.target.closest("[data-move]");
+        if (mv && !busy) {
+          const it = items.find((x) => x.id === mv.dataset.move);
+          const iso = new Date(Number(mv.dataset.t)).toISOString();
+          mv.disabled = true;
+          mv.textContent = "옮기는 중…";
+          api(`yt/reschedule/${it.id}`, { "x-yt-video": it.done.id, "x-yt-publish": iso })
+            .then(() => { it.done.publishAt = iso; render(); })
+            .catch((er) => { mv.textContent = er.message; });
+        }
         const pv = e.target.closest("[data-pv]");
         if (pv) {
           // 영상은 누를 때만 불러와요 (데이터 아끼기). jsDelivr가 휴대폰에서 바로 재생되는 형식으로 보내 줘요
@@ -341,6 +404,7 @@
           navigator.clipboard?.writeText(it.pinned).then(() => (cp.textContent = "복사했어요"));
         }
       });
+      $("#planBtn").addEventListener("click", () => !busy && autoPlace());
       $("#allBtn").addEventListener("click", () => {
         if (busy) return;
         // 본편이 먼저 올라가야 쇼츠 설명에 본편 링크를 넣을 수 있어요
@@ -386,6 +450,7 @@
           show("#sumCard", true);
           $("#channel").textContent = s.connected ? `${s.channel} 채널에 연결됐어요` : "아직 연결 전이라 올린 상태는 확인하지 못해요";
           $("#allBtn").hidden = !s.connected;
+          if (items.some((x) => phase(x) === "wait" && new Date(x.publishAt).getTime() < Date.now() + 3600e3)) autoPlace();
           render();
           if (!s.connected) document.querySelectorAll("[data-up]").forEach((b) => (b.disabled = true));
         } catch (e) {
