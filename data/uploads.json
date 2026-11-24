@@ -179,7 +179,8 @@
    "publishAt": "2026-11-28T12:00:00+09:00",
    "thumb": "56/cover1_v1.png",
    "parent": "56",
-   "draft": "음성 녹음 후 영상을 만들고 있어요"
+   "video": "56/short1_v1.mp4",
+   "size": 1921949
   },
   {
    "id": "56-2",
@@ -266,7 +267,8 @@
    "publishAt": "2026-11-30T12:00:00+09:00",
    "thumb": "56/cover2_v1.png",
    "parent": "56",
-   "draft": "음성 녹음 후 영상을 만들고 있어요"
+   "video": "56/short2_v1.mp4",
+   "size": 1758548
   },
   {
    "id": "56-3",
@@ -352,7 +354,8 @@
    "publishAt": "2026-12-01T12:00:00+09:00",
    "thumb": "56/cover3_v1.png",
    "parent": "56",
-   "draft": "음성 녹음 후 영상을 만들고 있어요"
+   "video": "56/short3_v1.mp4",
+   "size": 1758042
   },
   {
    "id": "56-4",
@@ -440,7 +443,8 @@
    "publishAt": "2026-12-02T12:00:00+09:00",
    "thumb": "56/cover4_v1.png",
    "parent": "56",
-   "draft": "음성 녹음 후 영상을 만들고 있어요"
+   "video": "56/short4_v1.mp4",
+   "size": 1648259
   },
   {
    "id": "56-5",
@@ -526,7 +530,8 @@
    "publishAt": "2026-12-03T12:00:00+09:00",
    "thumb": "56/cover5_v1.png",
    "parent": "56",
-   "draft": "음성 녹음 후 영상을 만들고 있어요"
+   "video": "56/short5_v1.mp4",
+   "size": 1653918
   }
  ]
 }
