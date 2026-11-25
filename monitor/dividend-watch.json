@@ -1,0 +1,45 @@
+{
+  "updatedAt": "2026-11-26",
+  "lastFullScan": "2026-11-25",
+  "notes": "첫 실행: 2026-11-25 기준선(11/3 Simply Safe Dividends 수익률)으로 시작. 11/26 실행에서 11/25 종가를 확인할 수 있는 날짜 맞는 시세 페이지를 찾지 못해 수익률·배수는 기준선 값 유지(미확인). 11/26은 미국 추수감사절 휴장.",
+  "lastAlert": { "date": null, "ratios": { "MKC": 1.82, "PEP": 1.44, "MZTI": 1.78 } },
+  "stocks": {
+    "MKC": {
+      "name": "맥코믹", "streak": 40, "yield": 4.10, "avgYield": 2.25, "ratio": 1.82,
+      "priceDate": "2026-11-03 (기준선, 11/25 종가 미확인)",
+      "revenueDownYears10": 0, "revenueCagr5": null, "revenueAsOf": "기준선",
+      "guidance": { "text": "2026 유기적 매출 +1~3% 유지", "date": "기준선", "clear": true, "cut": false, "epsCut": false },
+      "lastEarnings": "기준선 미기재",
+      "status": "통과",
+      "check": "2026-11-26: 새 실적·가이던스 변경 확인 안 됨. 11/25 장중 기사(finexus, 2차 출처)에 분기 배당 $0.51 언급 있으나 1차 출처 미확인. Unilever Foods 합병 영국 CMA 심사 진행 중.",
+      "sources": ["Simply Safe Dividends (2026-11-03 수익률, 기준선)", "https://api.finexus.net/api/news/earnings/129339/html"]
+    },
+    "PEP": {
+      "name": "펩시코", "streak": 54, "yield": 4.42, "avgYield": 3.08, "ratio": 1.44,
+      "priceDate": "2026-11-03 (기준선, 11/25 종가 미확인)",
+      "revenueDownYears10": 1, "revenueCagr5": null, "revenueAsOf": "기준선 (감소 2016)",
+      "guidance": { "text": "2026 유기적 매출 약 +3%, core EPS 전망 하향(주의)", "date": "기준선", "clear": true, "cut": false, "epsCut": true },
+      "dividend": { "quarterly": 1.48, "annual": 5.92, "declared": "2026-11-18", "record": "2026-12-04", "pay": "2027-01-06", "note": "6월 발표한 연 $5.69→$5.92 증액에 따른 정기 배당. 새 증액 아님. 회사 발표상 54년 연속 증액" },
+      "lastEarnings": "기준선 미기재",
+      "status": "통과(주의)",
+      "check": "2026-11-26: 11/24 종가 142.68(financialcontent)만 확인, 11/25 종가 미확인. 증액 연수 53→54(펩시코 11/18 보도자료 '54th consecutive annual dividend increase').",
+      "sources": ["Simply Safe Dividends (2026-11-03 수익률, 기준선)", "https://www.pepsico.com/newsroom/press-releases/2026/pepsico-declares-quarterly-dividend-1126"]
+    },
+    "MZTI": {
+      "name": "마르체티", "streak": 64, "yield": 3.67, "avgYield": 2.06, "ratio": 1.78,
+      "priceDate": "2026-11-03 (기준선, 11/25 종가 미확인)",
+      "revenueDownYears10": 0, "revenueCagr5": null, "revenueAsOf": "기준선",
+      "guidance": { "text": "연간 매출 가이던스 불명확, 이익률(FY27) 전망 하향", "date": "기준선", "clear": false, "cut": false, "epsCut": true },
+      "dividend": { "quarterly": 1.05, "declared": "2026-11-11", "record": "2026-12-04", "pay": "2026-12-31", "note": "분기 $1.00→$1.05 증액, 회사 발표상 64년 연속 증액. FY27 연간 지급 예정 $4.15(회사 표기)" },
+      "lastEarnings": "기준선 미기재",
+      "status": "관찰",
+      "check": "2026-11-26: 11/11 배당 증액(기준선 날짜 이전 발표)을 반영해 증액 연수 63→64로 정정. 새 배당 기준 수익률은 11/25 종가 미확인이라 재계산 안 함.",
+      "sources": ["Simply Safe Dividends (2026-11-03 수익률, 기준선)", "https://www.sec.gov/Archives/edgar/data/0000057515/000005751526000032/mzti-20261111.htm", "https://stockanalysis.com/stocks/mzti/dividend"]
+    },
+    "CLX": { "name": "클로락스", "status": "제외", "reason": "매출 조건 탈락 (기준선)", "sources": ["기준선"] },
+    "BF.B": { "name": "브라운포맨", "status": "제외", "reason": "매출 조건 탈락 (기준선)", "sources": ["기준선"] },
+    "HRL": { "name": "호멜푸드", "status": "제외", "reason": "매출 조건 탈락 (기준선)", "sources": ["기준선"] },
+    "FUL": { "name": "H.B. 풀러", "status": "제외", "reason": "매출 조건 탈락 (기준선)", "sources": ["기준선"] },
+    "BDX": { "name": "벡톤디킨슨", "status": "제외", "reason": "매출 조건 탈락 (기준선)", "sources": ["기준선"] }
+  }
+}
