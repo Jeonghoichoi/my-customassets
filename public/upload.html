@@ -233,7 +233,8 @@
         // 데일리 쇼츠는 그날 시장 이야기라, 정해 둔 날짜(publishAt)의 낮 12시 칸을 그대로 써요
         for (const it of live.filter((x) => x.kind === "daily")) {
           const d = new Date(it.publishAt).getTime();
-          const t = d >= now ? d : nextSlot("daily", now, taken); taken.add(t); plan[it.id] = t;
+          const soon = Date.now() + 30 * 60e3; // 데일리는 그날 소식이라 30분 여유만 둬요
+          const t = d >= soon ? d : nextSlot("daily", soon, taken); taken.add(t); plan[it.id] = t;
         }
         for (const it of live.filter((x) => x.kind === "short").sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }))) {
           const t = nextSlot("short", Math.max(now, (longT[it.ep] || 0) + 3600e3), taken); taken.add(t); plan[it.id] = t;
