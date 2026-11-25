@@ -93,6 +93,25 @@
       details { margin-top: 8px; font-size: 13px; color: var(--ink-2); }
       details summary { cursor: pointer; color: var(--ink-3); font-weight: 600; }
       a { color: var(--blue); }
+      a.btn { text-decoration: none; text-align: center; }
+      .tabs { display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: var(--fill); margin: 10px 0 8px; }
+      .tabs button { flex: 1; min-height: 34px; border: 0; border-radius: 9px; background: none; color: var(--ink-3); font: 600 13px var(--sans); cursor: pointer; }
+      .tabs button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 3px rgba(0, 27, 55, 0.08); }
+      .cap { white-space: pre-line; word-break: break-all; background: var(--fill); border-radius: 12px; padding: 12px; margin: 8px 0; font-size: 14px; }
+      .plat { display: inline-block; font-size: 12px; font-weight: 700; border-radius: 6px; padding: 1px 7px; margin: 2px 4px 2px 0; background: var(--fill); color: var(--ink-3); }
+      .plat.on { background: var(--blue-soft); color: var(--blue); }
+      .mis { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 10px 0; }
+      .mis div { background: var(--fill); border-radius: 14px; padding: 12px; }
+      .mis b { display: block; font-size: 20px; font-weight: 800; }
+      .mis b small { font-size: 13px; font-weight: 600; color: var(--ink-3); }
+      .mis .ok b { color: var(--blue); }
+      .mis-line { display: flex; justify-content: space-between; gap: 8px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px; }
+      .mis-line:first-of-type { border-top: 0; }
+      .mis-line span:last-child { font-weight: 700; white-space: nowrap; }
+      .mis-line.ok span:last-child { color: var(--blue); }
+      .set { display: grid; gap: 8px; margin-top: 8px; }
+      .set label { font-size: 13px; color: var(--ink-2); font-weight: 600; }
+      .set .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
       [hidden] { display: none !important; }
       @media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
     </style>
@@ -145,6 +164,31 @@
         <button class="btn" id="allBtn">남은 영상 전부 예약 업로드</button>
         <p class="muted" id="nDraft" style="margin: 10px 0 0"></p>
         <p class="muted" style="margin: 10px 0 0">올리는 동안 이 화면을 켜 두세요. 영상 하나에 30초쯤 걸려요. 하루 최대 100개까지 올릴 수 있어요.</p>
+      </section>
+
+      <section class="card" id="clipCard" hidden>
+        <h2>네이버 클립 미션</h2>
+        <p class="muted" id="clipSub"></p>
+        <div class="mis" id="clipNow"></div>
+        <div id="clipLines"></div>
+        <button class="btn sub sm" id="clipPostBtn">＋ 게시물 1개 올렸어요</button>
+        <button class="btn sub sm" id="clipUndo">마지막 기록 취소</button>
+        <details id="clipSetBox"><summary>이달의 해시태그·목표 바꾸기</summary>
+          <div class="set">
+            <label>이달의 해시태그 (클립 수익 화면에서 확인해서 넣어요)<input id="setTag" placeholder="#이달의해시태그" /></label>
+            <label>이달의 보너스 태그 · 정보태그<input id="setInfo" placeholder="#보너스태그" /></label>
+            <div class="two">
+              <label>주간 동영상<input id="setWv" inputmode="numeric" /></label>
+              <label>주간 게시물<input id="setWp" inputmode="numeric" /></label>
+              <label>4주차 추가 동영상<input id="setXv" inputmode="numeric" /></label>
+              <label>4주차 추가 게시물<input id="setXp" inputmode="numeric" /></label>
+              <label>이달 동영상<input id="setMv" inputmode="numeric" /></label>
+              <label>이달 게시물<input id="setMp" inputmode="numeric" /></label>
+            </div>
+            <button class="btn sm" id="setSave">저장</button>
+          </div>
+          <p class="muted">네이버 클립은 외부 업로드 API가 없어서, 올린 뒤 '클립에 올렸어요'를 눌러 기록해요. 기록은 이 휴대폰에만 저장돼요. 주는 월요일부터 세고, 4주차는 그달 22일이 들어 있는 주로 셌어요. 네이버 기준이 바뀌면 위 숫자를 고쳐 주세요.</p>
+        </details>
       </section>
 
       <p class="card state err" id="err" hidden></p>
@@ -248,6 +292,124 @@
         render();
       }
 
+      // ── 틱톡 라이트 · 인스타 릴스 · 네이버 클립 (복사해서 올리는 반자동) ──
+      // 같은 시각에 모든 곳에 몰아 올리지 않고, 플랫폼마다 사람이 많이 보는 시각으로 나눠요.
+      // 틱톡: Buffer 710만 개 게시물 분석(2026)의 요일별 1순위 시각 · 릴스: Buffer 인스타 분석(2026) 평일 오전 9시·저녁 6시, 금요일 제외
+      // 클립: 공개된 시간대 자료가 없어 저녁 8시를 기본으로 두고, 조회수를 보며 맞춰요
+      const PSLOTS = {
+        tiktok: [{ d: 1, h: 13 }, { d: 2, h: 6 }, { d: 3, h: 22 }, { d: 4, h: 13 }, { d: 5, h: 18 }, { d: 6, h: 17 }, { d: 0, h: 9 }],
+        reels: [1, 2, 3, 4].flatMap((d) => [{ d, h: 9 }, { d, h: 18 }]),
+        clip: [0, 1, 2, 3, 4, 5, 6].map((d) => ({ d, h: 20 })),
+      };
+      const PNAME = { tiktok: "틱톡 라이트", reels: "인스타 릴스", clip: "네이버 클립" };
+      const social = () => store("social", {});
+      function store(k, def) { try { return JSON.parse(localStorage.getItem(k) || "null") ?? def; } catch { return def; } }
+      function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+      // 유튜브 공개 3시간 뒤부터, 그 플랫폼의 다음 추천 칸
+      function platSlot(pl, it) {
+        const base = new Date(it.done?.publishAt || it.publishAt).getTime() + 3 * 3600e3;
+        const after = Math.max(base, Date.now());
+        for (let i = 0; i < 14; i++) {
+          const p = kstParts(after + i * 86400e3);
+          const hit = PSLOTS[pl].filter((s) => s.d === p.dow).map((s) => kstAt(p.y, p.m, p.day, s.h)).filter((t) => t >= after).sort((a, b) => a - b)[0];
+          if (hit) return hit;
+        }
+        return after;
+      }
+      const cleanTitle = (t) => t.replace(/\s*#shorts\b/gi, "").replace(/\s*\|\s*\d+월 \d+일.*$/, "").trim();
+      const tagsOf = (it, n) => {
+        const skip = /^(shorts|쇼츠|배당셰프)$/i;
+        return ["배당셰프", ...it.tags.filter((t) => !skip.test(t))].slice(0, n).map((t) => "#" + t.replace(/\s+/g, ""));
+      };
+      const bodyOf = (it) => it.description.split("\n").filter((l) => l.trim() && !/^출처|투자 권유|^https?:|본편|youtu/.test(l)).slice(0, 3).join("\n");
+      const note = "※ 투자 권유가 아니에요.";
+      function caption(pl, it) {
+        const set = clipSet();
+        if (pl === "tiktok") return [cleanTitle(it.title), "", bodyOf(it), "", note, "", tagsOf(it, 5).join(" ")].join("\n");
+        if (pl === "reels") return [cleanTitle(it.title), "", bodyOf(it), "", "더 긴 이야기는 유튜브 '배당셰프'에서 볼 수 있어요.", note, "", tagsOf(it, 12).join(" ")].join("\n");
+        const extra = [set.tag, set.info].filter(Boolean).flatMap((x) => x.split(/\s+/)).map((x) => (x.startsWith("#") ? x : "#" + x));
+        return [cleanTitle(it.title), "", bodyOf(it), "", note, "", [...extra, ...tagsOf(it, 5)].filter((x, i, a) => a.indexOf(x) === i).join(" ")].join("\n");
+      }
+      // 클립 게시물(사진+글) 미션용: 쇼츠 하나로 게시물 1개 거리
+      function clipPost(it) {
+        const set = clipSet();
+        const lines = it.description.split("\n").filter((l) => l.trim() && !/^출처|투자 권유|^https?:|youtu/.test(l)).slice(0, 4);
+        const extra = [set.tag, set.info].filter(Boolean).flatMap((x) => x.split(/\s+/)).map((x) => (x.startsWith("#") ? x : "#" + x));
+        return [cleanTitle(it.title), "", ...lines, "", note, "", [...extra, ...tagsOf(it, 4)].filter((x, i, a) => a.indexOf(x) === i).join(" ")].join("\n");
+      }
+      const DEF_SET = { tag: "", info: "", wv: 3, wp: 5, xv: 2, xp: 4, mv: 10, mp: 15 };
+      const clipSet = () => ({ ...DEF_SET, ...store("clipSet", {}) });
+      const clipLog = () => store("clipLog", []); // [{t: ISO, k: "v"|"p", id}]
+      function weekStart(ms) {
+        const p = kstParts(ms);
+        const back = (p.dow + 6) % 7; // 월요일부터
+        return kstAt(p.y, p.m, p.day - back, 0);
+      }
+      function renderClip() {
+        const set = clipSet();
+        const log = clipLog();
+        const now = Date.now();
+        const ws = weekStart(now);
+        const p = kstParts(now);
+        const ms = kstAt(p.y, p.m, 1, 0);
+        const cnt = (from, k, tagOnly) => log.filter((x) => new Date(x.t).getTime() >= from && x.k === k && (!tagOnly || x.tag)).length;
+        const wv = cnt(ws, "v"), wp = cnt(ws, "p"), mv = cnt(ms, "v"), mp = cnt(ms, "p");
+        // 4주차: 그달 22일이 들어 있는 주
+        const d22 = kstAt(p.y, p.m, 22, 12);
+        const isW4 = weekStart(d22) === ws;
+        const box = (label, n, goal) => `<div class="${n >= goal ? "ok" : ""}"><span class="muted">${label}</span><b>${n}<small> / ${goal}</small></b></div>`;
+        $("#clipSub").textContent = `${p.m + 1}월 · 이번 주 월요일부터 센 기록이에요`;
+        $("#clipNow").innerHTML = box("이번 주 동영상", wv, set.wv) + box("이번 주 게시물", wp, set.wp);
+        const tv = cnt(ms, "v", true), tp = cnt(ms, "p", true);
+        const line = (label, ok, right) => `<div class="mis-line ${ok ? "ok" : ""}"><span>${label}</span><span>${ok ? "✓ " : ""}${right}</span></div>`;
+        $("#clipLines").innerHTML =
+          (isW4 ? line("4주차 추가혜택", wv >= set.wv + set.xv && wp >= set.wp + set.xp, `동영상 ${Math.max(0, wv - set.wv)}/${set.xv} · 게시물 ${Math.max(0, wp - set.wp)}/${set.xp}`) : "") +
+          line("이달의 활동 미션", mv >= set.mv || mp >= set.mp, `동영상 ${mv}/${set.mv} 또는 게시물 ${mp}/${set.mp}`) +
+          line(`이달의 해시태그 미션${set.tag ? ` (${esc(set.tag)})` : ""}`, tv >= 1 || tp >= 2, set.tag ? `동영상 ${tv}/1 또는 게시물 ${tp}/2` : "해시태그를 넣어 주세요");
+        show("#clipCard", true);
+      }
+      function addClip(k, id) {
+        const log = clipLog();
+        log.push({ t: new Date().toISOString(), k, id: id || null, tag: Boolean(clipSet().tag) });
+        save("clipLog", log.slice(-400));
+      }
+      function socialBox(it) {
+        if (it.kind === "long" || !it.video) return "";
+        const done = social()[it.id] || {};
+        const tab = store("socialTab", "tiktok");
+        const chips = Object.keys(PNAME).map((pl) => `<span class="plat ${done[pl] ? "on" : ""}">${done[pl] ? "✓ " : ""}${PNAME[pl]}</span>`).join("");
+        const pane = (pl) => {
+          const t = platSlot(pl, it);
+          const tip = {
+            tiktok: "틱톡 라이트 앱 → ＋ → 업로드에서 받은 영상을 고르고, 캡션을 붙여 넣어요.",
+            reels: "인스타 앱 → ＋ → 릴스에서 받은 영상을 고르고, 캡션을 붙여 넣어요. 커버는 유튜브 썸네일을 저장해서 써도 돼요.",
+            clip: "네이버 앱 → 클립 → ＋ → 동영상에서 받은 영상을 고르고, 설정 단계의 설명에 붙여 넣어요.",
+          }[pl];
+          return `<div data-pane="${pl}" ${tab === pl ? "" : "hidden"}>
+            <p class="muted">추천 시각: <b>${fmtSlot(t)}</b>${pl === "clip" ? " (기본값)" : ""}</p>
+            <div class="cap">${esc(caption(pl, it))}</div>
+            <div class="row">
+              <button class="btn sm sub" data-copytext="${esc(caption(pl, it))}">캡션 복사</button>
+              <a class="btn sm sub" href="${CDN + esc(it.video)}" target="_blank" rel="noopener" download>영상 받기</a>
+              <button class="btn sm ${done[pl] ? "sub" : ""}" data-mark="${it.id}" data-pl="${pl}">${done[pl] ? "올렸어요 ✓ (취소)" : `${PNAME[pl]}에 올렸어요`}</button>
+            </div>
+            <p class="muted">${tip} 영상이 열리면 길게 눌러 저장해요.</p>
+            ${pl === "clip" ? `<details><summary>클립 게시물용 글 (게시물 미션)</summary>
+              <p class="muted">썸네일 이미지와 함께 '게시물'로 올리면 게시물 미션 1개가 채워져요.</p>
+              <div class="cap">${esc(clipPost(it))}</div>
+              <div class="row"><button class="btn sm sub" data-copytext="${esc(clipPost(it))}">글 복사</button>
+              <a class="btn sm sub" href="${RAW + esc(pick(it))}" target="_blank" rel="noopener">썸네일 열기</a>
+              <button class="btn sm" data-clippost="${it.id}">게시물로 올렸어요</button></div>
+            </details>` : ""}
+          </div>`;
+        };
+        return `<details data-social="${it.id}"><summary>📱 틱톡·릴스·클립에도 올리기</summary>
+          <div class="row">${chips}</div>
+          <div class="tabs">${Object.keys(PNAME).map((pl) => `<button data-tab="${pl}" aria-pressed="${tab === pl}">${{ tiktok: "틱톡", reels: "릴스", clip: "클립" }[pl]}</button>`).join("")}</div>
+          ${Object.keys(PNAME).map(pane).join("")}
+        </details>`;
+      }
+
       function phase(it) {
         if (!it.done && it.draft) return "draft";
         if (!it.done) return "wait";
@@ -301,6 +463,7 @@
                 <div class="row"><a href="${RAW + esc(pick(it))}" target="_blank" rel="noopener" class="muted">고른 썸네일 원본 보기</a>${it.done ? `<button class="btn sm sub" data-rethumb="${it.id}">이 썸네일로 바꾸기</button>` : ""}</div>
                 ${it.ab.titles.map((t, i) => `<p class="meta"><b>제목 ${i + 1}</b><br />${esc(t)}<br /><button class="btn sm sub" data-copytext="${esc(t)}">복사</button></p>`).join("")}
               </details>` : ""}
+              ${socialBox(it)}
               ${it.blog ? `<details><summary>📝 네이버 블로그용 글</summary>
                 <p class="meta">네이버는 블로그 자동 글쓰기를 막아 둬서, 복사해 붙여 넣는 방식이에요. ① '글 복사' → 네이버 블로그 앱 글쓰기에 붙여넣기 ② [사진 N] 자리에 아래 사진을 순서대로 넣기 ③ 발행. 3분이면 돼요.</p>
                 <button class="btn sm sub" data-copyblog="${it.id}">글 복사 (${it.blog.text.replace(/\s/g, "").length.toLocaleString()}자)</button>
@@ -314,7 +477,10 @@
             <div class="pv" data-pvbox="${it.id}" hidden></div>
           </article>`;
         }
+        const open = [...document.querySelectorAll("[data-social][open]")].map((d) => d.dataset.social);
         $("#list").innerHTML = html;
+        open.forEach((id) => { const d = $(`[data-social="${id}"]`); if (d) d.open = true; });
+        renderClip();
       }
 
       async function upload(id) {
@@ -429,6 +595,36 @@
           const link = it.done ? `https://youtu.be/${it.done.id}` : "(영상 링크를 여기에 붙여 주세요)";
           navigator.clipboard?.writeText(it.blog.text.replace("(영상 링크를 여기에 붙여 주세요)", link)).then(() => (cb.textContent = "복사했어요 ✓"));
         }
+        const tb = e.target.closest("[data-tab]");
+        if (tb) {
+          save("socialTab", tb.dataset.tab);
+          const box = tb.closest("details");
+          box.querySelectorAll("[data-tab]").forEach((b) => b.setAttribute("aria-pressed", String(b === tb)));
+          box.querySelectorAll("[data-pane]").forEach((p) => (p.hidden = p.dataset.pane !== tb.dataset.tab));
+          return;
+        }
+        const mk = e.target.closest("[data-mark]");
+        if (mk) {
+          const all = social();
+          const id = mk.dataset.mark, pl = mk.dataset.pl;
+          const cur = all[id] || {};
+          if (cur[pl]) {
+            delete cur[pl];
+            if (pl === "clip") save("clipLog", clipLog().filter((x) => !(x.k === "v" && x.id === id)));
+          } else {
+            cur[pl] = new Date().toISOString();
+            if (pl === "clip") addClip("v", id);
+          }
+          all[id] = cur;
+          save("social", all);
+          return render();
+        }
+        const cpost = e.target.closest("[data-clippost]");
+        if (cpost) {
+          addClip("p", cpost.dataset.clippost);
+          cpost.textContent = "기록했어요 ✓";
+          return renderClip();
+        }
         const ct = e.target.closest("[data-copytext]");
         if (ct) navigator.clipboard?.writeText(ct.dataset.copytext).then(() => (ct.textContent = "복사했어요"));
         const cp = e.target.closest("[data-copy]");
@@ -438,6 +634,20 @@
         }
       });
       $("#planBtn").addEventListener("click", () => !busy && autoPlace());
+      $("#clipPostBtn").addEventListener("click", () => { addClip("p"); renderClip(); });
+      $("#clipUndo").addEventListener("click", () => { const l = clipLog(); l.pop(); save("clipLog", l); render(); });
+      function fillSet() {
+        const s = clipSet();
+        $("#setTag").value = s.tag; $("#setInfo").value = s.info;
+        [["Wv", "wv"], ["Wp", "wp"], ["Xv", "xv"], ["Xp", "xp"], ["Mv", "mv"], ["Mp", "mp"]].forEach(([a, b]) => ($("#set" + a).value = s[b]));
+      }
+      $("#setSave").addEventListener("click", () => {
+        const n = (id, d) => { const v = parseInt($(id).value, 10); return Number.isFinite(v) && v >= 0 ? v : d; };
+        save("clipSet", { tag: $("#setTag").value.trim(), info: $("#setInfo").value.trim(), wv: n("#setWv", 3), wp: n("#setWp", 5), xv: n("#setXv", 2), xp: n("#setXp", 4), mv: n("#setMv", 10), mp: n("#setMp", 15) });
+        $("#setSave").textContent = "저장했어요 ✓";
+        render();
+      });
+      fillSet();
       $("#allBtn").addEventListener("click", () => {
         if (busy) return;
         // 본편이 먼저 올라가야 쇼츠 설명에 본편 링크를 넣을 수 있어요
