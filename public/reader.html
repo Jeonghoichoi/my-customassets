@@ -839,6 +839,40 @@
       .board-tools .refresh:disabled {
         opacity: 0.6;
       }
+      .scan-box {
+        margin-bottom: 16px;
+        padding: 16px;
+        border-radius: 14px;
+        background: var(--fill);
+      }
+      .scan-box h3 {
+        margin: 0 0 4px;
+        font-size: 15px;
+      }
+      .scan-box .sub {
+        margin: 0 0 12px;
+      }
+      .scan-box .seg {
+        background: var(--card);
+      }
+      .scan-box .seg button[aria-pressed="true"] {
+        background: var(--primary-soft);
+        color: var(--primary);
+        box-shadow: none;
+      }
+      .scan-box .refresh {
+        background: var(--primary);
+        color: #fff;
+      }
+      .scan-box .scan-status {
+        margin: 10px 0 0;
+        font-size: 13px;
+        color: var(--ink-2);
+      }
+      .board-tools .fav-only[aria-pressed="true"] {
+        background: var(--primary);
+        color: #fff;
+      }
       .table-wrap {
         position: relative; /* 안쪽 sr-only 글자가 페이지를 옆으로 늘리지 않게 */
         margin: 12px -20px 0;
@@ -3342,6 +3376,7 @@
         .then((d) => {
           STOCKS = d;
           renderChips();
+          if (location.hash === "#/board") renderBoard();
         })
         .catch(() => {});
       const CHO = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ";
@@ -3594,6 +3629,20 @@
       let boardSort = { key: "at", dir: -1 },
         boardFilter = "all",
         boardBusy = false;
+      // 전체 종목 훑기: 앱 종목 목록을 판독해 8명 중 6명 이상이 우호적(65점 이상)인 종목만 판독표에 담아요
+      const FAV_MIN = 6;
+      let favOnly = false,
+        scanMarket = "all",
+        scanBusy = false,
+        scanStop = false;
+      const scanList = (mk) => STOCKS.filter((x) => mk === "all" || (mk === "KR" ? x.m !== "US" : x.m === "US"));
+      function scanInfo() {
+        try {
+          return JSON.parse(localStorage.getItem("scanInfo") || "null");
+        } catch {
+          return null;
+        }
+      }
       // 국내는 6자리 코드, 미국은 티커 하나로 통일해요 (같은 종목이 두 줄로 저장되지 않게)
       const stockKey = (s) => (s.market === "KR" ? String(s.symbol).replace(/\.(KS|KQ)$/, "") : String(s.symbol).toUpperCase());
       function board() {
@@ -3632,7 +3681,7 @@
         };
         // 너무 많아지면 오래 조회한 것부터 지워요
         const keys = Object.keys(b).sort((x, y) => (b[y].at < b[x].at ? -1 : 1));
-        keys.slice(60).forEach((k) => delete b[k]);
+        keys.slice(120).forEach((k) => delete b[k]);
         writeBoard(b);
       }
 
@@ -3689,6 +3738,7 @@
         const all = Object.values(board());
         const rows = all
           .filter((r) => boardFilter === "all" || r.market === boardFilter)
+          .filter((r) => !favOnly || (r.favorable ?? 0) >= FAV_MIN)
           .sort((a, b) => {
             const x = boardValue(a, boardSort.key),
               y = boardValue(b, boardSort.key);
@@ -3702,10 +3752,33 @@
           `<button type="button" data-filter="${f}" aria-pressed="${boardFilter === f}">${t}${
             f === "all" ? "" : " " + all.filter((r) => r.market === f).length
           }</button>`;
-        $("#board-body").innerHTML = all.length
+        const info = scanInfo();
+        const mkName = { all: "전체", US: "미국", KR: "국내" };
+        const scanSeg = (f) =>
+          `<button type="button" data-scan-mk="${f}" aria-pressed="${scanMarket === f}"${scanBusy ? " disabled" : ""}>${mkName[f]} ${scanList(f).length}</button>`;
+        const scanBox = `<div class="scan-box">
+          <h3>전체 종목 훑기</h3>
+          <p class="sub">앱 종목 목록을 모두 판독해서, 8명 중 ${FAV_MIN}명 이상이 우호적(65점 이상)인 종목만 이 표에 담아요. 2~4분 걸려요.</p>
+          <div class="board-tools">
+            <div class="seg">${scanSeg("all")}${scanSeg("US")}${scanSeg("KR")}</div>
+            <button type="button" class="refresh" id="scan-run"${boardBusy || !STOCKS.length ? " disabled" : ""}>${scanBusy ? "멈추기" : "훑기 시작"}</button>
+          </div>
+          <p class="scan-status" id="scan-status" aria-live="polite">${
+            scanBusy
+              ? "판독하고 있어요"
+              : info
+              ? `${esc(timeText(info.at))} ${mkName[info.market] || ""} ${info.total}개를 훑어서 ${info.hits}개를 찾았어요${info.fail ? ` (${info.fail}개는 불러오지 못했어요)` : ""}${info.stopped ? ". 중간에 멈췄어요" : ""}`
+              : "아직 훑어본 적이 없어요"
+          }</p>
+          ${scanMarket !== "KR" ? `<p class="sub" style="margin:6px 0 0">미국 종목은 데이터 한도를 많이 써요. 한 번 판독한 종목은 4시간 동안 다시 불러오지 않아요.</p>` : ""}
+        </div>`;
+        $("#board-body").innerHTML = scanBox + (all.length
           ? `<div class="board-tools">
           <div class="seg">${filterBtn("all", "전체 " + all.length)}${filterBtn("US", "미국")}${filterBtn("KR", "국내")}</div>
-          <button type="button" class="refresh" id="board-refresh"${boardBusy ? " disabled" : ""}>${
+          <button type="button" class="refresh fav-only" id="fav-only" aria-pressed="${favOnly}">${FAV_MIN}명 이상 ${
+            all.filter((r) => (r.favorable ?? 0) >= FAV_MIN).length
+          }</button>
+          <button type="button" class="refresh" id="board-refresh"${boardBusy || scanBusy ? " disabled" : ""}>${
               boardBusy ? "갱신 중이에요" : "모두 새로고침"
             }</button>
         </div>
@@ -3735,7 +3808,7 @@
                 <small>${esc(r.market === "KR" ? r.s : r.n || "")}</small>
               </button></th>
               <td class="pos">${r.label ? `<span class="pos-tag" style="color:var(${scoreVar(r.needle ?? 0)})">${esc(r.label)}</span>` : "–"}</td>
-              <td class="num">${r.favorable === null || r.favorable === undefined ? "–" : `<strong>${r.favorable}</strong>/${r.total || 7}`}</td>
+              <td class="num">${r.favorable === null || r.favorable === undefined ? "–" : `<strong>${r.favorable}</strong>/${r.total || 8}`}</td>
               ${JUDGE_COLS.map(([k]) => scoreCell(r.scores?.[k])).join("")}
               <td class="num">${r.divYield === null || r.divYield === undefined ? "–" : fmt(r.divYield, 2) + "%"}</td>
               <td class="num">${r.pe === null || r.pe === undefined || r.pe <= 0 ? "–" : fmt(r.pe, 1) + "배"}</td>
@@ -3746,14 +3819,65 @@
             </tr>`
                     )
                     .join("")
-                : `<tr><td colspan="${JUDGE_COLS.length + 9}" class="muted">이 시장에서 조회한 종목이 없어요.</td></tr>`
+                : `<tr><td colspan="${JUDGE_COLS.length + 9}" class="muted">${
+                    favOnly ? `${FAV_MIN}명 이상이 우호적인 종목이 아직 없어요.` : "이 시장에서 조회한 종목이 없어요."
+                  }</td></tr>`
             }</tbody>
           </table>
         </div>`
-          : `<p class="empty">아직 판독한 종목이 없어요.<br />종목을 검색하면 여기에 차곡차곡 쌓여요.</p>`;
+          : `<p class="empty">아직 판독한 종목이 없어요.<br />종목을 검색하거나 위에서 전체 종목을 훑으면 여기에 쌓여요.</p>`);
+      }
+      async function runScan() {
+        if (scanBusy) {
+          scanStop = true;
+          return;
+        }
+        if (boardBusy || !STOCKS.length) return;
+        const list = scanList(scanMarket);
+        scanBusy = true;
+        scanStop = false;
+        renderBoard();
+        let done = 0,
+          hits = 0,
+          fail = 0,
+          next = 0;
+        const status = () => {
+          const st = $("#scan-status");
+          if (st) st.textContent = `${list.length}개 중 ${done}개 판독했어요. 지금까지 ${hits}개를 찾았어요`;
+        };
+        // 서버 부담을 줄이려고 3개씩만 동시에 불러와요
+        const worker = async () => {
+          while (!scanStop && next < list.length) {
+            const x = list[next++];
+            try {
+              const s = await apiRaw(`/api/stock/${encodeURIComponent(x.s)}`);
+              const inBoard = stockKey(s) in board();
+              if ((s.consensus?.favorable ?? 0) >= FAV_MIN) {
+                hits++;
+                saveBoard(s);
+              } else if (inBoard) saveBoard(s); // 이미 표에 있던 종목은 새 점수로 바꿔 둬요
+            } catch {
+              fail++;
+            }
+            done++;
+            status();
+          }
+        };
+        status();
+        await Promise.all([worker(), worker(), worker()]);
+        try {
+          localStorage.setItem(
+            "scanInfo",
+            JSON.stringify({ at: new Date().toISOString(), market: scanMarket, total: done, hits, fail, stopped: scanStop })
+          );
+        } catch {}
+        scanBusy = false;
+        favOnly = true;
+        renderBoard();
+        renderChips();
       }
       async function refreshBoard() {
-        if (boardBusy) return;
+        if (boardBusy || scanBusy) return;
         const keys = Object.keys(board());
         if (!keys.length) return;
         boardBusy = true;
@@ -3781,6 +3905,15 @@
           return;
         }
         if (t.id === "board-refresh") return refreshBoard();
+        if (t.id === "scan-run") return runScan();
+        if (t.dataset.scanMk) {
+          scanMarket = t.dataset.scanMk;
+          return renderBoard();
+        }
+        if (t.id === "fav-only") {
+          favOnly = !favOnly;
+          return renderBoard();
+        }
         if (t.dataset.filter) {
           boardFilter = t.dataset.filter;
           return renderBoard();
