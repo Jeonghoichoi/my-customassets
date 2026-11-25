@@ -187,6 +187,7 @@
             </div>
             <button class="btn sm" id="setSave">저장</button>
           </div>
+          <p class="muted" id="clipSrc"></p>
           <p class="muted">네이버 클립은 외부 업로드 API가 없어서, 올린 뒤 '클립에 올렸어요'를 눌러 기록해요. 기록은 이 휴대폰에만 저장돼요. 주는 월요일부터 세고, 4주차는 그달 22일이 들어 있는 주로 셌어요. 네이버 기준이 바뀌면 위 숫자를 고쳐 주세요.</p>
         </details>
       </section>
@@ -337,7 +338,14 @@
         const extra = [set.tag, set.info].filter(Boolean).flatMap((x) => x.split(/\s+/)).map((x) => (x.startsWith("#") ? x : "#" + x));
         return [cleanTitle(it.title), "", ...lines, "", note, "", [...extra, ...tagsOf(it, 4)].filter((x, i, a) => a.indexOf(x) === i).join(" ")].join("\n");
       }
-      const DEF_SET = { tag: "", info: "", wv: 3, wp: 5, xv: 2, xp: 4, mv: 10, mp: 15 };
+      let DEF_SET = { tag: "", info: "", wv: 3, wp: 5, xv: 2, xp: 4, mv: 10, mp: 15 };
+      // 기본 태그값: /clip-tags.json (구글 트렌드 기반 보너스 태그, 이달의 해시태그) — 저장한 값이 있으면 그게 먼저예요
+      fetch("/clip-tags.json", { cache: "no-store" }).then((r) => r.json()).then((j) => {
+        const p = kstParts(Date.now()), ym = `${p.y}-${String(p.m + 1).padStart(2, "0")}`;
+        DEF_SET = { ...DEF_SET, tag: j.month === ym ? j.monthTag || "" : "", info: j.bonus.tags.slice(0, 5).map((t) => "#" + t.tag).join(" "), mv: j.mission.video, mp: j.mission.post };
+        $("#clipSrc").innerHTML = `보너스 태그 기본값 (${esc(j.updated)} 기준): ` + j.bonus.tags.map((t) => `#${esc(t.tag)} — ${esc(t.why)}`).join(" · ") + `<br>출처: ${esc(j.bonus.source)}`;
+        fillSet(); if (!$("#clipCard").hidden) renderClip();
+      }).catch(() => {});
       const clipSet = () => ({ ...DEF_SET, ...store("clipSet", {}) });
       const clipLog = () => store("clipLog", []); // [{t: ISO, k: "v"|"p", id}]
       function weekStart(ms) {
