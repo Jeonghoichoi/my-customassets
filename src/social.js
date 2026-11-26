@@ -6,9 +6,12 @@ const CDN = "https://cdn.jsdelivr.net/gh/Jeonghoichoi/my-customassets@";
 const IG_MAX = 2200; // 릴스 캡션 최대 글자
 const TH_MAX = 500; // 쓰레드 글 최대 글자
 
+const clean = (v) => String(v || "").trim().replace(/^["']|["']$/g, "");
+
 const cfg = () => ({
-  ig: { token: process.env.IG_ACCESS_TOKEN || "", user: process.env.IG_USER_ID || "", ver: process.env.IG_GRAPH_VERSION || "v25.0" },
-  th: { token: process.env.THREADS_ACCESS_TOKEN || "", user: process.env.THREADS_USER_ID || "" },
+  // 복사·붙여넣기 때 따라온 공백·줄바꿈·따옴표는 지워요
+  ig: { token: clean(process.env.IG_ACCESS_TOKEN), user: clean(process.env.IG_USER_ID), ver: clean(process.env.IG_GRAPH_VERSION) || "v25.0" },
+  th: { token: clean(process.env.THREADS_ACCESS_TOKEN), user: clean(process.env.THREADS_USER_ID) },
 });
 
 function fail(status, message) {
@@ -55,7 +58,8 @@ const containerId = (s) => {
 
 function metaMessage(j, status, who) {
   const e = j.error || {};
-  if (e.code === 190) return `${who} 토큰이 만료됐거나 잘못됐어요. 개발자 대시보드에서 새 토큰을 받아 Vercel에 다시 넣어 주세요.`;
+  // 원인을 알 수 있게 메타가 보낸 원래 문구도 괄호로 붙여요 (토큰 값은 들어 있지 않아요)
+  if (e.code === 190) return `${who} 토큰이 만료됐거나 잘못됐어요. 개발자 대시보드에서 새 토큰을 받아 Vercel에 다시 넣어 주세요. (${e.message || "code 190"})`;
   if (e.code === 4 || e.code === 17 || e.code === 32) return `${who} API 사용 한도를 넘었어요. 잠시 뒤 다시 눌러 주세요.`;
   if (e.code === 10 || e.code === 200) return `${who} 게시 권한이 없어요. 앱 권한(콘텐츠 게시)을 확인해 주세요.`;
   return `${who} 오류예요 (${e.error_user_msg || e.message || status}).`;
