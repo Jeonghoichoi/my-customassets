@@ -10,6 +10,7 @@ const { judgeStock, streetReading } = require("./engine/judges");
 const { kimMarket, kimLens, kimUsLens } = require("./engine/kim");
 const { resolve, marketLabel, normalizeQuery, looksLikeKrEtf } = require("./sources/symbols");
 const { handleYt } = require("./youtube");
+const { handleSns } = require("./social");
 
 const env = () => ({
   demo: process.env.DEMO === "1" || !process.env.FRED_API_KEY || !process.env.FMP_API_KEY,
@@ -395,6 +396,12 @@ async function handle(path, headers = {}) {
       if (!code && path !== "yt/status")
         return { status: 403, body: { error: "Vercel에 ACCESS_CODE(접근 코드)를 먼저 넣어 주세요." }, maxAge: 0 };
       const body = await handleYt(path, headers);
+      if (body) return { status: 200, body, maxAge: 0 };
+    }
+    // 인스타 릴스·쓰레드 바로 올리기 (public/upload.html). 계정에 게시하는 기능이라 접근 코드가 꼭 있어야 해요
+    if (path.startsWith("sns/")) {
+      if (!code) return { status: 403, body: { error: "Vercel에 ACCESS_CODE(접근 코드)를 먼저 넣어 주세요." }, maxAge: 0 };
+      const body = await handleSns(path, headers);
       if (body) return { status: 200, body, maxAge: 0 };
     }
     if (path === "macro") return { status: 200, body: await getMacro(), maxAge: TTL.macro };

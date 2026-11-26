@@ -301,8 +301,13 @@
         tiktok: [{ d: 1, h: 13 }, { d: 2, h: 6 }, { d: 3, h: 22 }, { d: 4, h: 13 }, { d: 5, h: 18 }, { d: 6, h: 17 }, { d: 0, h: 9 }],
         reels: [1, 2, 3, 4].flatMap((d) => [{ d, h: 9 }, { d, h: 18 }]),
         clip: [0, 1, 2, 3, 4, 5, 6].map((d) => ({ d, h: 20 })),
+        threads: [0, 1, 2, 3, 4, 5, 6].flatMap((d) => [{ d, h: 8 }, { d, h: 21 }]), // 출근길·잠들기 전
       };
-      const PNAME = { tiktok: "틱톡 라이트", reels: "인스타 릴스", clip: "네이버 클립" };
+      const PNAME = { tiktok: "틱톡 라이트", reels: "인스타 릴스", threads: "쓰레드", clip: "네이버 클립" };
+      const PTAB = { tiktok: "틱톡", reels: "릴스", threads: "쓰레드", clip: "클립" };
+      // 인스타 릴스·쓰레드는 API로 바로 올릴 수 있어요 (sns/status로 연결 상태를 받아요)
+      let SNS = {};
+      const snsOk = (pl) => SNS[pl]?.ready && !SNS[pl]?.error;
       const social = () => store("social", {});
       function store(k, def) { try { return JSON.parse(localStorage.getItem(k) || "null") ?? def; } catch { return def; } }
       function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
@@ -327,7 +332,14 @@
       function caption(pl, it) {
         const set = clipSet();
         if (pl === "tiktok") return [cleanTitle(it.title), "", bodyOf(it), "", note, "", tagsOf(it, 5).join(" ")].join("\n");
-        if (pl === "reels") return [cleanTitle(it.title), "", bodyOf(it), "", "더 긴 이야기는 유튜브 '배당셰프'에서 볼 수 있어요.", note, "", tagsOf(it, 12).join(" ")].join("\n");
+        if (pl === "reels") return [cleanTitle(it.title), "", bodyOf(it), "", "더 긴 이야기는 유튜브 '배당셰프'에서 볼 수 있어요.", note, "", tagsOf(it, 12).join(" ")].join("\n").slice(0, 2200);
+        if (pl === "threads") {
+          // 쓰레드는 글 500자, 주제 태그 1개만 붙어요
+          const topic = tagsOf(it, 2)[1] || "#배당셰프";
+          const build = (n) => [cleanTitle(it.title), "", bodyOf(it).split("\n").slice(0, n).join("\n"), "", "▶ 전체 이야기는 유튜브 '배당셰프'에서", note, "", topic].join("\n");
+          for (const n of [3, 2, 1]) if ([...build(n)].length <= 500) return build(n);
+          return [...build(1)].slice(0, 500).join("");
+        }
         const extra = [set.tag, set.info].filter(Boolean).flatMap((x) => x.split(/\s+/)).map((x) => (x.startsWith("#") ? x : "#" + x));
         return [cleanTitle(it.title), "", bodyOf(it), "", note, "", [...extra, ...tagsOf(it, 5)].filter((x, i, a) => a.indexOf(x) === i).join(" ")].join("\n");
       }
@@ -392,7 +404,13 @@
             tiktok: "틱톡 라이트 앱 → ＋ → 업로드에서 받은 영상을 고르고, 캡션을 붙여 넣어요.",
             reels: "인스타 앱 → ＋ → 릴스에서 받은 영상을 고르고, 캡션을 붙여 넣어요. 커버는 유튜브 썸네일을 저장해서 써도 돼요.",
             clip: "네이버 앱 → 클립 → ＋ → 동영상에서 받은 영상을 고르고, 설정 단계의 설명에 붙여 넣어요.",
+            threads: "쓰레드 앱 → 새 글 → 영상 첨부에서 받은 영상을 고르고, 글을 붙여 넣어요.",
           }[pl];
+          const link = store("snsLinks", {})[`${it.id}-${pl}`];
+          const auto = (pl === "reels" || pl === "threads") && snsOk(pl)
+            ? `<div class="row"><button class="btn sm" data-snspost="${it.id}" data-pl="${pl}" ${done[pl] ? "disabled" : ""}>${done[pl] ? "올렸어요 ✓" : `${PNAME[pl]}에 바로 올리기`}</button></div>
+              <p class="muted" data-snsmsg="${it.id}-${pl}">${link ? `<a href="${esc(link)}" target="_blank" rel="noopener">올린 게시물 보기</a>` : `@${esc(SNS[pl].username || "")} 계정에 지금 바로 공개로 올라가요.`}</p>`
+            : (pl === "reels" || pl === "threads") && SNS[pl]?.error ? `<p class="muted">바로 올리기 연결 오류: ${esc(SNS[pl].error)}</p>` : "";
           return `<div data-pane="${pl}" ${tab === pl ? "" : "hidden"}>
             <p class="muted">추천 시각: <b>${fmtSlot(t)}</b>${pl === "clip" ? " (기본값)" : ""}</p>
             <div class="cap">${esc(caption(pl, it))}</div>
@@ -401,6 +419,7 @@
               <a class="btn sm sub" href="${CDN + esc(it.video)}" target="_blank" rel="noopener" download>영상 받기</a>
               <button class="btn sm ${done[pl] ? "sub" : ""}" data-mark="${it.id}" data-pl="${pl}">${done[pl] ? "올렸어요 ✓ (취소)" : `${PNAME[pl]}에 올렸어요`}</button>
             </div>
+            ${auto}
             <p class="muted">${tip} 영상이 열리면 길게 눌러 저장해요.</p>
             ${pl === "clip" ? `<details><summary>클립 게시물용 글 (게시물 미션)</summary>
               <p class="muted">썸네일 이미지와 함께 '게시물'로 올리면 게시물 미션 1개가 채워져요.</p>
@@ -411,9 +430,9 @@
             </details>` : ""}
           </div>`;
         };
-        return `<details data-social="${it.id}"><summary>📱 틱톡·릴스·클립에도 올리기</summary>
+        return `<details data-social="${it.id}"><summary>📱 틱톡·릴스·쓰레드·클립에도 올리기</summary>
           <div class="row">${chips}</div>
-          <div class="tabs">${Object.keys(PNAME).map((pl) => `<button data-tab="${pl}" aria-pressed="${tab === pl}">${{ tiktok: "틱톡", reels: "릴스", clip: "클립" }[pl]}</button>`).join("")}</div>
+          <div class="tabs">${Object.keys(PNAME).map((pl) => `<button data-tab="${pl}" aria-pressed="${tab === pl}">${PTAB[pl]}</button>`).join("")}</div>
           ${Object.keys(PNAME).map(pane).join("")}
         </details>`;
       }
@@ -611,6 +630,8 @@
           box.querySelectorAll("[data-pane]").forEach((p) => (p.hidden = p.dataset.pane !== tb.dataset.tab));
           return;
         }
+        const sp = e.target.closest("[data-snspost]");
+        if (sp) return snsPost(sp);
         const mk = e.target.closest("[data-mark]");
         if (mk) {
           const all = social();
@@ -675,6 +696,42 @@
         load();
       });
 
+      // 릴스·쓰레드 바로 올리기: 컨테이너 만들기 → 메타가 영상을 가져가 처리할 때까지 5초마다 확인 → 게시
+      async function snsPost(btn) {
+        if (busy) return;
+        const id = btn.dataset.snspost, pl = btn.dataset.pl;
+        const it = items.find((x) => x.id === id);
+        if (!it || !confirm(`${PNAME[pl]}에 지금 바로 공개로 올려요. 올린 뒤에는 앱에서 직접 지워야 해요. 올릴까요?`)) return;
+        const msg = document.querySelector(`[data-snsmsg="${id}-${pl}"]`);
+        const say = (t) => msg && (msg.textContent = t);
+        busy = true;
+        btn.disabled = true;
+        try {
+          say("영상을 보내는 중이에요…");
+          const { container } = await api(`sns/${pl}/start/${id}`, { "x-sns-text": encodeURIComponent(caption(pl, it)) });
+          let state = "IN_PROGRESS";
+          for (let i = 0; i < 60 && state !== "FINISHED"; i++) {
+            await new Promise((r) => setTimeout(r, 5000));
+            const c = await api(`sns/${pl}/check/${container}`);
+            state = c.state;
+            if (state === "ERROR" || state === "EXPIRED") throw new Error(`영상 처리에 실패했어요${c.detail ? ` (${c.detail})` : ""}.`);
+            say(`메타가 영상을 처리하는 중이에요… (${(i + 1) * 5}초)`);
+          }
+          if (state !== "FINISHED") throw new Error("처리가 5분을 넘었어요. 잠시 뒤 다시 눌러 주세요.");
+          const r = await api(`sns/${pl}/publish/${container}`);
+          const all = social();
+          all[id] = { ...(all[id] || {}), [pl]: new Date().toISOString() };
+          save("social", all);
+          if (r.url) save("snsLinks", { ...store("snsLinks", {}), [`${id}-${pl}`]: r.url });
+          busy = false;
+          render();
+        } catch (e) {
+          busy = false;
+          btn.disabled = false;
+          say(e.message);
+        }
+      }
+
       async function load() {
         err("");
         $("#redirect").textContent = `${location.origin}/upload.html`;
@@ -696,6 +753,7 @@
           const cfg = await fetch("/api/config").then((r) => r.json()).catch(() => ({}));
           show("#needCode", !cfg.needsCode);
           items = s.items || [];
+          SNS = await api("sns/status").catch(() => ({}));
           show("#setupCard", !s.ready);
           show("#connectCard", s.ready && !s.connected && $("#tokenCard").hidden);
           show("#sumCard", true);
