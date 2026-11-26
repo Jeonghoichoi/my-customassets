@@ -10,7 +10,7 @@ const { judgeStock, streetReading } = require("./engine/judges");
 const { kimMarket, kimLens, kimUsLens } = require("./engine/kim");
 const { resolve, marketLabel, normalizeQuery, looksLikeKrEtf } = require("./sources/symbols");
 const { handleYt } = require("./youtube");
-const { handleSns } = require("./social");
+const { handleSns, handleCron } = require("./social");
 
 const env = () => ({
   demo: process.env.DEMO === "1" || !process.env.FRED_API_KEY || !process.env.FMP_API_KEY,
@@ -389,6 +389,8 @@ async function handle(path, headers = {}) {
   try {
     if (path === "config")
       return { status: 200, body: { demo, ai, needsCode: Boolean(code), demoSymbols: demo ? demoSymbols : [] }, maxAge: 0 };
+    // Vercel Cron: 접근 코드 대신 CRON_SECRET으로 확인해요
+    if (path === "cron/threads") return { status: 200, body: await handleCron(headers), maxAge: 0 };
     if (code && headers["x-access-code"] !== code)
       return { status: 401, body: { error: "접근 코드가 맞지 않아요." }, maxAge: 0 };
     // 유튜브 예약 업로드 (public/upload.html). 채널에 올리는 기능이라 접근 코드가 꼭 있어야 해요

@@ -8,7 +8,7 @@
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <title>유튜브 업로드</title>
+    <title>콘텐츠</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -100,6 +100,16 @@
       .cap { white-space: pre-line; word-break: break-all; background: var(--fill); border-radius: 12px; padding: 12px; margin: 8px 0; font-size: 14px; }
       .plat { display: inline-block; font-size: 12px; font-weight: 700; border-radius: 6px; padding: 1px 7px; margin: 2px 4px 2px 0; background: var(--fill); color: var(--ink-3); }
       .plat.on { background: var(--blue-soft); color: var(--blue); }
+      .golink { display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: var(--ink); min-height: 44px; }
+      .golink b { display: block; font-size: 16px; } .golink small { color: var(--ink-3); font-size: 13px; } .golink > span:last-child { font-size: 22px; color: var(--ink-3); }
+      .plist { background: var(--fill); border-radius: 16px; padding: 4px 14px; margin: 10px 0; }
+      .prow { display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 8px 0; border-top: 1px solid var(--line); flex-wrap: wrap; }
+      .prow:first-child { border-top: 0; }
+      .pinfo { flex: 1; min-width: 0; } .pinfo b { display: block; font-size: 15px; } .pinfo small { color: var(--ink-3); font-size: 12px; }
+      .sw { width: 52px; height: 32px; border: 0; border-radius: 16px; padding: 3px; background: #d1d6db; display: flex; cursor: pointer; }
+      .sw i { width: 26px; height: 26px; border-radius: 13px; background: #fff; display: block; }
+      .sw[aria-checked="true"] { background: var(--blue); justify-content: flex-end; }
+      .pact { width: 100%; display: flex; gap: 6px; flex-wrap: wrap; }
       .mis { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 10px 0; }
       .mis div { background: var(--fill); border-radius: 14px; padding: 12px; }
       .mis b { display: block; font-size: 20px; font-weight: 800; }
@@ -120,9 +130,11 @@
     <div class="wrap">
       <header>
         <a class="back" href="/">‹ 홈</a>
-        <h1>유튜브 업로드</h1>
-        <p>Claude가 만들어 둔 영상을 확인하고 예약 업로드해요.</p>
+        <h1>콘텐츠</h1>
+        <p>만들어 둔 영상과 글을 확인하고, 필요한 곳에 한 번에 올려요.</p>
       </header>
+
+      <a class="card golink" href="/threads.html"><span><b>쓰레드 글</b><small>오늘 준비된 글을 읽고 승인만 눌러요</small></span><span aria-hidden="true">›</span></a>
 
       <section class="card" id="codeCard" hidden>
         <h2>접근 코드를 넣어 주세요</h2>
@@ -301,10 +313,10 @@
         tiktok: [{ d: 1, h: 13 }, { d: 2, h: 6 }, { d: 3, h: 22 }, { d: 4, h: 13 }, { d: 5, h: 18 }, { d: 6, h: 17 }, { d: 0, h: 9 }],
         reels: [1, 2, 3, 4].flatMap((d) => [{ d, h: 9 }, { d, h: 18 }]),
         clip: [0, 1, 2, 3, 4, 5, 6].map((d) => ({ d, h: 20 })),
-        threads: [0, 1, 2, 3, 4, 5, 6].flatMap((d) => [{ d, h: 8 }, { d, h: 21 }]), // 출근길·잠들기 전
       };
-      const PNAME = { tiktok: "틱톡 라이트", reels: "인스타 릴스", threads: "쓰레드", clip: "네이버 클립" };
-      const PTAB = { tiktok: "틱톡", reels: "릴스", threads: "쓰레드", clip: "클립" };
+      const PNAME = { reels: "인스타 릴스", clip: "네이버 클립", tiktok: "틱톡 라이트" };
+      const PLS = ["reels", "clip", "tiktok"];
+      const plOn = () => ({ reels: true, clip: true, tiktok: false, ...store("plOn", {}) });
       // 인스타 릴스·쓰레드는 API로 바로 올릴 수 있어요 (sns/status로 연결 상태를 받아요)
       let SNS = {};
       const snsOk = (pl) => SNS[pl]?.ready && !SNS[pl]?.error;
@@ -333,13 +345,6 @@
         const set = clipSet();
         if (pl === "tiktok") return [cleanTitle(it.title), "", bodyOf(it), "", note, "", tagsOf(it, 5).join(" ")].join("\n");
         if (pl === "reels") return [cleanTitle(it.title), "", bodyOf(it), "", "더 긴 이야기는 유튜브 '배당셰프'에서 볼 수 있어요.", note, "", tagsOf(it, 12).join(" ")].join("\n").slice(0, 2200);
-        if (pl === "threads") {
-          // 쓰레드는 글 500자, 주제 태그 1개만 붙어요
-          const topic = tagsOf(it, 2)[1] || "#배당셰프";
-          const build = (n) => [cleanTitle(it.title), "", bodyOf(it).split("\n").slice(0, n).join("\n"), "", "▶ 전체 이야기는 유튜브 '배당셰프'에서", note, "", topic].join("\n");
-          for (const n of [3, 2, 1]) if ([...build(n)].length <= 500) return build(n);
-          return [...build(1)].slice(0, 500).join("");
-        }
         const extra = [set.tag, set.info].filter(Boolean).flatMap((x) => x.split(/\s+/)).map((x) => (x.startsWith("#") ? x : "#" + x));
         return [cleanTitle(it.title), "", bodyOf(it), "", note, "", [...extra, ...tagsOf(it, 5)].filter((x, i, a) => a.indexOf(x) === i).join(" ")].join("\n");
       }
@@ -393,47 +398,41 @@
         log.push({ t: new Date().toISOString(), k, id: id || null, tag: Boolean(clipSet().tag) });
         save("clipLog", log.slice(-400));
       }
+      // 쇼츠 한 개를 다른 플랫폼에도: 스위치로 고르고 버튼 하나로 (릴스는 자동, 클립·틱톡은 캡션 복사)
       function socialBox(it) {
         if (it.kind === "long" || !it.video) return "";
         const done = social()[it.id] || {};
-        const tab = store("socialTab", "tiktok");
-        const chips = Object.keys(PNAME).map((pl) => `<span class="plat ${done[pl] ? "on" : ""}">${done[pl] ? "✓ " : ""}${PNAME[pl]}</span>`).join("");
-        const pane = (pl) => {
-          const t = platSlot(pl, it);
-          const tip = {
-            tiktok: "틱톡 라이트 앱 → ＋ → 업로드에서 받은 영상을 고르고, 캡션을 붙여 넣어요.",
-            reels: "인스타 앱 → ＋ → 릴스에서 받은 영상을 고르고, 캡션을 붙여 넣어요. 커버는 유튜브 썸네일을 저장해서 써도 돼요.",
-            clip: "네이버 앱 → 클립 → ＋ → 동영상에서 받은 영상을 고르고, 설정 단계의 설명에 붙여 넣어요.",
-            threads: "쓰레드 앱 → 새 글 → 영상 첨부에서 받은 영상을 고르고, 글을 붙여 넣어요.",
-          }[pl];
-          const link = store("snsLinks", {})[`${it.id}-${pl}`];
-          const auto = (pl === "reels" || pl === "threads") && snsOk(pl)
-            ? `<div class="row"><button class="btn sm" data-snspost="${it.id}" data-pl="${pl}" ${done[pl] ? "disabled" : ""}>${done[pl] ? "올렸어요 ✓" : `${PNAME[pl]}에 바로 올리기`}</button></div>
-              <p class="muted" data-snsmsg="${it.id}-${pl}">${link ? `<a href="${esc(link)}" target="_blank" rel="noopener">올린 게시물 보기</a>` : `@${esc(SNS[pl].username || "")} 계정에 지금 바로 공개로 올라가요.`}</p>`
-            : (pl === "reels" || pl === "threads") && SNS[pl]?.error ? `<p class="muted">바로 올리기 연결 오류: ${esc(SNS[pl].error)}</p>` : "";
-          return `<div data-pane="${pl}" ${tab === pl ? "" : "hidden"}>
-            <p class="muted">추천 시각: <b>${fmtSlot(t)}</b>${pl === "clip" ? " (기본값)" : ""}</p>
-            <div class="cap">${esc(caption(pl, it))}</div>
-            <div class="row">
-              <button class="btn sm sub" data-copytext="${esc(caption(pl, it))}">캡션 복사</button>
-              <a class="btn sm sub" href="${CDN + esc(it.video)}" target="_blank" rel="noopener" download>영상 받기</a>
-              <button class="btn sm ${done[pl] ? "sub" : ""}" data-mark="${it.id}" data-pl="${pl}">${done[pl] ? "올렸어요 ✓ (취소)" : `${PNAME[pl]}에 올렸어요`}</button>
-            </div>
-            ${auto}
-            <p class="muted">${tip} 영상이 열리면 길게 눌러 저장해요.</p>
-            ${pl === "clip" ? `<details><summary>클립 게시물용 글 (게시물 미션)</summary>
-              <p class="muted">썸네일 이미지와 함께 '게시물'로 올리면 게시물 미션 1개가 채워져요.</p>
-              <div class="cap">${esc(clipPost(it))}</div>
-              <div class="row"><button class="btn sm sub" data-copytext="${esc(clipPost(it))}">글 복사</button>
-              <a class="btn sm sub" href="${RAW + esc(pick(it))}" target="_blank" rel="noopener">썸네일 열기</a>
-              <button class="btn sm" data-clippost="${it.id}">게시물로 올렸어요</button></div>
-            </details>` : ""}
-          </div>`;
-        };
-        return `<details data-social="${it.id}"><summary>📱 틱톡·릴스·쓰레드·클립에도 올리기</summary>
-          <div class="row">${chips}</div>
-          <div class="tabs">${Object.keys(PNAME).map((pl) => `<button data-tab="${pl}" aria-pressed="${tab === pl}">${PTAB[pl]}</button>`).join("")}</div>
-          ${Object.keys(PNAME).map(pane).join("")}
+        const on = plOn();
+        const links = store("snsLinks", {});
+        const isAuto = (pl) => pl === "reels" && snsOk("reels");
+        const rows = PLS.map((pl) => {
+          const d = done[pl];
+          const link = links[`${it.id}-${pl}`];
+          const sub = d
+            ? `✓ 올렸어요${link ? ` · <a href="${esc(link)}" target="_blank" rel="noopener">보기</a>` : ""}`
+            : isAuto(pl) ? `자동으로 올라가요 · 추천 ${fmtSlot(platSlot(pl, it))}` : `캡션 복사 후 앱에서 올려요 · 추천 ${fmtSlot(platSlot(pl, it))}`;
+          const ctl = d
+            ? `<button class="btn sm sub" data-mark="${it.id}" data-pl="${pl}">취소</button>`
+            : `<button class="sw" role="switch" aria-checked="${Boolean(on[pl])}" aria-label="${PNAME[pl]}" data-sw="${pl}"><i></i></button>`;
+          const act = !d && on[pl] && !isAuto(pl)
+            ? `<div class="pact"><button class="btn sm sub" data-copytext="${esc(caption(pl, it))}">캡션 복사</button><a class="btn sm sub" href="${CDN + esc(it.video)}" target="_blank" rel="noopener" download>영상 받기</a><button class="btn sm" data-mark="${it.id}" data-pl="${pl}">올렸어요</button></div>`
+            : "";
+          return `<div class="prow"><div class="pinfo"><b>${PNAME[pl]}</b><small>${sub}</small></div>${ctl}${act}</div>`;
+        }).join("");
+        const autoTodo = PLS.filter((pl) => on[pl] && !done[pl] && isAuto(pl));
+        const left = PLS.filter((pl) => !done[pl]).length;
+        const err = SNS.reels?.error ? `<p class="muted">릴스 자동 연결 오류: ${esc(SNS.reels.error)}</p>` : "";
+        return `<details data-social="${it.id}"><summary>📱 다른 플랫폼에도 올리기 ${left ? `· 남은 ${left}곳` : "· 모두 올렸어요 ✓"}</summary>
+          <div class="plist">${rows}</div>
+          ${autoTodo.length ? `<button class="btn" data-snsgo="${it.id}">선택한 곳에 올리기</button>` : ""}
+          <p class="muted" data-snsmsg="${it.id}"></p>${err}
+          <details><summary>플랫폼별 캡션 보기</summary>
+            ${PLS.map((pl) => `<p class="meta"><b>${PNAME[pl]}</b></p><div class="cap">${esc(caption(pl, it))}</div><button class="btn sm sub" data-copytext="${esc(caption(pl, it))}">캡션 복사</button>`).join("")}
+            <p class="meta"><b>클립 게시물용 글 (게시물 미션)</b></p><div class="cap">${esc(clipPost(it))}</div>
+            <div class="row"><button class="btn sm sub" data-copytext="${esc(clipPost(it))}">글 복사</button>
+            <a class="btn sm sub" href="${RAW + esc(pick(it))}" target="_blank" rel="noopener">썸네일 열기</a>
+            <button class="btn sm" data-clippost="${it.id}">게시물로 올렸어요</button></div>
+          </details>
         </details>`;
       }
 
@@ -505,7 +504,10 @@
           </article>`;
         }
         const open = [...document.querySelectorAll("[data-social][open]")].map((d) => d.dataset.social);
+        // 다시 그려도 펼쳐 둔 '다른 플랫폼' 상자는 그대로 열어 둬요
+        const opened = [...document.querySelectorAll("details[data-social][open]")].map((d) => d.dataset.social);
         $("#list").innerHTML = html;
+        opened.forEach((id) => { const d = document.querySelector(`details[data-social="${id}"]`); if (d) d.open = true; });
         open.forEach((id) => { const d = $(`[data-social="${id}"]`); if (d) d.open = true; });
         renderClip();
       }
@@ -622,16 +624,6 @@
           const link = it.done ? `https://youtu.be/${it.done.id}` : "(영상 링크를 여기에 붙여 주세요)";
           navigator.clipboard?.writeText(it.blog.text.replace("(영상 링크를 여기에 붙여 주세요)", link)).then(() => (cb.textContent = "복사했어요 ✓"));
         }
-        const tb = e.target.closest("[data-tab]");
-        if (tb) {
-          save("socialTab", tb.dataset.tab);
-          const box = tb.closest("details");
-          box.querySelectorAll("[data-tab]").forEach((b) => b.setAttribute("aria-pressed", String(b === tb)));
-          box.querySelectorAll("[data-pane]").forEach((p) => (p.hidden = p.dataset.pane !== tb.dataset.tab));
-          return;
-        }
-        const sp = e.target.closest("[data-snspost]");
-        if (sp) return snsPost(sp);
         const mk = e.target.closest("[data-mark]");
         if (mk) {
           const all = social();
@@ -696,33 +688,42 @@
         load();
       });
 
-      // 릴스·쓰레드 바로 올리기: 컨테이너 만들기 → 메타가 영상을 가져가 처리할 때까지 5초마다 확인 → 게시
-      async function snsPost(btn) {
-        if (busy) return;
-        const id = btn.dataset.snspost, pl = btn.dataset.pl;
+      // 릴스 자동 올리기: 컨테이너 만들기 → 메타가 영상을 처리할 때까지 5초마다 확인 → 게시
+      async function snsRun(id, pl, say) {
         const it = items.find((x) => x.id === id);
-        if (!it || !confirm(`${PNAME[pl]}에 지금 바로 공개로 올려요. 올린 뒤에는 앱에서 직접 지워야 해요. 올릴까요?`)) return;
-        const msg = document.querySelector(`[data-snsmsg="${id}-${pl}"]`);
+        const { container } = await api(`sns/${pl}/start/${id}`, { "x-sns-text": encodeURIComponent(caption(pl, it)) });
+        let state = "IN_PROGRESS";
+        for (let i = 0; i < 60 && state !== "FINISHED"; i++) {
+          await new Promise((r) => setTimeout(r, 5000));
+          const c = await api(`sns/${pl}/check/${container}`);
+          state = c.state;
+          if (state === "ERROR" || state === "EXPIRED") throw new Error(`${PNAME[pl]} 영상 처리에 실패했어요${c.detail ? ` (${c.detail})` : ""}.`);
+          say(`${PNAME[pl]}: 영상을 처리하는 중이에요… (${(i + 1) * 5}초)`);
+        }
+        if (state !== "FINISHED") throw new Error("처리가 5분을 넘었어요. 잠시 뒤 다시 눌러 주세요.");
+        const r = await api(`sns/${pl}/publish/${container}`);
+        const all = social();
+        all[id] = { ...(all[id] || {}), [pl]: new Date().toISOString() };
+        save("social", all);
+        if (r.url) save("snsLinks", { ...store("snsLinks", {}), [`${id}-${pl}`]: r.url });
+      }
+
+      async function snsGo(btn) {
+        if (busy) return;
+        const id = btn.dataset.snsgo;
+        const done = social()[id] || {};
+        const on = plOn();
+        const todo = PLS.filter((pl) => on[pl] && !done[pl] && pl === "reels" && snsOk(pl));
+        if (!todo.length || !confirm(`${todo.map((pl) => PNAME[pl]).join(", ")}에 지금 바로 공개로 올려요. 올릴까요?`)) return;
+        const msg = document.querySelector(`[data-snsmsg="${id}"]`);
         const say = (t) => msg && (msg.textContent = t);
         busy = true;
         btn.disabled = true;
         try {
-          say("영상을 보내는 중이에요…");
-          const { container } = await api(`sns/${pl}/start/${id}`, { "x-sns-text": encodeURIComponent(caption(pl, it)) });
-          let state = "IN_PROGRESS";
-          for (let i = 0; i < 60 && state !== "FINISHED"; i++) {
-            await new Promise((r) => setTimeout(r, 5000));
-            const c = await api(`sns/${pl}/check/${container}`);
-            state = c.state;
-            if (state === "ERROR" || state === "EXPIRED") throw new Error(`영상 처리에 실패했어요${c.detail ? ` (${c.detail})` : ""}.`);
-            say(`메타가 영상을 처리하는 중이에요… (${(i + 1) * 5}초)`);
+          for (const pl of todo) {
+            say(`${PNAME[pl]}에 보내는 중이에요…`);
+            await snsRun(id, pl, say);
           }
-          if (state !== "FINISHED") throw new Error("처리가 5분을 넘었어요. 잠시 뒤 다시 눌러 주세요.");
-          const r = await api(`sns/${pl}/publish/${container}`);
-          const all = social();
-          all[id] = { ...(all[id] || {}), [pl]: new Date().toISOString() };
-          save("social", all);
-          if (r.url) save("snsLinks", { ...store("snsLinks", {}), [`${id}-${pl}`]: r.url });
           busy = false;
           render();
         } catch (e) {

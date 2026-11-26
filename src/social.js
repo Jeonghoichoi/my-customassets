@@ -129,6 +129,115 @@ async function thPublish(cid) {
   return { id: j.id, url: p.permalink || "" };
 }
 
+// ── 쓰레드 글(텍스트) ──
+// 매일 아침 예약 작업이 threads 브랜치의 threads.json에 초안을 올려요. 노아 님이 앱에서 승인하면
+// 아침 글(am)은 바로, 저녁 글(pm)은 밤 9시 Vercel Cron이 올려요.
+// threads 브랜치는 배포가 꺼져 있어서(vercel.json) 승인할 때마다 앱이 다시 배포되지 않아요
+const GH = "https://api.github.com/repos/Jeonghoichoi/my-customassets/contents/threads.json";
+const STORE_BRANCH = "threads";
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const kstDate = (ms = Date.now()) => new Date(ms + 9 * 3600e3).toISOString().slice(0, 10);
+
+async function gh(method, body) {
+  const token = clean(process.env.GITHUB_TOKEN);
+  if (!token) throw fail(400, "Vercel에 GITHUB_TOKEN을 먼저 넣어 주세요.");
+  const res = await fetch(method === "GET" ? `${GH}?ref=${STORE_BRANCH}` : GH, {
+    method,
+    headers: {
+      authorization: `Bearer ${token}`,
+      accept: "application/vnd.github+json",
+      "user-agent": "baedang-chef-reader",
+      ...(body ? { "content-type": "application/json" } : {}),
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (method === "GET" && res.status === 404) return null;
+  const j = await res.json().catch(() => ({}));
+  if (res.status === 401) throw fail(401, "GITHUB_TOKEN이 만료됐거나 잘못됐어요.");
+  if (res.status === 409) throw fail(409, "다른 곳에서 동시에 저장했어요. 새로고침하고 다시 눌러 주세요.");
+  if (!res.ok) throw fail(502, `글 목록 저장소 오류예요 (${j.message || res.status}).`);
+  return j;
+}
+
+async function loadStore() {
+  const j = await gh("GET");
+  if (!j) return { data: { items: [] }, sha: null };
+  return { data: JSON.parse(Buffer.from(j.content, "base64").toString("utf8")), sha: j.sha };
+}
+
+async function saveStore(data, sha, message) {
+  const content = Buffer.from(JSON.stringify(data, null, 1) + "\n", "utf8").toString("base64");
+  await gh("PUT", { message, content, branch: STORE_BRANCH, ...(sha ? { sha } : {}) });
+}
+
+// 글만 올리기: 컨테이너 만들기 → 게시 (준비가 덜 됐으면 몇 초 기다렸다 다시)
+async function postText(text) {
+  const { id: container } = await th(`/${cfg().th.user}/threads`, { media_type: "TEXT", text });
+  let last;
+  for (let i = 0; i < 5; i++) {
+    try {
+      const j = await th(`/${cfg().th.user}/threads_publish`, { creation_id: container });
+      const p = await th(`/${j.id}`, { fields: "permalink" }, "GET").catch(() => ({}));
+      return { id: j.id, url: p.permalink || "" };
+    } catch (e) {
+      last = e;
+      await sleep(3000);
+    }
+  }
+  throw last;
+}
+
+async function drafts() {
+  const { data } = await loadStore();
+  const items = (data.items || []).filter((x) => x.date >= kstDate(Date.now() - 6 * 86400e3));
+  return { today: kstDate(), items: items.sort((a, b) => (a.date === b.date ? a.slot.localeCompare(b.slot) : b.date.localeCompare(a.date))) };
+}
+
+async function decide(id, action, headers) {
+  const { data, sha } = await loadStore();
+  const it = (data.items || []).find((x) => x.id === id);
+  if (!it) throw fail(404, "그 초안을 찾지 못했어요.");
+  if (it.status === "posted") throw fail(409, "이미 올린 글이에요.");
+  if (action === "skip") {
+    it.status = "skipped";
+    await saveStore(data, sha, `쓰레드 ${id} 건너뛰기`);
+    return { status: it.status };
+  }
+  const text = textFrom(headers, TH_MAX);
+  if (/\{어제\}|\[[^\]]*\]/.test(text)) throw fail(400, "빈칸([ ]이나 어제 칸)을 채워야 올릴 수 있어요.");
+  it.final = text;
+  it.approvedAt = new Date().toISOString();
+  // 아침 글이나 '지금 올리기'는 바로, 저녁 글은 밤 9시에 올려요
+  if (it.slot === "am" || headers["x-sns-now"] === "1") {
+    const r = await postText(text);
+    Object.assign(it, { status: "posted", postedAt: new Date().toISOString(), url: r.url, postId: r.id });
+  } else {
+    it.status = "approved";
+  }
+  await saveStore(data, sha, `쓰레드 ${id} ${it.status === "posted" ? "게시" : "승인"}`);
+  return { status: it.status, url: it.url || "" };
+}
+
+// Vercel Cron (매일 21:00 KST): 승인된 저녁 글을 올려요. CRON_SECRET이 맞을 때만 동작해요
+async function handleCron(headers) {
+  const secret = clean(process.env.CRON_SECRET);
+  if (!secret || headers.authorization !== `Bearer ${secret}`) throw fail(401, "허용되지 않은 요청이에요.");
+  const { data, sha } = await loadStore();
+  const due = (data.items || []).filter((x) => x.status === "approved" && x.date <= kstDate()).slice(0, 2);
+  const done = [];
+  for (const it of due) {
+    try {
+      const r = await postText(it.final);
+      Object.assign(it, { status: "posted", postedAt: new Date().toISOString(), url: r.url, postId: r.id });
+      done.push(it.id);
+    } catch (e) {
+      it.error = e.message;
+    }
+  }
+  if (due.length) await saveStore(data, sha, `쓰레드 예약 게시 ${done.join(", ") || "실패"}`);
+  return { posted: done, tried: due.length };
+}
+
 // 연결 상태: 토큰이 살아 있는지 계정 이름을 한 번 불러서 확인해요
 async function status() {
   const c = cfg();
@@ -151,6 +260,9 @@ async function status() {
 // path 예: "sns/status", "sns/reels/start/56-1", "sns/reels/check/1789…", "sns/threads/publish/1789…"
 async function handleSns(path, headers) {
   if (path === "sns/status") return status();
+  if (path === "sns/threads/drafts") return drafts();
+  const d = path.match(/^sns\/threads\/(approve|skip)\/([\w-]{1,40})$/);
+  if (d) return decide(d[2], d[1], headers);
   const m = path.match(/^sns\/(reels|threads)\/(start|check|publish)\/([\w-]{1,30})$/);
   if (!m) return null;
   const [, pl, step, arg] = m;
@@ -158,4 +270,4 @@ async function handleSns(path, headers) {
   return fns[step](arg, headers);
 }
 
-module.exports = { handleSns };
+module.exports = { handleSns, handleCron };

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#F2F4F6" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <title>쓰레드 글</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root { --bg: #f2f4f6; --card: #fff; --fill: #f2f4f6; --ink: #191f28; --ink-2: #4e5968; --ink-3: #6b7684; --blue: #3182f6; --blue-soft: #e8f3ff; --red: #f04452; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Noto Sans KR", -apple-system, "Apple SD Gothic Neo", sans-serif; -webkit-font-smoothing: antialiased; }
+      .wrap { max-width: 560px; margin: 0 auto; padding: 16px 20px 48px; }
+      header { padding: 8px 0 16px; }
+      .back { color: var(--ink-2); text-decoration: none; font-size: 15px; display: inline-flex; min-height: 44px; align-items: center; }
+      h1 { margin: 4px 0 6px; font-size: 26px; font-weight: 800; }
+      header p { margin: 0; color: var(--ink-3); font-size: 14px; line-height: 1.6; }
+      .card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 12px; }
+      .muted { color: var(--ink-3); font-size: 13px; line-height: 1.6; margin: 0; }
+      .day { margin: 20px 4px 8px; font-size: 14px; font-weight: 700; color: var(--ink-2); }
+      .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; }
+      .slot { font-size: 13px; font-weight: 700; color: var(--blue); }
+      .chip { font-size: 12px; font-weight: 700; background: var(--fill); color: var(--ink-2); border-radius: 8px; padding: 4px 8px; }
+      textarea { width: 100%; min-height: 168px; border: 0; background: var(--fill); border-radius: 14px; padding: 14px; font: inherit; font-size: 15px; line-height: 1.65; color: var(--ink); resize: vertical; }
+      textarea:focus, input:focus { outline: 2px solid var(--blue); }
+      .stance { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0 8px; }
+      .stance button { height: 40px; padding: 0 14px; border: 0; border-radius: 20px; background: var(--fill); color: var(--ink-2); font: inherit; font-size: 14px; font-weight: 700; }
+      .stance button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+      input { width: 100%; height: 44px; border: 0; background: var(--fill); border-radius: 12px; padding: 0 12px; font: inherit; font-size: 14px; }
+      .preview { white-space: pre-line; font-size: 15px; line-height: 1.65; border: 1px solid #e5e8eb; border-radius: 14px; padding: 14px; margin: 12px 0 6px; }
+      .count.over { color: var(--red); font-weight: 700; }
+      .btn { width: 100%; height: 52px; border: 0; border-radius: 14px; background: var(--blue); color: #fff; font: inherit; font-size: 16px; font-weight: 700; margin-top: 12px; }
+      .btn:disabled { background: #c9d3de; }
+      .ghost { width: 100%; height: 44px; border: 0; background: transparent; color: var(--ink-2); font: inherit; font-size: 14px; font-weight: 700; }
+      .done { color: var(--blue); font-weight: 700; font-size: 14px; }
+      .err { color: var(--red); font-size: 13px; margin: 8px 0 0; }
+      label.lab { display: block; font-size: 13px; font-weight: 700; color: var(--ink-2); margin-top: 4px; }
+      a { color: var(--blue); }
+      [hidden] { display: none !important; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <a class="back" href="/upload.html">‹ 콘텐츠</a>
+        <h1>쓰레드 글</h1>
+        <p>매일 아침 7시 50분에 오늘 글 2개가 준비돼요. 읽어 보고 괜찮으면 승인만 눌러요. 아침 글은 바로, 저녁 글은 밤 9시에 올라가요.</p>
+      </header>
+      <section class="card" id="codeCard" hidden>
+        <p class="muted">접근 코드를 넣어 주세요. 판독기와 같은 코드예요.</p>
+        <input id="code" type="password" autocomplete="current-password" placeholder="접근 코드" />
+        <button class="btn" id="codeBtn">확인</button>
+      </section>
+      <p class="card err" id="err" hidden></p>
+      <div id="list"><p class="muted">불러오는 중이에요…</p></div>
+    </div>
+    <script>
+      const $ = (s) => document.querySelector(s);
+      const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+      const STANCE = { hold: "어제 나는 아무것도 안 했다.", buy: "어제 나는 샀다.", sell: "어제 나는 팔았다." };
+      const SLOT = { am: "아침 · 시황과 내 스탠스", pm: "저녁 · 공감 글" };
+      let items = [];
+      const pick = {}; // 초안별로 고른 스탠스·메모
+
+      async function api(path, headers = {}) {
+        const code = localStorage.getItem("accessCode") || "";
+        const res = await fetch("/api/" + path, { method: "POST", headers: { ...(code ? { "x-access-code": code } : {}), ...headers } });
+        const j = await res.json().catch(() => ({ error: "서버 응답을 읽지 못했어요." }));
+        if (!res.ok) { const e = new Error(j.error || "오류가 났어요."); e.status = res.status; throw e; }
+        return j;
+      }
+
+      // 초안의 {어제} 자리에 노아 님이 고른 실제 행동을 넣어요
+      function finalText(it) {
+        const box = document.querySelector(`[data-text="${it.id}"]`);
+        let t = box ? box.value : it.text;
+        const p = pick[it.id] || {};
+        if (t.includes("{어제}") && p.stance) t = t.replace("{어제}", [STANCE[p.stance], (p.memo || "").trim()].filter(Boolean).join(" "));
+        return t.trim();
+      }
+      const ready = (t) => !/\{어제\}|\[[^\]]*\]/.test(t) && [...t].length <= 500;
+
+      function card(it) {
+        const done = it.status === "posted" || it.status === "skipped";
+        const head = `<div class="top"><span class="slot">${SLOT[it.slot] || it.slot}</span>${it.trend ? `<span class="chip">트렌드 · ${esc(it.trend)}</span>` : ""}</div>`;
+        if (done || it.status === "approved") {
+          const st = it.status === "posted" ? `✓ 올렸어요${it.url ? ` · <a href="${esc(it.url)}" target="_blank" rel="noopener">보기</a>` : ""}` : it.status === "approved" ? "✓ 승인했어요 · 밤 9시에 올라가요" : "건너뛰었어요";
+          return `<article class="card">${head}<div class="preview">${esc(it.final || it.text)}</div><p class="done">${st}</p>${it.error ? `<p class="err">${esc(it.error)}</p>` : ""}</article>`;
+        }
+        const needs = it.text.includes("{어제}");
+        const p = pick[it.id] || {};
+        const t = finalText(it);
+        const n = [...t].length;
+        return `<article class="card" id="c-${esc(it.id)}">${head}
+          ${it.why ? `<p class="muted" style="margin-bottom:10px">${esc(it.why)}</p>` : ""}
+          <label class="lab" for="t-${esc(it.id)}">글 (직접 고쳐도 돼요)</label>
+          <textarea id="t-${esc(it.id)}" data-text="${esc(it.id)}">${esc(it.text)}</textarea>
+          ${needs ? `<label class="lab">어제 나는 실제로…</label>
+            <div class="stance">${Object.keys(STANCE).map((k) => `<button type="button" data-stance="${esc(it.id)}" data-k="${k}" aria-pressed="${p.stance === k}">${{ hold: "관망했어요", buy: "샀어요", sell: "팔았어요" }[k]}</button>`).join("")}</div>
+            <input data-memo="${esc(it.id)}" placeholder="한 줄 메모 (예: 펩시 2주 더 담았다)" value="${esc(p.memo || "")}" aria-label="한 줄 메모" />` : ""}
+          <div class="preview" data-pv="${esc(it.id)}">${esc(t)}</div>
+          <p class="muted count ${n > 500 ? "over" : ""}" data-n="${esc(it.id)}">${n} / 500자${ready(t) ? "" : " · 빈칸을 채우면 올릴 수 있어요"}</p>
+          <button class="btn" data-ok="${esc(it.id)}" ${ready(t) ? "" : "disabled"}>${it.slot === "am" ? "승인하고 바로 올리기" : "승인 (밤 9시에 올라가요)"}</button>
+          ${it.slot === "pm" ? `<button class="ghost" data-now="${esc(it.id)}" ${ready(t) ? "" : "disabled"}>지금 바로 올리기</button>` : ""}
+          <button class="ghost" data-skip="${esc(it.id)}">이 글은 건너뛰기</button>
+          <p class="err" data-e="${esc(it.id)}" hidden></p>
+        </article>`;
+      }
+
+      function render() {
+        if (!items.length) { $("#list").innerHTML = `<div class="card"><p class="muted">아직 준비된 글이 없어요. 내일 아침 7시 50분에 알림이 와요.</p></div>`; return; }
+        let html = "", last = "";
+        for (const it of items) {
+          if (it.date !== last) { const d = new Date(it.date + "T00:00:00+09:00"); html += `<p class="day">${d.getMonth() + 1}월 ${d.getDate()}일</p>`; last = it.date; }
+          html += card(it);
+        }
+        $("#list").innerHTML = html;
+      }
+
+      function refresh(id) {
+        const it = items.find((x) => x.id === id);
+        const t = finalText(it), n = [...t].length;
+        document.querySelector(`[data-pv="${id}"]`).textContent = t;
+        const c = document.querySelector(`[data-n="${id}"]`);
+        c.textContent = `${n} / 500자${ready(t) ? "" : " · 빈칸을 채우면 올릴 수 있어요"}`;
+        c.classList.toggle("over", n > 500);
+        document.querySelectorAll(`[data-ok="${id}"],[data-now="${id}"]`).forEach((b) => (b.disabled = !ready(t)));
+      }
+
+      async function send(id, now) {
+        const it = items.find((x) => x.id === id);
+        const t = finalText(it);
+        const e = document.querySelector(`[data-e="${id}"]`);
+        if (!ready(t)) { e.textContent = "빈칸을 채워 주세요."; e.hidden = false; return; }
+        if ((it.slot === "am" || now) && !confirm("쓰레드에 지금 바로 공개로 올려요. 올릴까요?")) return;
+        document.querySelectorAll(`#c-${CSS.escape(id)} button`).forEach((b) => (b.disabled = true));
+        try {
+          const r = await api(`sns/threads/approve/${id}`, { "x-sns-text": encodeURIComponent(t), ...(now ? { "x-sns-now": "1" } : {}) });
+          Object.assign(it, { status: r.status, url: r.url, final: t });
+          render();
+        } catch (err) {
+          e.textContent = err.message; e.hidden = false;
+          refresh(id);
+          document.querySelectorAll(`#c-${CSS.escape(id)} .ghost[data-skip]`).forEach((b) => (b.disabled = false));
+        }
+      }
+
+      document.addEventListener("input", (e) => {
+        const t = e.target.closest("[data-text],[data-memo]");
+        if (!t) return;
+        const id = t.dataset.text || t.dataset.memo;
+        if (t.dataset.memo) pick[id] = { ...(pick[id] || {}), memo: t.value };
+        refresh(id);
+      });
+      document.addEventListener("click", async (e) => {
+        const s = e.target.closest("[data-stance]");
+        if (s) {
+          const id = s.dataset.stance;
+          pick[id] = { ...(pick[id] || {}), stance: s.dataset.k };
+          document.querySelectorAll(`[data-stance="${id}"]`).forEach((b) => b.setAttribute("aria-pressed", String(b === s)));
+          return refresh(id);
+        }
+        const ok = e.target.closest("[data-ok]");
+        if (ok) return send(ok.dataset.ok, false);
+        const now = e.target.closest("[data-now]");
+        if (now) return send(now.dataset.now, true);
+        const sk = e.target.closest("[data-skip]");
+        if (sk) {
+          try { await api(`sns/threads/skip/${sk.dataset.skip}`); items.find((x) => x.id === sk.dataset.skip).status = "skipped"; render(); }
+          catch (err) { $("#err").textContent = err.message; $("#err").hidden = false; }
+        }
+      });
+      $("#codeBtn").addEventListener("click", () => { localStorage.setItem("accessCode", $("#code").value); load(); });
+
+      async function load() {
+        $("#err").hidden = true;
+        try {
+          const j = await api("sns/threads/drafts");
+          $("#codeCard").hidden = true;
+          items = j.items || [];
+          render();
+        } catch (e) {
+          if (e.status === 401 && /접근 코드/.test(e.message)) { $("#codeCard").hidden = false; $("#list").innerHTML = ""; return; }
+          $("#err").textContent = e.message; $("#err").hidden = false; $("#list").innerHTML = "";
+        }
+      }
+      load();
+    </script>
+  </body>
+</html>

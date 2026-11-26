@@ -1,11 +1,25 @@
 {
   "rewrites": [
-    { "source": "/api/:path((?!router).*)", "destination": "/api/router?path=:path" }
+    {
+      "source": "/api/:path((?!router).*)",
+      "destination": "/api/router?path=:path"
+    }
   ],
   "functions": {
-    "api/router.js": { "maxDuration": 60 }
+    "api/router.js": {
+      "maxDuration": 60
+    }
   },
   "git": {
-    "deploymentEnabled": { "media": false }
-  }
+    "deploymentEnabled": {
+      "media": false,
+      "threads": false
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/threads",
+      "schedule": "0 12 * * *"
+    }
+  ]
 }
