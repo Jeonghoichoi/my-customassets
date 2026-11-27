@@ -62,6 +62,7 @@ function metaMessage(j, status, who) {
   // 원인을 알 수 있게 메타가 보낸 원래 문구도 괄호로 붙여요 (토큰 값은 들어 있지 않아요)
   if (e.code === 190) return `${who} 토큰이 만료됐거나 잘못됐어요. 개발자 대시보드에서 새 토큰을 받아 Vercel에 다시 넣어 주세요. (${e.message || "code 190"})`;
   if (e.code === 4 || e.code === 17 || e.code === 32) return `${who} API 사용 한도를 넘었어요. 잠시 뒤 다시 눌러 주세요.`;
+  if (e.error_subcode === 2207081) return `${who} 체험판 릴스는 팔로워 수 조건이 안 돼서 아직 못 써요. 일반 릴스로 올려 주세요. (2207081)`;
   if (e.code === 10 || e.code === 200) return `${who} 게시 권한이 없어요. 앱 권한(콘텐츠 게시)을 확인해 주세요. (${e.error_user_msg || e.message || "code " + e.code}${e.error_subcode ? " · " + e.error_subcode : ""})`;
   return `${who} 오류예요 (${e.error_user_msg || e.message || status}).`;
 }
@@ -155,10 +156,16 @@ async function instaStart(id, headers = {}) {
     if (it.cover) params.cover_url = url[it.cover];
     // 체험판 릴스: 팔로워가 아닌 사람에게 먼저 보여 주고, 반응이 좋으면 자동으로 정식 공개돼요
     if (trial) {
-      params.trial_params = JSON.stringify({ graduation_strategy: "SS_PERFORMANCE" });
-      delete params.share_to_feed;
+      try {
+        const t = { ...params, trial_params: JSON.stringify({ graduation_strategy: "SS_PERFORMANCE" }) };
+        delete t.share_to_feed;
+        return { container: (await ig(`/${user}/media`, t)).id, trial: true };
+      } catch (e) {
+        // 2207081: 팔로워 수 조건이 안 돼서 체험판을 못 써요 → 일반 릴스로 바로 다시 올려요
+        if (!/2207081/.test(e.message)) throw e;
+      }
     }
-    return { container: (await ig(`/${user}/media`, params)).id };
+    return { container: (await ig(`/${user}/media`, params)).id, trial: false };
   }
   const imgs = it.images || [];
   if (imgs.length < 2 || imgs.length > 10) throw fail(400, "카드뉴스는 2~10장이어야 해요.");
