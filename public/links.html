@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>배당셰프 링크</title>
+    <meta name="description" content="배당셰프가 직접 써 본 것만 모아 둔 링크 모음이에요." />
+    <link rel="icon" href="/icon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root { --bg: #f2f4f6; --card: #fff; --fill: #f2f4f6; --ink: #191f28; --ink-2: #4e5968; --ink-3: #6b7684; --blue: #3182f6; --blue-soft: #e8f3ff; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Noto Sans KR", -apple-system, "Apple SD Gothic Neo", sans-serif; -webkit-font-smoothing: antialiased; }
+      .wrap { max-width: 480px; margin: 0 auto; padding: 28px 16px 48px; }
+      .me { text-align: center; padding: 12px 0 20px; }
+      .me img { width: 84px; height: 84px; border-radius: 50%; display: block; margin: 0 auto 12px; background: #fff; }
+      .me h1 { font-size: 22px; font-weight: 800; margin: 0 0 6px; }
+      .me p { font-size: 15px; color: var(--ink-2); margin: 0; line-height: 1.5; }
+      h2 { font-size: 15px; color: var(--ink-3); font-weight: 700; margin: 24px 4px 10px; display: flex; align-items: center; gap: 6px; }
+      a.btn { display: block; background: var(--card); border-radius: 18px; padding: 18px 20px; margin-bottom: 10px; text-decoration: none; color: inherit; }
+      a.btn:active { transform: scale(.98); }
+      .t { font-size: 17px; font-weight: 700; }
+      .d { font-size: 14px; color: var(--ink-3); margin-top: 4px; line-height: 1.45; }
+      .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: var(--fill); color: var(--ink-2); margin-right: 6px; vertical-align: 2px; }
+      .badge.ad { background: #191f28; color: #fff; }
+      .notice { font-size: 13px; color: var(--ink-3); line-height: 1.55; background: var(--card); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; }
+      .empty { font-size: 14px; color: var(--ink-3); text-align: center; padding: 18px; }
+      footer { text-align: center; font-size: 12px; color: var(--ink-3); margin-top: 28px; line-height: 1.6; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="me">
+        <img src="/icon-192.png" alt="배당셰프" />
+        <h1>배당셰프</h1>
+        <p id="intro"></p>
+      </div>
+      <div id="main"></div>
+      <h2>오늘의 혜택</h2>
+      <div class="notice">광고가 포함되어 있어요. 아래 링크로 가입하면 제가 수수료를 받을 수 있어요. 직접 써 본 것만 올려요.</div>
+      <div id="offers"></div>
+      <footer>투자 권유가 아니라 제 기록이에요.<br />@baedang_chef</footer>
+    </div>
+    <script>
+      const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+      // 어디서 들어왔는지(인스타·쓰레드·당근)를 판독기 안 링크에 그대로 넘겨요
+      const from = new URLSearchParams(location.search).get("from") || "";
+      const withFrom = (u) => (from && u.startsWith("/") ? u + (u.includes("?") ? "&" : "?") + "from=" + encodeURIComponent(from) : u);
+      fetch("/links.json", { cache: "no-store" })
+        .then((r) => r.json())
+        .then((d) => {
+          document.getElementById("intro").textContent = d.intro || "";
+          document.getElementById("main").innerHTML = (d.main || [])
+            .filter((m) => m.url)
+            .map((m) => `<a class="btn" href="${esc(withFrom(m.url))}" ${m.url.startsWith("/") ? "" : 'target="_blank" rel="noopener"'}><div class="t">${esc(m.title)}</div><div class="d">${esc(m.desc)}</div></a>`)
+            .join("");
+          const offers = (d.offers || []).filter((o) => o.show && o.url);
+          document.getElementById("offers").innerHTML = offers.length
+            ? offers
+                .map((o) => `<a class="btn" href="${esc(o.url)}" target="_blank" rel="noopener sponsored"><div class="t"><span class="badge ad">광고</span>${esc(o.title)}</div><div class="d">${esc(o.review)}</div></a>`)
+                .join("")
+            : `<div class="empty">곧 직접 써 본 혜택을 올릴게요.</div>`;
+        })
+        .catch(() => { document.getElementById("offers").innerHTML = `<div class="empty">잠시 후 다시 열어 주세요.</div>`; });
+    </script>
+  </body>
+</html>
