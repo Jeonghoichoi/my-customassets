@@ -121,17 +121,32 @@ function instaItem(id) {
   if (!it.caption || [...it.caption].length > IG_MAX) throw fail(400, "캡션이 비었거나 2,200자를 넘어요.");
   return it;
 }
+const warm = (paths) => Promise.all(paths.map((p) => fetch(media(p)).then((r) => r.arrayBuffer()).catch(() => null)));
+async function retry(fn, n = 3) {
+  for (let i = 1; ; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      if (i >= n || e.status === 401) throw e;
+      await new Promise((r) => setTimeout(r, 2500));
+    }
+  }
+}
 async function instaStart(id) {
   const it = instaItem(id);
   const user = cfg().ig.user;
   if (it.kind === "reel") {
+    await warm([it.video, it.cover].filter(Boolean));
     const params = { media_type: "REELS", video_url: media(it.video), caption: it.caption, share_to_feed: "true" };
     if (it.cover) params.cover_url = media(it.cover);
     return { container: (await ig(`/${user}/media`, params)).id };
   }
   const imgs = it.images || [];
   if (imgs.length < 2 || imgs.length > 10) throw fail(400, "카드뉴스는 2~10장이어야 해요.");
-  const kids = await Promise.all(imgs.map((p) => ig(`/${user}/media`, { image_url: media(p), is_carousel_item: "true" }).then((j) => j.id)));
+  // CDN이 처음 받는 파일은 느려서 인스타가 못 가져갈 때가 있어요 → 먼저 한 번씩 불러 두고, 실패하면 두 번 더 시도해요
+  await warm(imgs);
+  const kids = [];
+  for (const p of imgs) kids.push(await retry(() => ig(`/${user}/media`, { image_url: media(p), is_carousel_item: "true" }).then((j) => j.id)));
   const j = await ig(`/${user}/media`, { media_type: "CAROUSEL", children: kids.join(","), caption: it.caption });
   return { container: j.id };
 }
