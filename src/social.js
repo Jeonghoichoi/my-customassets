@@ -104,6 +104,39 @@ async function igPublish(cid) {
   return { id: j.id, url: p.permalink || "" };
 }
 
+
+// ── 인스타 피드 게시물 (카드뉴스 묶음·릴스) ──
+// data/insta.json 에 예약 작업·제작 세션이 게시물을 쌓아요. 이미지는 media 브랜치의 JPG(인스타 API는 JPG만 받아요)
+// 카드뉴스: 이미지마다 묶음용 컨테이너 → 묶음 컨테이너(CAROUSEL) → 처리 확인 → 게시
+function instaItems() {
+  try {
+    return require("../data/insta.json").items || [];
+  } catch {
+    return [];
+  }
+}
+function instaItem(id) {
+  const it = instaItems().find((x) => x.id === id);
+  if (!it) throw fail(404, "인스타 게시물 목록에 없는 항목이에요.");
+  if (!it.caption || [...it.caption].length > IG_MAX) throw fail(400, "캡션이 비었거나 2,200자를 넘어요.");
+  return it;
+}
+async function instaStart(id) {
+  const it = instaItem(id);
+  const user = cfg().ig.user;
+  if (it.kind === "reel") {
+    const params = { media_type: "REELS", video_url: media(it.video), caption: it.caption, share_to_feed: "true" };
+    if (it.cover) params.cover_url = media(it.cover);
+    return { container: (await ig(`/${user}/media`, params)).id };
+  }
+  const imgs = it.images || [];
+  if (imgs.length < 2 || imgs.length > 10) throw fail(400, "카드뉴스는 2~10장이어야 해요.");
+  const kids = await Promise.all(imgs.map((p) => ig(`/${user}/media`, { image_url: media(p), is_carousel_item: "true" }).then((j) => j.id)));
+  const j = await ig(`/${user}/media`, { media_type: "CAROUSEL", children: kids.join(","), caption: it.caption });
+  return { container: j.id };
+}
+const instaList = () => ({ items: instaItems().map(({ id, kind, title, images, video, cover, caption }) => ({ id, kind, title, images, video, cover, caption })) });
+
 // ── 쓰레드 ──
 const th = (path, params = {}, method = "POST") => {
   const c = cfg().th;
@@ -266,6 +299,9 @@ async function status() {
 async function handleSns(path, headers) {
   if (path === "sns/status") return status();
   if (path === "sns/threads/drafts") return drafts();
+  if (path === "sns/insta/items") return instaList();
+  const g = path.match(/^sns\/insta\/(start|check|publish)\/([\w-]{1,40})$/);
+  if (g) return { start: instaStart, check: igCheck, publish: igPublish }[g[1]](g[2]);
   const d = path.match(/^sns\/threads\/(approve|skip)\/([\w-]{1,40})$/);
   if (d) return decide(d[2], d[1], headers);
   const m = path.match(/^sns\/(reels|threads)\/(start|check|publish)\/([\w-]{1,30})$/);
