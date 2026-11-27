@@ -93,7 +93,7 @@
 
       function card(it) {
         const done = it.status === "posted" || it.status === "skipped";
-        const head = `<div class="top"><span class="slot">${SLOT[it.slot] || it.slot}</span>${it.trend ? `<span class="chip">트렌드 · ${esc(it.trend)}</span>` : ""}</div>`;
+        const head = `<div class="top"><span class="slot">${SLOT[it.slot] || it.slot}</span>${it.trend ? `<span class="chip">트렌드 · ${esc(it.trend)}</span>` : ""}</div>${it.topic ? `<p class="muted" style="margin:-4px 0 10px">올라갈 주제 · <b>${esc(it.topic)}</b></p>` : ""}`;
         if (done || it.status === "approved") {
           const st = it.status === "posted" ? `✓ 올렸어요${it.url ? ` · <a href="${esc(it.url)}" target="_blank" rel="noopener">보기</a>` : ""}` : it.status === "approved" ? "✓ 승인했어요 · 12시 30분에 올라가요" : "건너뛰었어요";
           return `<article class="card">${head}${it.image ? `<img class="cardimg" src="${IMG(it.image)}" alt="카드 이미지" />` : ""}<div class="preview">${esc(it.final || it.text)}</div><p class="done">${st}</p>${it.error ? `<p class="err">${esc(it.error)}</p>` : ""}</article>`;

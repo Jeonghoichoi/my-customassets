@@ -172,8 +172,11 @@ async function saveStore(data, sha, message) {
 
 // 글(+카드 이미지) 올리기: 컨테이너 만들기 → 게시 (준비가 덜 됐으면 몇 초 기다렸다 다시)
 // image는 media 브랜치 경로예요 (예: threads/2026-11-28-noon.png) — jsDelivr 주소로 넘기면 메타가 가져가요
-async function postText(text, image) {
+async function postText(text, image, topic) {
   const params = image ? { media_type: "IMAGE", image_url: `${CDN}media/${image}`, text } : { media_type: "TEXT", text };
+  // 주제 태그(글마다 1개, 50자 이내, 마침표·& 금지): 쓰레드 '재테크'·'주식' 같은 주제 피드에 노출돼요
+  const tp = String(topic || "").replace(/[.&#]/g, "").trim().slice(0, 50);
+  if (tp) params.topic_tag = tp;
   const { id: container } = await th(`/${cfg().th.user}/threads`, params);
   let last;
   for (let i = 0; i < 5; i++) {
@@ -211,7 +214,7 @@ async function decide(id, action, headers) {
   it.approvedAt = new Date().toISOString();
   // 아침 글이나 '지금 올리기'는 바로, 나머지(점심 카드 등)는 12시 30분 예약 게시로 올려요
   if (it.slot === "am" || headers["x-sns-now"] === "1") {
-    const r = await postText(text, it.image);
+    const r = await postText(text, it.image, it.topic);
     Object.assign(it, { status: "posted", postedAt: new Date().toISOString(), url: r.url, postId: r.id });
   } else {
     it.status = "approved";
@@ -229,7 +232,7 @@ async function handleCron(headers) {
   const done = [];
   for (const it of due) {
     try {
-      const r = await postText(it.final, it.image);
+      const r = await postText(it.final, it.image, it.topic);
       Object.assign(it, { status: "posted", postedAt: new Date().toISOString(), url: r.url, postId: r.id });
       done.push(it.id);
     } catch (e) {
