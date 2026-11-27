@@ -122,7 +122,18 @@ function instaItem(id) {
   if (!it.caption || [...it.caption].length > IG_MAX) throw fail(400, "캡션이 비었거나 2,200자를 넘어요.");
   return it;
 }
-const warm = (paths) => Promise.all(paths.map((p) => fetch(media(p)).then((r) => r.arrayBuffer()).catch(() => null)));
+// jsDelivr는 media 브랜치를 몇 시간씩 캐시해서, 방금 올린 파일은 한동안 404일 수 있어요
+// → CDN에서 먼저 받아 보고(미리 불러 두기도 겸해요), 안 되면 GitHub 원본 주소로 넘겨요
+const RAW = "https://raw.githubusercontent.com/Jeonghoichoi/my-customassets/";
+const rawMedia = (p) => `${RAW}${queue().branch || "media"}/${p}`;
+async function warm(paths) {
+  const urls = {};
+  await Promise.all(paths.map(async (p) => {
+    const ok = await fetch(media(p)).then(async (r) => (await r.arrayBuffer(), r.ok)).catch(() => false);
+    urls[p] = ok ? media(p) : rawMedia(p);
+  }));
+  return urls;
+}
 async function retry(fn, n = 3) {
   for (let i = 1; ; i++) {
     try {
@@ -138,9 +149,10 @@ async function instaStart(id, headers = {}) {
   const it = instaItem(id);
   const user = cfg().ig.user;
   if (it.kind === "reel") {
-    await warm([it.video, it.cover].filter(Boolean));
-    const params = { media_type: "REELS", video_url: media(it.video), caption: it.caption, share_to_feed: "true" };
-    if (it.cover) params.cover_url = media(it.cover);
+    if (!it.video) throw fail(400, "릴스 영상 파일이 아직 없어요.");
+    const url = await warm([it.video, it.cover].filter(Boolean));
+    const params = { media_type: "REELS", video_url: url[it.video], caption: it.caption, share_to_feed: "true" };
+    if (it.cover) params.cover_url = url[it.cover];
     // 체험판 릴스: 팔로워가 아닌 사람에게 먼저 보여 주고, 반응이 좋으면 자동으로 정식 공개돼요
     if (trial) {
       params.trial_params = JSON.stringify({ graduation_strategy: "SS_PERFORMANCE" });
@@ -151,13 +163,13 @@ async function instaStart(id, headers = {}) {
   const imgs = it.images || [];
   if (imgs.length < 2 || imgs.length > 10) throw fail(400, "카드뉴스는 2~10장이어야 해요.");
   // CDN이 처음 받는 파일은 느려서 인스타가 못 가져갈 때가 있어요 → 먼저 한 번씩 불러 두고, 실패하면 두 번 더 시도해요
-  await warm(imgs);
+  const url = await warm(imgs);
   const kids = [];
-  for (const p of imgs) kids.push(await retry(() => ig(`/${user}/media`, { image_url: media(p), is_carousel_item: "true" }).then((j) => j.id)));
+  for (const p of imgs) kids.push(await retry(() => ig(`/${user}/media`, { image_url: url[p], is_carousel_item: "true" }).then((j) => j.id)));
   const j = await ig(`/${user}/media`, { media_type: "CAROUSEL", children: kids.join(","), caption: it.caption });
   return { container: j.id };
 }
-const instaList = () => ({ items: instaItems().map(({ id, kind, title, images, video, cover, caption }) => ({ id, kind, title, images, video, cover, caption })) });
+const instaList = () => ({ items: instaItems().map(({ id, kind, title, images, video, cover, caption, pair }) => ({ id, kind, title, images, video, cover, caption, pair })) });
 
 // ── 쓰레드 ──
 const th = (path, params = {}, method = "POST") => {

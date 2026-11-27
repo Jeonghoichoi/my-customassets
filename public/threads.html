@@ -67,7 +67,7 @@
       const $ = (s) => document.querySelector(s);
       const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
       const STANCE = { hold: "어제 나는 아무것도 안 했다.", buy: "어제 나는 샀다.", sell: "어제 나는 팔았다." };
-      const SLOT = { am: "아침 · 시황과 내 스탠스", noon: "점심 12:30 · 계산형 카드", pm: "점심 12:30 · 예약 글" };
+      const SLOT = { am: "아침 · 시황과 내 스탠스", noon: "점심 12:30 · 시황 요약 글", pm: "점심 12:30 · 예약 글" };
       const IMG = (p) => `https://cdn.jsdelivr.net/gh/Jeonghoichoi/my-customassets@media/${p}`;
       const ver = {}; // 초안별로 고른 버전 (0=버전1)
       let items = [];

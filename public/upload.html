@@ -124,7 +124,11 @@
       .set .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
       [hidden] { display: none !important; }
       @media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
-    .istrip{display:flex;gap:6px;overflow-x:auto;margin:10px 0}.istrip img{width:96px;height:120px;object-fit:cover;border-radius:10px;flex:none;background:#eee}
+    .istrip{display:flex;gap:6px;overflow-x:auto;margin:10px 0;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+      .istrip a{position:relative;flex:none;scroll-snap-align:start}.istrip img{display:block;width:96px;height:120px;object-fit:cover;border-radius:10px;background:#eee}
+      .istrip span{position:absolute;left:6px;bottom:6px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px}
+      .ireel{display:block;width:100%;max-width:180px;aspect-ratio:9/16;border-radius:14px;background:#000;margin:10px 0}
+      .ipicks{display:flex;flex-direction:column;gap:8px;margin:10px 0 12px}.ipick{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.ipick input{width:20px;height:20px}.ipick.sub{font-size:13px;flex-wrap:nowrap;align-items:flex-start}.ipick.sub span{flex:1}
       .iitem{border-top:1px solid var(--fill, #f2f4f6);padding-top:14px;margin-top:14px}.iitem:first-child{border:0;margin:0;padding:0}
       </style>
   </head>
@@ -208,7 +212,7 @@
 
       <section class="card" id="instaCard" hidden>
         <h2>인스타 게시물</h2>
-        <p class="muted">카드뉴스·릴스를 골라 바로 올려요. 누르면 지금 바로 공개돼요.</p>
+        <p class="muted">같은 주제의 카드뉴스와 릴스를 함께 보여 줘요. 올릴 것을 체크하고 한 번에 올리면 바로 공개돼요.</p>
         <div id="instaList"></div>
       </section>
 
@@ -579,6 +583,20 @@
       }
 
       $("#list").addEventListener("click", (e) => {
+        // 다른 플랫폼 스위치 켜기·끄기 (다시 그려도 펼친 상자는 그대로 열어 둬요)
+        const sw = e.target.closest("[data-sw]");
+        if (sw) {
+          if (busy) return;
+          const pl = sw.dataset.sw;
+          const box = sw.closest("[data-social]")?.dataset.social;
+          save("plOn", { ...store("plOn", {}), [pl]: !plOn()[pl] });
+          render();
+          if (box) document.querySelector(`[data-social="${box}"]`)?.setAttribute("open", "");
+          return;
+        }
+        // '선택한 곳에 올리기' 버튼
+        const sg = e.target.closest("[data-snsgo]");
+        if (sg) return snsGo(sg);
         const up = e.target.closest("[data-up]");
         if (up && !busy) {
           // 같은 화면의 다른 업로드를 막고 이 영상만 올려요
@@ -742,58 +760,96 @@
       }
 
 
-      // ── 인스타 게시물 (data/insta.json): 카드뉴스 묶음·릴스를 API로 바로 올려요 ──
+      // ── 인스타 게시물 (data/insta.json): 같은 주제의 카드뉴스와 릴스를 한 묶음으로 보여 주고, 고른 것을 한 번에 올려요 ──
+      // 릴스 항목의 pair 에 카드뉴스 id를 적으면 같은 묶음이 돼요 (예: r03.pair = "p03")
       let INSTA = [];
+      // 미리보기는 GitHub 원본 주소로 (jsDelivr는 방금 올린 파일을 몇 시간 못 찾을 때가 있어요), 안 뜨면 CDN으로 한 번 더
+      const imgTag = (p, alt) => `<img src="${RAW + esc(p)}" alt="${esc(alt)}" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='${CDN + esc(p)}'}else{this.style.visibility='hidden'}" />`;
+      function instaGroups() {
+        const cards = INSTA.filter((x) => x.kind !== "reel");
+        const reels = INSTA.filter((x) => x.kind === "reel");
+        const groups = cards.map((c) => ({ id: c.id, title: c.title, card: c, reel: reels.find((r) => r.pair === c.id) || null }));
+        reels.filter((r) => !cards.some((c) => c.id === r.pair)).forEach((r) => groups.push({ id: r.id, title: r.title, card: null, reel: r }));
+        return groups;
+      }
       function renderInsta() {
         const done = store("instaDone", {});
-        show("#instaCard", INSTA.length > 0);
-        $("#instaList").innerHTML = INSTA.map((it) => {
-          const pics = it.kind === "reel" ? [it.cover] : it.images;
-          const d = done[it.id];
+        show("#instaCard", true);
+        const groups = instaGroups();
+        if (!groups.length) {
+          $("#instaList").innerHTML = `<p class="muted" style="margin-top:12px">올릴 카드뉴스·릴스가 아직 없어요.</p>`;
+          return;
+        }
+        const ready = snsOk("reels");
+        const doneLine = (d) => `<span class="state done">✓ 올렸어요${d.url ? ` · <a href="${esc(d.url)}" target="_blank" rel="noopener">보기</a>` : ""}</span>`;
+        $("#instaList").innerHTML = groups.map((g) => {
+          const parts = [g.card, g.reel].filter(Boolean);
+          const left = parts.filter((p) => !done[p.id]);
+          const pick = (p, label) => `<label class="ipick"><input type="checkbox" data-ipick="${esc(g.id)}" value="${esc(p.id)}" ${done[p.id] ? "disabled" : "checked"} /> <b>${label}</b> ${done[p.id] ? doneLine(done[p.id]) : ""}</label>`;
+          const imgs = g.card ? (g.card.images || []).filter(Boolean) : [];
           return `<div class="iitem">
-            <div class="t"><span class="badge short">${it.kind === "reel" ? "릴스" : `카드뉴스 ${it.images.length}장`}</span>${esc(it.title)}</div>
-            <div class="istrip">${pics.filter(Boolean).map((p) => `<img src="${CDN + esc(p)}" alt="" loading="lazy" />`).join("")}</div>
-            <details><summary>캡션 보기</summary><div class="cap">${esc(it.caption)}</div><button class="btn sm sub" data-copytext="${esc(it.caption)}">캡션 복사</button></details>
-            ${d ? `<p class="state done">✓ 올렸어요${d.url ? ` · <a href="${esc(d.url)}" target="_blank" rel="noopener">보기</a>` : ""}</p>`
-              : snsOk("reels") ? `${it.kind === "reel" ? `<label class="muted" style="display:flex;gap:8px;align-items:center;margin:6px 0 10px"><input type="checkbox" data-trial="${esc(it.id)}" checked /> 체험판 릴스로 올리기 (팔로워 아닌 사람에게 먼저 보여 주고, 반응 좋으면 자동 공개)</label>` : ""}<button class="btn" data-instago="${esc(it.id)}">인스타에 올리기</button>` : `<p class="muted">인스타 연결 확인이 필요해요${SNS.reels?.error ? ` (${esc(SNS.reels.error)})` : ""}.</p>`}
-            <p class="muted" data-instamsg="${esc(it.id)}"></p>
+            <div class="t">${g.card ? `<span class="badge short">카드뉴스 ${imgs.length}장</span>` : ""}${g.reel ? `<span class="badge short">릴스</span>` : ""}${esc(g.card ? g.card.title : g.reel.title)}</div>
+            ${g.card ? `<div class="istrip">${imgs.map((p, i) => `<a href="${RAW + esc(p)}" target="_blank" rel="noopener">${imgTag(p, `${i + 1}장`)}<span>${i + 1}/${imgs.length}</span></a>`).join("")}</div>` : ""}
+            ${g.reel ? (g.reel.video ? `<video class="ireel" controls playsinline preload="none" ${g.reel.cover ? `poster="${RAW + esc(g.reel.cover)}"` : ""} src="${RAW + esc(g.reel.video)}"></video>` : `<p class="muted">릴스 영상 파일이 아직 없어요.</p>`) : ""}
+            <div class="ipicks">
+              ${g.card ? pick(g.card, `카드뉴스 ${imgs.length}장`) : ""}
+              ${g.reel ? pick(g.reel, "릴스") : ""}
+              ${g.reel && !done[g.reel.id] ? `<label class="muted ipick sub"><input type="checkbox" data-trial="${esc(g.reel.id)}" /><span>릴스를 체험판으로 (팔로워 아닌 사람에게 먼저 보여 주고, 반응 좋으면 자동 공개)</span></label>` : ""}
+            </div>
+            <details><summary>캡션 보기</summary>${parts.map((p) => `<p class="meta"><b>${p.kind === "reel" ? "릴스" : "카드뉴스"}</b></p><div class="cap">${esc(p.caption)}</div><button class="btn sm sub" data-copytext="${esc(p.caption)}">캡션 복사</button>`).join("")}</details>
+            ${!left.length ? `<p class="state done">✓ 모두 올렸어요</p>`
+              : ready ? `<button class="btn" data-igo="${esc(g.id)}">${parts.length > 1 ? "고른 것 한 번에 올리기" : "인스타에 올리기"}</button>`
+              : `<p class="muted">인스타 연결 확인이 필요해요${SNS.reels?.error ? ` (${esc(SNS.reels.error)})` : ""}.</p>`}
+            <p class="muted" data-instamsg="${esc(g.id)}"></p>
           </div>`;
         }).join("");
       }
+      // 게시물 하나 올리기: 컨테이너 만들기 → 처리될 때까지 5초마다 확인 → 게시
+      async function instaOne(it, trial, say) {
+        const name = it.kind === "reel" ? "릴스" : "카드뉴스";
+        say(`${name}: 인스타에 보내는 중이에요…`);
+        const { container } = await api(`sns/insta/start/${it.id}`, trial ? { "x-insta-trial": "1" } : {});
+        let state = "IN_PROGRESS";
+        for (let i = 0; i < 60 && state !== "FINISHED"; i++) {
+          await new Promise((r) => setTimeout(r, 5000));
+          const c = await api(`sns/insta/check/${container}`);
+          state = c.state;
+          if (state === "ERROR" || state === "EXPIRED") throw new Error(`${name} 처리에 실패했어요${c.detail ? ` (${c.detail})` : ""}.`);
+          say(`${name}: 인스타가 처리하는 중이에요… (${(i + 1) * 5}초)`);
+        }
+        if (state !== "FINISHED") throw new Error(`${name} 처리가 5분을 넘었어요. 잠시 뒤 다시 눌러 주세요.`);
+        const r = await api(`sns/insta/publish/${container}`);
+        save("instaDone", { ...store("instaDone", {}), [it.id]: { t: new Date().toISOString(), url: r.url || "" } });
+      }
       async function instaGo(btn) {
         if (busy) return;
-        const id = btn.dataset.instago;
-        const it = INSTA.find((x) => x.id === id);
-        if (!it || !confirm(`'${it.title}'을(를) 인스타에 지금 바로 올려요. 올릴까요?`)) return;
-        const msg = document.querySelector(`[data-instamsg="${id}"]`);
+        const gid = btn.dataset.igo;
+        const ids = [...document.querySelectorAll(`[data-ipick="${gid}"]`)].filter((c) => c.checked && !c.disabled).map((c) => c.value);
+        const todo = ids.map((id) => INSTA.find((x) => x.id === id)).filter(Boolean);
+        const msg = document.querySelector(`[data-instamsg="${gid}"]`);
         const say = (t) => msg && (msg.textContent = t);
+        if (!todo.length) return say("올릴 것을 하나 이상 골라 주세요.");
+        const names = todo.map((x) => (x.kind === "reel" ? "릴스" : "카드뉴스")).join(" + ");
+        if (!confirm(`${names}를 인스타에 지금 바로 공개로 올려요. 올릴까요?`)) return;
         busy = true;
         btn.disabled = true;
+        const ok = [];
         try {
-          say("인스타에 보내는 중이에요…");
-          const trial = document.querySelector(`[data-trial="${id}"]`)?.checked;
-          const { container } = await api(`sns/insta/start/${id}`, trial ? { "x-insta-trial": "1" } : {});
-          let state = "IN_PROGRESS";
-          for (let i = 0; i < 60 && state !== "FINISHED"; i++) {
-            await new Promise((r) => setTimeout(r, 5000));
-            const c = await api(`sns/insta/check/${container}`);
-            state = c.state;
-            if (state === "ERROR" || state === "EXPIRED") throw new Error(`인스타 처리에 실패했어요${c.detail ? ` (${c.detail})` : ""}.`);
-            say(`인스타가 처리하는 중이에요… (${(i + 1) * 5}초)`);
+          for (const it of todo) {
+            await instaOne(it, it.kind === "reel" && document.querySelector(`[data-trial="${it.id}"]`)?.checked, say);
+            ok.push(it.kind === "reel" ? "릴스" : "카드뉴스");
           }
-          if (state !== "FINISHED") throw new Error("처리가 5분을 넘었어요. 잠시 뒤 다시 눌러 주세요.");
-          const r = await api(`sns/insta/publish/${container}`);
-          save("instaDone", { ...store("instaDone", {}), [id]: { t: new Date().toISOString(), url: r.url || "" } });
           busy = false;
           renderInsta();
         } catch (e) {
           busy = false;
-          btn.disabled = false;
-          say(e.message);
+          renderInsta();
+          const m = document.querySelector(`[data-instamsg="${gid}"]`);
+          if (m) m.textContent = (ok.length ? `${ok.join(" + ")}는 올렸어요. ` : "") + e.message;
         }
       }
       $("#instaList").addEventListener("click", (e) => {
-        const go = e.target.closest("[data-instago]");
+        const go = e.target.closest("[data-igo]");
         if (go) return instaGo(go);
         const cp = e.target.closest("[data-copytext]");
         if (cp) navigator.clipboard?.writeText(cp.dataset.copytext).then(() => (cp.textContent = "복사했어요"));
