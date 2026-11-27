@@ -132,13 +132,19 @@ async function retry(fn, n = 3) {
     }
   }
 }
-async function instaStart(id) {
+async function instaStart(id, headers = {}) {
+  const trial = headers["x-insta-trial"] === "1";
   const it = instaItem(id);
   const user = cfg().ig.user;
   if (it.kind === "reel") {
     await warm([it.video, it.cover].filter(Boolean));
     const params = { media_type: "REELS", video_url: media(it.video), caption: it.caption, share_to_feed: "true" };
     if (it.cover) params.cover_url = media(it.cover);
+    // 체험판 릴스: 팔로워가 아닌 사람에게 먼저 보여 주고, 반응이 좋으면 자동으로 정식 공개돼요
+    if (trial) {
+      params.trial_params = JSON.stringify({ graduation_strategy: "SS_PERFORMANCE" });
+      delete params.share_to_feed;
+    }
     return { container: (await ig(`/${user}/media`, params)).id };
   }
   const imgs = it.images || [];
@@ -316,7 +322,7 @@ async function handleSns(path, headers) {
   if (path === "sns/threads/drafts") return drafts();
   if (path === "sns/insta/items") return instaList();
   const g = path.match(/^sns\/insta\/(start|check|publish)\/([\w-]{1,40})$/);
-  if (g) return { start: instaStart, check: igCheck, publish: igPublish }[g[1]](g[2]);
+  if (g) return { start: instaStart, check: igCheck, publish: igPublish }[g[1]](g[2], headers);
   const d = path.match(/^sns\/threads\/(approve|skip)\/([\w-]{1,40})$/);
   if (d) return decide(d[2], d[1], headers);
   const m = path.match(/^sns\/(reels|threads)\/(start|check|publish)\/([\w-]{1,30})$/);

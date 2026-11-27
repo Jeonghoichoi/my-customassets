@@ -755,7 +755,7 @@
             <div class="istrip">${pics.filter(Boolean).map((p) => `<img src="${CDN + esc(p)}" alt="" loading="lazy" />`).join("")}</div>
             <details><summary>캡션 보기</summary><div class="cap">${esc(it.caption)}</div><button class="btn sm sub" data-copytext="${esc(it.caption)}">캡션 복사</button></details>
             ${d ? `<p class="state done">✓ 올렸어요${d.url ? ` · <a href="${esc(d.url)}" target="_blank" rel="noopener">보기</a>` : ""}</p>`
-              : snsOk("reels") ? `<button class="btn" data-instago="${esc(it.id)}">인스타에 올리기</button>` : `<p class="muted">인스타 연결 확인이 필요해요${SNS.reels?.error ? ` (${esc(SNS.reels.error)})` : ""}.</p>`}
+              : snsOk("reels") ? `${it.kind === "reel" ? `<label class="muted" style="display:flex;gap:8px;align-items:center;margin:6px 0 10px"><input type="checkbox" data-trial="${esc(it.id)}" checked /> 체험판 릴스로 올리기 (팔로워 아닌 사람에게 먼저 보여 주고, 반응 좋으면 자동 공개)</label>` : ""}<button class="btn" data-instago="${esc(it.id)}">인스타에 올리기</button>` : `<p class="muted">인스타 연결 확인이 필요해요${SNS.reels?.error ? ` (${esc(SNS.reels.error)})` : ""}.</p>`}
             <p class="muted" data-instamsg="${esc(it.id)}"></p>
           </div>`;
         }).join("");
@@ -764,14 +764,15 @@
         if (busy) return;
         const id = btn.dataset.instago;
         const it = INSTA.find((x) => x.id === id);
-        if (!it || !confirm(`'${it.title}'을(를) 인스타에 지금 바로 공개로 올려요. 올릴까요?`)) return;
+        if (!it || !confirm(`'${it.title}'을(를) 인스타에 지금 바로 올려요. 올릴까요?`)) return;
         const msg = document.querySelector(`[data-instamsg="${id}"]`);
         const say = (t) => msg && (msg.textContent = t);
         busy = true;
         btn.disabled = true;
         try {
           say("인스타에 보내는 중이에요…");
-          const { container } = await api(`sns/insta/start/${id}`);
+          const trial = document.querySelector(`[data-trial="${id}"]`)?.checked;
+          const { container } = await api(`sns/insta/start/${id}`, trial ? { "x-insta-trial": "1" } : {});
           let state = "IN_PROGRESS";
           for (let i = 0; i < 60 && state !== "FINISHED"; i++) {
             await new Promise((r) => setTimeout(r, 5000));
