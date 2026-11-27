@@ -794,6 +794,7 @@
             <div class="ipicks">
               ${g.card ? pick(g.card, `카드뉴스 ${imgs.length}장`) : ""}
               ${g.reel ? pick(g.reel, "릴스") : ""}
+              ${g.reel && !done[g.reel.id] ? `<label class="muted ipick sub"><input type="checkbox" data-trial="${esc(g.reel.id)}" checked /><span>릴스를 체험판으로 (팔로워 아닌 사람에게 먼저 보여 주고, 반응 좋으면 자동 공개 · 팔로워 200명부터 가능)</span></label>` : ""}
             </div>
             <details><summary>캡션 보기</summary>${parts.map((p) => `<p class="meta"><b>${p.kind === "reel" ? "릴스" : "카드뉴스"}</b></p><div class="cap">${esc(p.caption)}</div><button class="btn sm sub" data-copytext="${esc(p.caption)}">캡션 복사</button>`).join("")}</details>
             ${!left.length ? `<p class="state done">✓ 모두 올렸어요</p>`
@@ -828,6 +829,7 @@
         const msg = document.querySelector(`[data-instamsg="${gid}"]`);
         const say = (t) => msg && (msg.textContent = t);
         if (!todo.length) return say("올릴 것을 하나 이상 골라 주세요.");
+        const trialOn = [...document.querySelectorAll("[data-trial]")].map((t) => [t.dataset.trial, t.checked]);
         const names = todo.map((x) => (x.kind === "reel" ? "릴스" : "카드뉴스")).join(" + ");
         if (!confirm(`${names}를 인스타에 지금 바로 공개로 올려요. 올릴까요?`)) return;
         busy = true;
@@ -835,7 +837,7 @@
         const ok = [];
         try {
           for (const it of todo) {
-            await instaOne(it, false, say);
+            await instaOne(it, it.kind === "reel" && document.querySelector(`[data-trial="${it.id}"]`)?.checked, say);
             ok.push(it.kind === "reel" ? "릴스" : "카드뉴스");
           }
           busy = false;
@@ -845,6 +847,7 @@
           renderInsta();
           // 다시 그려도 고른 상태는 그대로 (이미 올라간 건 자동으로 잠겨요)
           document.querySelectorAll(`[data-ipick="${gid}"]`).forEach((c) => { if (!c.disabled) c.checked = ids.includes(c.value); });
+          trialOn.forEach(([id, on]) => { const t = document.querySelector(`[data-trial="${id}"]`); if (t) t.checked = on; });
           const m = document.querySelector(`[data-instamsg="${gid}"]`);
           if (m) m.textContent = (ok.length ? `${ok.join(" + ")}는 올렸어요. ` : "") + e.message;
         }
