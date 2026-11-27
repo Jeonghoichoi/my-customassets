@@ -1,5 +1,5 @@
 // 인스타 릴스·쓰레드 바로 올리기: data/uploads.json의 쇼츠를 공식 API로 게시해요
-// 키는 Vercel 환경변수에만 있어요: IG_ACCESS_TOKEN, IG_USER_ID, THREADS_ACCESS_TOKEN, THREADS_USER_ID
+// 키는 Vercel 환경변수에만 있어요: IG_ACCESS_TOKEN, IG_USER_ID, THREADS_ACCESS_TOKEN (THREADS_USER_ID는 더 안 써요)
 // 영상은 media 브랜치 파일을 jsDelivr 주소로 넘기면, 메타 서버가 직접 가져가요 (video/mp4로 내려줘요)
 // 서버리스 60초 제한 때문에 유튜브처럼 단계를 나눠요: start(컨테이너 만들기) → check(처리 확인, 화면이 반복) → publish(게시)
 const CDN = "https://cdn.jsdelivr.net/gh/Jeonghoichoi/my-customassets@";
@@ -11,7 +11,8 @@ const clean = (v) => String(v || "").trim().replace(/^["']|["']$/g, "");
 const cfg = () => ({
   // 복사·붙여넣기 때 따라온 공백·줄바꿈·따옴표는 지워요
   ig: { token: clean(process.env.IG_ACCESS_TOKEN), user: clean(process.env.IG_USER_ID), ver: clean(process.env.IG_GRAPH_VERSION) || "v25.0" },
-  th: { token: clean(process.env.THREADS_ACCESS_TOKEN), user: clean(process.env.THREADS_USER_ID) },
+  // 쓰레드는 계정 번호 대신 "me"(토큰 주인)로 올려요 — 앱·토큰을 새로 만들어도 번호가 어긋나 실패하지 않게
+  th: { token: clean(process.env.THREADS_ACCESS_TOKEN), user: "me" },
 });
 
 function fail(status, message) {
@@ -161,7 +162,7 @@ const instaList = () => ({ items: instaItems().map(({ id, kind, title, images, v
 // ── 쓰레드 ──
 const th = (path, params = {}, method = "POST") => {
   const c = cfg().th;
-  if (!c.token || !c.user) throw fail(400, "Vercel에 THREADS_ACCESS_TOKEN과 THREADS_USER_ID를 먼저 넣어 주세요.");
+  if (!c.token) throw fail(400, "Vercel에 THREADS_ACCESS_TOKEN을 먼저 넣어 주세요.");
   return call("https://graph.threads.net/v1.0", path, params, method, c.token, "쓰레드");
 };
 
@@ -300,7 +301,7 @@ async function handleCron(headers) {
 // 연결 상태: 토큰이 살아 있는지 계정 이름을 한 번 불러서 확인해요
 async function status() {
   const c = cfg();
-  const out = { reels: { ready: Boolean(c.ig.token && c.ig.user) }, threads: { ready: Boolean(c.th.token && c.th.user) } };
+  const out = { reels: { ready: Boolean(c.ig.token && c.ig.user) }, threads: { ready: Boolean(c.th.token) } };
   const probe = async (key, fn) => {
     if (!out[key].ready) return;
     try {
