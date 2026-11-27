@@ -19,7 +19,7 @@
   "crons": [
     {
       "path": "/api/cron/threads",
-      "schedule": "0 12 * * *"
+      "schedule": "30 3 * * *"
     }
   ]
 }
