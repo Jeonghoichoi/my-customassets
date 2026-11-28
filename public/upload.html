@@ -415,9 +415,11 @@
       // 쇼츠 한 개를 다른 플랫폼에도: 스위치로 고르고 버튼 하나로 (릴스는 자동, 클립·틱톡은 캡션 복사)
       function socialBox(it) {
         if (it.kind === "long" || !it.video) return "";
-        const done = social()[it.id] || {};
+        // 크롬 자동 업로드(예약 작업)가 올린 기록은 서버 auto.json 의 cross 에 있어요: { tiktok: { id: { status, url } }, clip: {…} }
+        const cross = Object.fromEntries(["clip", "tiktok"].map((pl) => [pl, AUTOST.cross?.[pl]?.[it.id]]).filter(([, v]) => v?.status === "posted"));
+        const done = { ...(social()[it.id] || {}), ...Object.fromEntries(Object.keys(cross).map((pl) => [pl, true])) };
         const on = plOn();
-        const links = store("snsLinks", {});
+        const links = { ...store("snsLinks", {}), ...Object.fromEntries(Object.entries(cross).filter(([, v]) => v.url).map(([pl, v]) => [`${it.id}-${pl}`, v.url])) };
         const isAuto = (pl) => pl === "reels" && snsOk("reels");
         const rows = PLS.map((pl) => {
           const d = done[pl];
