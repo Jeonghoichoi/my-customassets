@@ -88,8 +88,16 @@ const ig = (path, params = {}, method = "POST") => {
 
 async function igStart(id, headers) {
   const it = item(id);
-  const params = { media_type: "REELS", video_url: media(it.video), caption: textFrom(headers, IG_MAX), share_to_feed: "true" };
-  if (it.thumb) params.cover_url = media(it.thumb);
+  const caption = textFrom(headers, IG_MAX);
+  // 방금 올린 쇼츠는 CDN이 못 찾을 수 있어요 → 못 찾으면 GitHub 원본 주소로
+  const url = await warm([it.video, it.thumb].filter(Boolean));
+  const params = { media_type: "REELS", video_url: url[it.video], caption, share_to_feed: "true" };
+  if (it.thumb) params.cover_url = url[it.thumb];
+  // 체험판 릴스 (팔로워 200명 이상 공개 프로페셔널 계정부터): 팔로워 아닌 사람에게 먼저 보여 주고, 반응 좋으면 자동 공개
+  if (headers["x-insta-trial"] === "1") {
+    params.trial_params = JSON.stringify({ graduation_strategy: "SS_PERFORMANCE" });
+    delete params.share_to_feed;
+  }
   const j = await ig(`/${cfg().ig.user}/media`, params);
   return { container: j.id };
 }
