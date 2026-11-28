@@ -46,6 +46,7 @@
       .vers button { flex: 1; height: 38px; border: 0; border-radius: 12px; background: var(--fill); color: var(--ink-2); font: inherit; font-size: 14px; font-weight: 700; }
       .vers button[aria-pressed="true"] { background: var(--ink); color: #fff; }
       [hidden] { display: none !important; }
+      details.hist { margin-top: 18px; } details.hist > summary { font-weight: 700; color: #6b7684; padding: 14px 4px; cursor: pointer; }
     </style>
   </head>
   <body>
@@ -120,14 +121,18 @@
         </article>`;
       }
 
+      let histOpen = false;
       function render() {
         if (!items.length) { $("#list").innerHTML = `<div class="card"><p class="muted">아직 준비된 글이 없어요. 내일 아침 7시 15분쯤 알림이 와요.</p></div>`; return; }
-        let html = "", last = "";
-        for (const it of items) {
-          if (it.date !== last) { const d = new Date(it.date + "T00:00:00+09:00"); html += `<p class="day">${d.getMonth() + 1}월 ${d.getDate()}일</p>`; last = it.date; }
-          html += card(it);
-        }
+        // 올린 글·건너뛴 글은 '지난 기록'으로 접어 두고, 위에는 아직 할 일이 있는 글만 보여요
+        const isHist = (it) => it.status === "posted" || it.status === "skipped";
+        const day = (it) => { const d = new Date(it.date + "T00:00:00+09:00"); return `${d.getMonth() + 1}월 ${d.getDate()}일`; };
+        const build = (list) => { let h = "", last = ""; for (const it of list) { if (it.date !== last) { h += `<p class="day">${day(it)}</p>`; last = it.date; } h += card(it); } return h; };
+        const now = items.filter((it) => !isHist(it)), hist = items.filter(isHist).reverse();
+        let html = now.length ? build(now) : `<div class="card"><p class="muted">지금 확인할 글이 없어요. 내일 아침 7시 15분쯤 알림이 와요.</p></div>`;
+        if (hist.length) html += `<details class="hist" ${histOpen ? "open" : ""}><summary>지난 기록 · ${hist.length}개 (올림·건너뜀)</summary>${build(hist)}</details>`;
         $("#list").innerHTML = html;
+        $("#list .hist")?.addEventListener("toggle", (e) => (histOpen = e.target.open));
       }
 
       function refresh(id) {

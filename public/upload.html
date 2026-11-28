@@ -76,6 +76,8 @@
       .row input[type="datetime-local"] { flex: 1 1 100%; min-width: 0; max-width: 100%; padding: 8px 10px; font-size: 14px; }
       .state { font-size: 14px; font-weight: 700; }
       .state.done { color: var(--blue); }
+      details.hist { margin-top: 18px; }
+      details.hist > summary { font-weight: 700; color: var(--sub, #6b7684); padding: 14px 4px; cursor: pointer; }
       .state.err { color: var(--red); font-weight: 500; }
       .bar { height: 6px; background: var(--fill); border-radius: 3px; overflow: hidden; margin-top: 10px; }
       .bar i { display: block; height: 100%; background: var(--blue); width: 0; transition: width 0.3s; }
@@ -455,6 +457,7 @@
         return "sched";
       }
 
+      let histOpen = false;
       function render() {
         const n = { wait: 0, sched: 0, pub: 0, draft: 0 };
         items.forEach((it) => n[phase(it)]++);
@@ -468,15 +471,25 @@
         PLAN = planTimes();
         let html = "";
         let last = "";
+        // 이미 유튜브에 올라간 영상(예약됨·공개됨)은 '올린 기록'으로 접어 둬요 — 위에는 올릴 것만 남게
+        const isHist = (x) => ["sched", "pub"].includes(phase(x));
+        let hist = "";
+        let lastH = "";
         for (const it of items) {
+          const H = isHist(it);
           const at = new Date(it.done?.publishAt || it.publishAt);
           const day = dayLabel(at);
-          if (day !== last) html += `<p class="day">${day}</p>`;
-          last = day;
+          if (H) {
+            if (day !== lastH) hist += `<p class="day">${day}</p>`;
+            lastH = day;
+          } else {
+            if (day !== last) html += `<p class="day">${day}</p>`;
+            last = day;
+          }
           const p = phase(it);
           const pubAt = it.done?.publishAt ? new Date(it.done.publishAt) : at;
           const st = { wait: `<span class="state">대기 중</span>`, sched: `<span class="state done">✓ 예약됨 · ${dayLabel(pubAt)} ${timeLabel(pubAt)} 공개</span>`, pub: `<span class="state done">✓ 공개됨</span>`, draft: `<span class="state">🍳 만드는 중 · ${esc(it.draft || "")}</span>` }[p];
-          html += `<article class="card item ${it.kind}" id="it-${it.id}">
+          const card = `<article class="card item ${it.kind}" id="it-${it.id}">
             <img class="thumb" src="${RAW + esc(pick(it))}" alt="" onerror="this.style.visibility='hidden'" />
             <div>
               <div class="t"><span class="badge ${it.kind}">${it.kind === "long" ? `${it.ep}편 본편` : it.kind === "daily" ? "데일리 쇼츠" : `${it.ep}편 쇼츠`}</span>${esc(it.title)}</div>
@@ -514,11 +527,17 @@
             </div>
             <div class="pv" data-pvbox="${it.id}" hidden></div>
           </article>`;
+          if (H) hist += card;
+          else html += card;
         }
+        const nHist = items.filter(isHist).length;
+        if (!html) html = `<p class="card muted">올릴 영상이 없어요. 새 영상이 대기열에 들어오면 여기에 떠요.</p>`;
+        if (nHist) html += `<details class="hist" ${histOpen ? "open" : ""}><summary>올린 기록 · ${nHist}개 (예약됨·공개됨)</summary>${hist}</details>`;
         const open = [...document.querySelectorAll("[data-social][open]")].map((d) => d.dataset.social);
         // 다시 그려도 펼쳐 둔 '다른 플랫폼' 상자는 그대로 열어 둬요
         const opened = [...document.querySelectorAll("details[data-social][open]")].map((d) => d.dataset.social);
         $("#list").innerHTML = html;
+        $("#list .hist")?.addEventListener("toggle", (e) => (histOpen = e.target.open));
         opened.forEach((id) => { const d = document.querySelector(`details[data-social="${id}"]`); if (d) d.open = true; });
         open.forEach((id) => { const d = $(`[data-social="${id}"]`); if (d) d.open = true; });
         renderClip();
@@ -777,7 +796,9 @@
         const keep = store("instaPick", {});
         const chk = (key, def) => (key in keep ? keep[key] : def) ? "checked" : "";
         const doneLine = (url) => `<span class="state done">✓ 올렸어요${url ? ` · <a href="${esc(url)}" target="_blank" rel="noopener">보기</a>` : ""}</span>`;
-        const cards = INSTA.filter((x) => x.kind !== "reel");
+        const cardsAll = INSTA.filter((x) => x.kind !== "reel");
+        const cards = cardsAll.filter((c) => !done[c.id]);
+        const cardsDone = cardsAll.filter((c) => done[c.id]);
         const cardHtml = cards.map((c) => {
           const imgs = (c.images || []).filter(Boolean);
           const d = done[c.id];
@@ -803,6 +824,7 @@
         $("#instaList").innerHTML = `
           <h3 class="isub">카드뉴스</h3>
           ${cardHtml || `<p class="muted">올릴 카드뉴스가 아직 없어요.</p>`}
+          ${cardsDone.length ? `<details><summary>올린 카드뉴스 기록 · ${cardsDone.length}개</summary>${cardsDone.map((c) => `<p class="meta"><b>${esc(c.title)}</b> ${doneLine(done[c.id].url)}</p>`).join("")}</details>` : ""}
           <h3 class="isub">릴스 <small class="muted">유튜브 쇼츠 영상 그대로</small></h3>
           ${todo.length ? todo.slice(0, REEL_MAX).map((x) => reelRow(x, false)).join("") : `<p class="muted">릴스로 올릴 쇼츠가 없어요. 쇼츠가 대기열에 들어오면 여기에 떠요.</p>`}
           ${posted.length ? `<details><summary>최근 릴스로 올린 쇼츠</summary>${posted.map((x) => reelRow(x, true)).join("")}</details>` : ""}
