@@ -390,7 +390,10 @@ async function handle(path, headers = {}) {
     if (path === "config")
       return { status: 200, body: { demo, ai, needsCode: Boolean(code), demoSymbols: demo ? demoSymbols : [] }, maxAge: 0 };
     // Vercel Cron: 접근 코드 대신 CRON_SECRET으로 확인해요
-    if (path === "cron/threads") return { status: 200, body: await handleCron(headers), maxAge: 0 };
+    if (path === "cron/threads") return { status: 200, body: await handleCron(headers, "threads"), maxAge: 0 };
+    if (path === "cron/morning") return { status: 200, body: await handleCron(headers, "morning"), maxAge: 0 };
+    if (path === "cron/youtube") return { status: 200, body: await handleCron(headers, "youtube"), maxAge: 0 };
+    if (path === "cron/metrics") return { status: 200, body: await handleCron(headers, "metrics"), maxAge: 0 };
     if (code && headers["x-access-code"] !== code)
       return { status: 401, body: { error: "접근 코드가 맞지 않아요." }, maxAge: 0 };
     // 유튜브 예약 업로드 (public/upload.html). 채널에 올리는 기능이라 접근 코드가 꼭 있어야 해요

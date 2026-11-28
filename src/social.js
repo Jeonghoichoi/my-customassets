@@ -211,12 +211,13 @@ async function thPublish(cid) {
 // 매일 아침 예약 작업이 threads 브랜치의 threads.json에 초안을 올려요. 노아 님이 앱에서 승인하면
 // 아침 글(am)은 바로, 저녁 글(pm)은 밤 9시 Vercel Cron이 올려요.
 // threads 브랜치는 배포가 꺼져 있어서(vercel.json) 승인할 때마다 앱이 다시 배포되지 않아요
-const GH = "https://api.github.com/repos/Jeonghoichoi/my-customassets/contents/threads.json";
+const GH_DIR = "https://api.github.com/repos/Jeonghoichoi/my-customassets/contents/";
 const STORE_BRANCH = "threads";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const kstDate = (ms = Date.now()) => new Date(ms + 9 * 3600e3).toISOString().slice(0, 10);
 
-async function gh(method, body) {
+async function gh(method, body, file = "threads.json") {
+  const GH = GH_DIR + file;
   const token = clean(process.env.GITHUB_TOKEN);
   if (!token) throw fail(400, "Vercel에 GITHUB_TOKEN을 먼저 넣어 주세요.");
   const res = await fetch(method === "GET" ? `${GH}?ref=${STORE_BRANCH}` : GH, {
@@ -237,15 +238,15 @@ async function gh(method, body) {
   return j;
 }
 
-async function loadStore() {
-  const j = await gh("GET");
-  if (!j) return { data: { items: [] }, sha: null };
+async function loadStore(file = "threads.json") {
+  const j = await gh("GET", null, file);
+  if (!j) return { data: file === "threads.json" ? { items: [] } : {}, sha: null };
   return { data: JSON.parse(Buffer.from(j.content, "base64").toString("utf8")), sha: j.sha };
 }
 
-async function saveStore(data, sha, message) {
+async function saveStore(data, sha, message, file = "threads.json") {
   const content = Buffer.from(JSON.stringify(data, null, 1) + "\n", "utf8").toString("base64");
-  await gh("PUT", { message, content, branch: STORE_BRANCH, ...(sha ? { sha } : {}) });
+  await gh("PUT", { message, content, branch: STORE_BRANCH, ...(sha ? { sha } : {}) }, file);
 }
 
 // 글(+카드 이미지) 올리기: 컨테이너 만들기 → 게시 (준비가 덜 됐으면 몇 초 기다렸다 다시)
@@ -301,24 +302,196 @@ async function decide(id, action, headers) {
   return { status: it.status, url: it.url || "" };
 }
 
-// Vercel Cron (매일 12:30 KST, 쓰레드 황금 시간대): 승인된 점심 글·카드를 올려요. CRON_SECRET이 맞을 때만 동작해요
-async function handleCron(headers) {
+// ── 자동 운영 (Vercel Cron) ──────────────────────────────────────────
+// 노아 님이 승인하지 않아도 정해진 시간에 올라가요. 판독기에서 '건너뛰기'를 누른 것만 빠져요.
+//  · cron/morning (매일 08:30 KST): 아침 쓰레드 글 게시 + 인스타 카드뉴스·릴스 컨테이너 만들기(인스타가 처리할 시간 주기)
+//  · cron/threads (매일 12:30 KST): 점심 쓰레드 카드 게시 + 아침에 만든 인스타 컨테이너 게시
+//  · cron/youtube (매일 07:00 KST): 대기열의 다음 영상 1개를 유튜브에 예약 업로드
+// 인스타 진행 상태는 threads 브랜치 auto.json 에 기록해요 (배포가 꺼진 브랜치라 기록할 때마다 앱이 다시 배포되지 않아요)
+const blank = (t) => /\{어제\}|\[[^\]]*\]/.test(String(t || ""));
+const AUTO = "auto.json";
+const cleanTitle = (t) => String(t || "").replace(/\s*#shorts\b/gi, "").replace(/\s*\|\s*\d+월 \d+일.*$/, "").trim();
+function reelCaption(it) {
+  const skip = /^(shorts|쇼츠|배당셰프)$/i;
+  const tags = ["배당셰프", ...(it.tags || []).filter((t) => !skip.test(t))].slice(0, 12).map((t) => "#" + t.replace(/\s+/g, ""));
+  const body = String(it.description || "").split("\n").filter((l) => l.trim() && !/^출처|투자 권유|^https?:|본편|youtu/.test(l)).slice(0, 3).join("\n");
+  return [cleanTitle(it.title), "", body, "", "더 긴 이야기는 유튜브 '배당셰프'에서 볼 수 있어요.", "※ 투자 권유가 아니에요.", "", tags.join(" ")].join("\n").slice(0, IG_MAX);
+}
+function checkCron(headers) {
   const secret = clean(process.env.CRON_SECRET);
   if (!secret || headers.authorization !== `Bearer ${secret}`) throw fail(401, "허용되지 않은 요청이에요.");
+}
+// 쓰레드: slots 중 오늘(또는 지난) 글을 올려요. 승인한 글은 고친 글(final)로, 승인 안 한 글은 버전 1로
+async function autoThreads(slots, max) {
   const { data, sha } = await loadStore();
-  const due = (data.items || []).filter((x) => x.status === "approved" && x.date <= kstDate()).slice(0, 2);
+  const due = (data.items || [])
+    .filter((x) => slots.includes(x.slot) && x.date <= kstDate() && x.date >= kstDate(Date.now() - 2 * 86400e3))
+    .filter((x) => x.status === "approved" || ((x.status || "draft") === "draft" && !blank(x.text)))
+    .slice(0, max);
   const done = [];
   for (const it of due) {
     try {
-      const r = await postText(it.final, it.image, it.topic);
-      Object.assign(it, { status: "posted", postedAt: new Date().toISOString(), url: r.url, postId: r.id });
+      const text = it.status === "approved" ? it.final : it.text;
+      const r = await postText(text, it.image, it.topic);
+      Object.assign(it, { status: "posted", postedAt: new Date().toISOString(), url: r.url, postId: r.id, auto: it.status !== "approved" });
       done.push(it.id);
     } catch (e) {
       it.error = e.message;
     }
   }
-  if (due.length) await saveStore(data, sha, `쓰레드 예약 게시 ${done.join(", ") || "실패"}`);
+  if (due.length) await saveStore(data, sha, `쓰레드 자동 게시 ${done.join(", ") || "실패"}`);
   return { posted: done, tried: due.length };
+}
+// 인스타 다음 순서: 카드뉴스는 목록 순서대로, 릴스는 유튜브에 이미 공개된 쇼츠 중 최신
+async function nextReel(state) {
+  const yt = require("./youtube.js");
+  let pub = new Set();
+  try {
+    pub = new Set((await yt.uploads()).videos.filter((v) => v.privacy === "public").map((v) => cleanTitle(v.title)));
+  } catch {
+    return null;
+  }
+  return queue().items
+    .filter((x) => x.kind !== "long" && x.video && !x.draft && pub.has(cleanTitle(x.title)) && !state.reels[x.id])
+    .sort((a, b) => String(b.publishAt).localeCompare(String(a.publishAt)))[0] || null;
+}
+async function autoInstaStart() {
+  const c = cfg().ig;
+  if (!c.token || !c.user) return { skipped: "인스타 키 없음" };
+  const { data: st, sha } = await loadStore(AUTO);
+  st.cards = st.cards || {};
+  st.reels = st.reels || {};
+  const out = {};
+  const card = instaItems().find((x) => x.kind !== "reel" && !st.cards[x.id]);
+  if (card) {
+    try {
+      const { container } = await instaStart(card.id);
+      st.cards[card.id] = { status: "pending", container, at: new Date().toISOString() };
+      out.card = card.id;
+    } catch (e) {
+      st.cards[card.id] = { status: "error", error: e.message, at: new Date().toISOString() };
+    }
+  }
+  const reel = await nextReel(st);
+  if (reel) {
+    try {
+      const { container } = await igStart(reel.id, { "x-sns-text": encodeURIComponent(reelCaption(reel)) });
+      st.reels[reel.id] = { status: "pending", container, at: new Date().toISOString() };
+      out.reel = reel.id;
+    } catch (e) {
+      st.reels[reel.id] = { status: "error", error: e.message, at: new Date().toISOString() };
+    }
+  }
+  if (card || reel) await saveStore(st, sha, `인스타 자동 준비 ${[out.card, out.reel].filter(Boolean).join(", ") || "실패"}`, AUTO);
+  return out;
+}
+async function autoInstaPublish() {
+  const { data: st, sha } = await loadStore(AUTO);
+  const out = [];
+  let changed = false;
+  for (const kind of ["cards", "reels"]) {
+    for (const [id, v] of Object.entries(st[kind] || {})) {
+      if (v.status !== "pending") continue;
+      changed = true;
+      try {
+        const c = await igCheck(v.container);
+        if (c.state === "FINISHED") {
+          const r = await igPublish(v.container);
+          Object.assign(v, { status: "posted", url: r.url, mediaId: r.id, postedAt: new Date().toISOString() });
+          out.push(id);
+        } else if (c.state === "ERROR" || c.state === "EXPIRED") Object.assign(v, { status: "error", error: c.detail || c.state });
+      } catch (e) {
+        v.error = e.message;
+      }
+    }
+  }
+  if (changed) await saveStore(st, sha, `인스타 자동 게시 ${out.join(", ") || "대기"}`, AUTO);
+  return { posted: out };
+}
+async function instaSkip(key) {
+  const [kind, id] = key.split(":");
+  if (!["cards", "reels"].includes(kind)) throw fail(400, "건너뛸 항목이 이상해요.");
+  const { data: st, sha } = await loadStore(AUTO);
+  st[kind] = st[kind] || {};
+  if (st[kind][id]?.status === "posted") throw fail(409, "이미 올린 거예요.");
+  st[kind][id] = { status: "skipped", at: new Date().toISOString() };
+  await saveStore(st, sha, `인스타 건너뛰기 ${key}`, AUTO);
+  return { ok: true };
+}
+
+// 성과 수집 (매주 일요일 20:00 KST, cron/metrics): threads 브랜치 metrics.json 에 저장 →
+// 주간 예약 작업이 읽고 분석해서 playbook.json(잘된 주제·첫 문장·시간)을 고쳐요 → 다음 생산이 플레이북을 따라요 (선순환)
+const num = (x) => Number(x?.total_value?.value ?? x?.values?.[0]?.value ?? 0);
+async function pool(list, n, fn) {
+  const out = [];
+  for (let i = 0; i < list.length; i += n) out.push(...(await Promise.all(list.slice(i, i + n).map((x) => fn(x).catch(() => null)))));
+  return out.filter(Boolean);
+}
+async function autoMetrics() {
+  const t0 = new Date().toISOString();
+  const res = { at: t0, threads: [], insta: [], youtube: [], errors: [] };
+  // 쓰레드: 최근 30일 내가 올린 글
+  try {
+    const { data } = await loadStore();
+    const posted = (data.items || []).filter((x) => x.status === "posted" && x.postId && x.date >= kstDate(Date.now() - 30 * 86400e3));
+    res.threads = await pool(posted, 5, async (x) => {
+      const j = await th(`/${x.postId}/insights`, { metric: "views,likes,replies,reposts,quotes,shares" }, "GET");
+      const m = Object.fromEntries((j.data || []).map((d) => [d.name, num(d)]));
+      return { id: x.id, date: x.date, slot: x.slot, topic: x.topic || "", series: x.series || "", auto: Boolean(x.auto), hook: String(x.final || x.text).split("\n")[0], ...m };
+    });
+  } catch (e) {
+    res.errors.push(`쓰레드: ${e.message}`);
+  }
+  // 인스타: 최근 게시물 25개
+  try {
+    const c = cfg().ig;
+    if (c.token && c.user) {
+      const list = await ig(`/${c.user}/media`, { fields: "id,caption,media_type,media_product_type,permalink,timestamp,like_count,comments_count", limit: "25" }, "GET");
+      res.insta = await pool(list.data || [], 5, async (m) => {
+        const reel = m.media_product_type === "REELS";
+        const metric = reel ? "views,reach,saved,shares,total_interactions" : "reach,saved,shares,total_interactions";
+        const j = await ig(`/${m.id}/insights`, { metric }, "GET").catch(() => ({ data: [] }));
+        const k = Object.fromEntries((j.data || []).map((d) => [d.name, num(d)]));
+        return { id: m.id, type: reel ? "reel" : m.media_type, at: m.timestamp, url: m.permalink, hook: String(m.caption || "").split("\n")[0].slice(0, 80), likes: m.like_count || 0, comments: m.comments_count || 0, ...k };
+      });
+    }
+  } catch (e) {
+    res.errors.push(`인스타: ${e.message}`);
+  }
+  // 유튜브
+  try {
+    res.youtube = await require("./youtube.js").stats();
+  } catch (e) {
+    res.errors.push(`유튜브: ${e.message}`);
+  }
+  const { data: old, sha } = await loadStore("metrics.json");
+  const hist = (old.history || []).concat({ at: t0, threads: res.threads.length, insta: res.insta.length, youtube: res.youtube.length }).slice(-52);
+  await saveStore({ ...res, history: hist }, sha, `성과 수집 ${kstDate()}`, "metrics.json");
+  return { threads: res.threads.length, insta: res.insta.length, youtube: res.youtube.length, errors: res.errors };
+}
+
+async function handleCron(headers, which = "threads") {
+  checkCron(headers);
+  const out = {};
+  const safe = async (k, fn) => {
+    try {
+      out[k] = await fn();
+    } catch (e) {
+      out[k] = { error: e.message };
+    }
+  };
+  if (which === "morning") {
+    await safe("threads", () => autoThreads(["am"], 1));
+    await safe("insta", autoInstaStart);
+  } else if (which === "metrics") {
+    await safe("metrics", autoMetrics);
+  } else if (which === "youtube") {
+    await safe("youtube", () => require("./youtube.js").autoUpload());
+  } else {
+    await safe("threads", () => autoThreads(["noon", "pm"], 2));
+    await safe("insta", autoInstaPublish);
+  }
+  return out;
 }
 
 // 연결 상태: 토큰이 살아 있는지 계정 이름을 한 번 불러서 확인해요
@@ -344,7 +517,9 @@ async function status() {
 async function handleSns(path, headers) {
   if (path === "sns/status") return status();
   if (path === "sns/threads/drafts") return drafts();
-  if (path === "sns/insta/items") return instaList();
+  if (path === "sns/insta/items") return { ...instaList(), auto: (await loadStore(AUTO).catch(() => ({ data: {} }))).data };
+  const k = path.match(/^sns\/insta\/skip\/((?:cards|reels):[\w-]{1,40})$/);
+  if (k) return instaSkip(k[1]);
   const g = path.match(/^sns\/insta\/(start|check|publish)\/([\w-]{1,40})$/);
   if (g) return { start: instaStart, check: igCheck, publish: igPublish }[g[1]](g[2], headers);
   const d = path.match(/^sns\/threads\/(approve|skip)\/([\w-]{1,40})$/);

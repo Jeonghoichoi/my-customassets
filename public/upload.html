@@ -782,6 +782,8 @@
       // ── 인스타 게시물: 카드뉴스(data/insta.json) + 릴스(유튜브 쇼츠 영상 그대로) ──
       // 올릴 것을 섞어서 체크하고 버튼 하나로 차례대로 올려요. 릴스는 쇼츠의 '다른 플랫폼에도 올리기'와 같은 기록을 써요
       let INSTA = [];
+      // 서버 자동 게시 기록 (threads 브랜치 auto.json): cards/reels → { status: pending|posted|skipped|error, url }
+      let AUTOST = {};
       // 미리보기는 GitHub 원본 주소로 (jsDelivr는 방금 올린 파일을 몇 시간 못 찾을 때가 있어요), 안 뜨면 CDN으로 한 번 더
       const imgTag = (p, alt) => `<img src="${RAW + esc(p)}" alt="${esc(alt)}" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='${CDN + esc(p)}'}else{this.style.visibility='hidden'}" />`;
       const REEL_MAX = 8;
@@ -789,8 +791,12 @@
         .filter((x) => x.kind !== "long" && x.video && !x.draft)
         .sort((a, b) => String(b.publishAt || "").localeCompare(String(a.publishAt || "")));
       function renderInsta() {
-        const done = store("instaDone", {});
-        const sdone = social();
+        const done = { ...store("instaDone", {}) };
+        const sdone = { ...social() };
+        const A = { cards: AUTOST.cards || {}, reels: AUTOST.reels || {} };
+        for (const [id, v] of Object.entries(A.cards)) if (v.status === "posted" || v.status === "skipped") done[id] = done[id] || { url: v.url || "", skipped: v.status === "skipped" };
+        for (const [id, v] of Object.entries(A.reels)) if (v.status === "posted" || v.status === "skipped") sdone[id] = { ...(sdone[id] || {}), reels: sdone[id]?.reels || { url: v.url || "", skipped: v.status === "skipped" } };
+        const autoNote = (v) => (v?.status === "pending" ? `<span class="state">⏳ 자동 게시 대기 · 12시 30분</span>` : v?.status === "error" ? `<span class="state err">자동 게시 실패 · ${esc(v.error || "")}</span>` : "");
         show("#instaCard", true);
         const ready = snsOk("reels");
         const keep = store("instaPick", {});
@@ -804,6 +810,7 @@
           const d = done[c.id];
           return `<div class="iitem">
             <label class="ipick"><input type="checkbox" data-ipick="card" value="${esc(c.id)}" ${d ? "disabled" : chk("c-" + c.id, false)} /> <span class="badge short">카드뉴스 ${imgs.length}장</span><b>${esc(c.title)}</b> ${d ? doneLine(d.url) : ""}</label>
+            <div class="row">${autoNote(A.cards[c.id])}${d ? "" : `<button class="btn sm sub" data-iskip="cards:${esc(c.id)}">자동 게시에서 빼기</button>`}</div>
             <div class="istrip">${imgs.map((p, i) => `<a href="${RAW + esc(p)}" target="_blank" rel="noopener">${imgTag(p, `${i + 1}장`)}<span>${i + 1}/${imgs.length}</span></a>`).join("")}</div>
             <details><summary>캡션 보기</summary><div class="cap">${esc(c.caption)}</div><button class="btn sm sub" data-copytext="${esc(c.caption)}">캡션 복사</button></details>
           </div>`;
@@ -816,15 +823,16 @@
             <img class="ithumb" src="${RAW + esc(pick(x))}" alt="" onerror="this.style.visibility='hidden'" />
             <div class="ireelinfo">
               <label class="ipick"><input type="checkbox" data-ipick="reel" value="${esc(x.id)}" ${isDone ? "disabled" : chk("r-" + x.id, false)} /> <b>${esc(cleanTitle(x.title))}</b></label>
-              ${isDone ? doneLine(links[`${x.id}-reels`]) : `<button class="btn sm sub" data-reelpv="${esc(x.id)}">▶ 미리보기</button>`}
+              ${isDone ? (sdone[x.id]?.reels?.skipped ? `<span class="state">건너뜀</span>` : doneLine(links[`${x.id}-reels`] || sdone[x.id]?.reels?.url)) : `${autoNote(A.reels[x.id])}<button class="btn sm sub" data-reelpv="${esc(x.id)}">▶ 미리보기</button><button class="btn sm sub" data-iskip="reels:${esc(x.id)}">자동 게시에서 빼기</button>`}
               <div data-reelbox="${esc(x.id)}" hidden></div>
               <details><summary>릴스 캡션 보기</summary><div class="cap">${esc(caption("reels", x))}</div></details>
             </div>
           </div>`;
         $("#instaList").innerHTML = `
+          <p class="muted">자동 운영 중이에요: 매일 아침 8시 30분에 준비해서 12시 30분에 카드뉴스 1개·릴스 1개(공개된 쇼츠)가 올라가요. 빼고 싶은 건 '자동 게시에서 빼기'를 눌러 주세요.</p>
           <h3 class="isub">카드뉴스</h3>
           ${cardHtml || `<p class="muted">올릴 카드뉴스가 아직 없어요.</p>`}
-          ${cardsDone.length ? `<details><summary>올린 카드뉴스 기록 · ${cardsDone.length}개</summary>${cardsDone.map((c) => `<p class="meta"><b>${esc(c.title)}</b> ${doneLine(done[c.id].url)}</p>`).join("")}</details>` : ""}
+          ${cardsDone.length ? `<details><summary>올린 카드뉴스 기록 · ${cardsDone.length}개</summary>${cardsDone.map((c) => `<p class="meta"><b>${esc(c.title)}</b> ${done[c.id].skipped ? `<span class="state">건너뜀</span>` : doneLine(done[c.id].url)}</p>`).join("")}</details>` : ""}
           <h3 class="isub">릴스 <small class="muted">유튜브 쇼츠 영상 그대로</small></h3>
           ${todo.length ? todo.slice(0, REEL_MAX).map((x) => reelRow(x, false)).join("") : `<p class="muted">릴스로 올릴 쇼츠가 없어요. 쇼츠가 대기열에 들어오면 여기에 떠요.</p>`}
           ${posted.length ? `<details><summary>최근 릴스로 올린 쇼츠</summary>${posted.map((x) => reelRow(x, true)).join("")}</details>` : ""}
@@ -889,6 +897,15 @@
       $("#instaList").addEventListener("change", (e) => { if (e.target.matches("[data-ipick], #instaTrial")) rememberPicks(); });
       $("#instaList").addEventListener("click", (e) => {
         if (e.target.closest("#instaGoBtn")) return instaGo(e.target.closest("#instaGoBtn"));
+        const sk = e.target.closest("[data-iskip]");
+        if (sk) {
+          if (!confirm("이건 자동 게시에서 뺄까요? (다시 넣으려면 말씀해 주세요)")) return;
+          sk.disabled = true;
+          const [kind, id] = sk.dataset.iskip.split(":");
+          return api(`sns/insta/skip/${sk.dataset.iskip}`)
+            .then(() => { AUTOST[kind] = { ...(AUTOST[kind] || {}), [id]: { status: "skipped" } }; renderInsta(); })
+            .catch((er) => { sk.disabled = false; alert(er.message); });
+        }
         const rp = e.target.closest("[data-reelpv]");
         if (rp) {
           // 영상은 누를 때만 불러와요 (데이터 아끼기)
@@ -931,7 +948,9 @@
           show("#needCode", !cfg.needsCode);
           items = s.items || [];
           SNS = await api("sns/status").catch(() => ({}));
-          INSTA = (await api("sns/insta/items").catch(() => ({ items: [] }))).items || [];
+          const ir = await api("sns/insta/items").catch(() => ({ items: [] }));
+          INSTA = ir.items || [];
+          AUTOST = ir.auto || {};
           renderInsta();
           show("#setupCard", !s.ready);
           show("#connectCard", s.ready && !s.connected && $("#tokenCard").hidden);

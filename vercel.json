@@ -18,8 +18,20 @@
   },
   "crons": [
     {
+      "path": "/api/cron/youtube",
+      "schedule": "0 22 * * *"
+    },
+    {
+      "path": "/api/cron/morning",
+      "schedule": "30 23 * * *"
+    },
+    {
       "path": "/api/cron/threads",
       "schedule": "30 3 * * *"
+    },
+    {
+      "path": "/api/cron/metrics",
+      "schedule": "0 11 * * 0"
     }
   ]
 }

@@ -320,4 +320,59 @@ async function handleYt(path, headers) {
   return { start, chunk, finish, reschedule, thumb }[m[1]](m[2], headers);
 }
 
-module.exports = { handleYt };
+// 자동 운영 (Vercel Cron, 매일 07:00 KST): 대기열에서 아직 채널에 없는 영상을 공개 시각 순서대로 예약 업로드해요
+// 60초 제한 안에서 1~2개만. 쇼츠는 본편이 먼저 올라가 있어야 해서(설명란 링크) 안 되면 다음 영상으로 넘어가요
+async function autoUpload() {
+  const c = cfg();
+  if (!(c.id && c.secret && c.refresh)) return { skipped: "유튜브가 연결되지 않았어요" };
+  const t0 = Date.now();
+  const have = new Set((await uploads()).videos.map((v) => norm(v.title)));
+  const todo = queue().items
+    .filter((it) => !it.draft && it.video && !have.has(norm(it.title)))
+    .sort((a, b) => String(a.publishAt).localeCompare(String(b.publishAt)));
+  const done = [], notes = [];
+  for (const it of todo) {
+    if (done.length >= 2 || Date.now() - t0 > 25e3) break;
+    // 공개 시각이 이미 지났거나 너무 가까우면 3시간 뒤로
+    const want = new Date(it.publishAt).getTime();
+    const at = !want || want < Date.now() + 20 * 60e3 ? new Date(Date.now() + 3 * 3600e3) : new Date(want);
+    const h = { "x-yt-publish": at.toISOString() };
+    let s;
+    try {
+      s = await start(it.id, h);
+    } catch (e) {
+      notes.push(`${it.id}: ${e.message}`);
+      continue;
+    }
+    let r = { offset: 0 };
+    while (!r.videoId && Date.now() - t0 < 52e3) r = await chunk(it.id, { "x-yt-session": s.session, "x-yt-offset": String(r.offset) });
+    if (!r.videoId) {
+      notes.push(`${it.id}: 시간이 모자라 다음 실행 때 다시 올려요`);
+      break;
+    }
+    await finish(it.id, { "x-yt-video": r.videoId }).catch(() => null);
+    done.push({ id: it.id, videoId: r.videoId, publishAt: at.toISOString() });
+  }
+  return { uploaded: done, notes, left: todo.length - done.length };
+}
+
+
+// 성과 숫자 (매주 cron/metrics): 최근 영상 50개의 조회수·좋아요·댓글
+async function stats() {
+  const c = cfg();
+  if (!(c.id && c.secret && c.refresh)) return [];
+  const vids = (await uploads()).videos.map((v) => v.id);
+  if (!vids.length) return [];
+  const j = await (await yt(`https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet,contentDetails&id=${vids.join(",")}`)).json();
+  return (j.items || []).map((v) => ({
+    id: v.id,
+    title: v.snippet.title,
+    publishedAt: v.snippet.publishedAt,
+    duration: v.contentDetails.duration,
+    views: Number(v.statistics.viewCount || 0),
+    likes: Number(v.statistics.likeCount || 0),
+    comments: Number(v.statistics.commentCount || 0),
+  }));
+}
+
+module.exports = { handleYt, uploads, autoUpload, stats };
